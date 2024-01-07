@@ -1037,17 +1037,6 @@ mod jmp_in {
 
         assert_eq!(cpu.cycle, 4);
     }
-
-    #[test]
-    fn should_incorrectly_interpret_address_pointed_to_by_program_counter_and_take_lsb_from_correct_address_but_wrap_around_page_for_msb(
-    ) {
-        let mut cpu = CPU::new(Box::new(MemoryMock::new(&[0xFF, 0x00, 0x04, 0x00])));
-        cpu.program_counter = 0x00;
-
-        jmp_in(&mut cpu);
-
-        assert_eq!(cpu.program_counter, 0xFF00);
-    }
 }
 
 #[cfg(test)]

@@ -7,7 +7,7 @@ name = "cpu6502"
 version = "0.1.0"
 
 [[package]]
-name = "emu6502"
+name = "emu65"
 version = "0.1.0"
 dependencies = [
  "cpu6502",

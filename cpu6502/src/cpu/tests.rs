@@ -1082,7 +1082,10 @@ mod get_address {
     #[cfg(test)]
     mod indirect_addressing {
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::{
+            consts::Byte,
+            cpu::{AddressingMode, MemoryOperation, CPU},
+        };
 
         #[test]
         fn should_return_address_from_place_in_memory_stored_in_next_word_relative_to_program_counter(
@@ -1117,14 +1120,28 @@ mod get_address {
         }
 
         #[test]
-        fn should_incorrectly_interpret_address_stored_in_next_word_when_it_points_to_page_edge_and_take_lsb_from_correct_address_but_wrap_around_page_for_msb(
+        fn should_incorrectly_fetch_fetch_target_address_when_indirect_address_is_falling_on_a_page_boundary_and_take_lo_from_correct_address_but_use_indirect_address_for_hi(
         ) {
-            let mut uut = CPU::new(Box::new(MemoryMock::new(&[0xFF, 0x00, 0x04, 0x00])));
-            uut.program_counter = 0x00;
+            const INDIRECT_ADDR_LO: Byte = 0xFF;
+            const INDIRECT_ADDR_HI: Byte = 0x00;
+            const TARGET_ADDR_LO: Byte = 0xA5;
+            const TARGET_ADDR_HI: Byte = 0xCC;
+            const INCORRECT_TARGET_ADDR_HI: Byte = 0x09;
+
+            let mut memory: [Byte; 512] = [0x00; 512];
+            memory[0x0000] = INCORRECT_TARGET_ADDR_HI;
+            memory[0x0001] = INDIRECT_ADDR_LO;
+            memory[0x0002] = INDIRECT_ADDR_HI;
+            memory[0x00FF] = TARGET_ADDR_LO;
+            memory[0x0100] = TARGET_ADDR_HI;
+
+            let mut uut = CPU::new(Box::new(MemoryMock::new(&memory)));
+            uut.program_counter = 0x0001;
+            uut.cycle = 0;
 
             let result = uut.get_address(AddressingMode::Indirect, MemoryOperation::Read);
 
-            assert_eq!(result.unwrap(), 0xFF00);
+            assert_eq!(result, Some(0x09A5));
         }
     }
 

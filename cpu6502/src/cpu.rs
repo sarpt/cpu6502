@@ -590,7 +590,7 @@ impl CPU {
                 };
 
                 let hi = self.access_memory(address);
-                let lo = self.access_memory(address & 0x1100);
+                let lo = self.access_memory(address & 0xFF00);
                 let incorrect_jmp_address = Word::from_le_bytes([hi, lo]);
 
                 return Some(incorrect_jmp_address);
