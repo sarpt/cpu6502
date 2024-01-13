@@ -22,7 +22,7 @@ mod lda {
 
             lda_im(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -60,7 +60,7 @@ mod lda {
 
             lda_zp(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -111,7 +111,7 @@ mod lda {
 
             lda_zpx(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -150,7 +150,7 @@ mod lda {
 
             lda_a(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -202,7 +202,7 @@ mod lda {
 
             lda_ax(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -276,7 +276,7 @@ mod lda {
 
             lda_ay(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -361,7 +361,7 @@ mod lda {
 
             lda_iny(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -428,7 +428,7 @@ mod ldx {
 
             ldx_im(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -466,7 +466,7 @@ mod ldx {
 
             ldx_zp(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -517,7 +517,7 @@ mod ldx {
 
             ldx_zpy(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -556,7 +556,7 @@ mod ldx {
 
             ldx_a(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -608,7 +608,7 @@ mod ldx {
 
             ldx_ay(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -670,7 +670,7 @@ mod ldy {
 
             ldy_im(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -708,7 +708,7 @@ mod ldy {
 
             ldy_zp(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -759,7 +759,7 @@ mod ldy {
 
             ldy_zpx(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -798,7 +798,7 @@ mod ldy {
 
             ldy_a(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -850,7 +850,7 @@ mod ldy {
 
             ldy_ax(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1498,11 +1498,11 @@ mod cmp {
             let mut cpu = CPU::new(Box::new(MemoryMock::new(&[0x03, 0xFF])));
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_im(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1527,11 +1527,11 @@ mod cmp {
             let mut cpu = CPU::new(Box::new(MemoryMock::new(&[0x03, 0xFF, 0x00, 0x04])));
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_zp(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1557,11 +1557,11 @@ mod cmp {
             cpu.accumulator = 0x02;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_zpx(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1587,11 +1587,11 @@ mod cmp {
             let mut cpu = CPU::new(Box::new(MemoryMock::new(&[0x03, 0x00, 0x00, 0x03])));
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_a(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1627,11 +1627,11 @@ mod cmp {
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_ax(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1690,11 +1690,11 @@ mod cmp {
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_ay(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1760,11 +1760,11 @@ mod cmp {
             cpu.accumulator = 0x02;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_iny(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1820,11 +1820,11 @@ mod cpy {
             let mut cpu = CPU::new(Box::new(MemoryMock::new(&[0x03, 0xFF])));
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cpy_im(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1849,11 +1849,11 @@ mod cpy {
             let mut cpu = CPU::new(Box::new(MemoryMock::new(&[0x03, 0xFF, 0x00, 0x04])));
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cpy_zp(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1878,11 +1878,11 @@ mod cpy {
             let mut cpu = CPU::new(Box::new(MemoryMock::new(&[0x03, 0x00, 0x00, 0x03])));
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cpy_a(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1910,11 +1910,11 @@ mod cpx {
             let mut cpu = CPU::new(Box::new(MemoryMock::new(&[0x03, 0xFF])));
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cpx_im(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1939,11 +1939,11 @@ mod cpx {
             let mut cpu = CPU::new(Box::new(MemoryMock::new(&[0x03, 0xFF, 0x00, 0x04])));
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cpx_zp(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -1968,11 +1968,11 @@ mod cpx {
             let mut cpu = CPU::new(Box::new(MemoryMock::new(&[0x03, 0x00, 0x00, 0x03])));
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
-            assert_eq!(cpu.processor_status.flags, 0b00000000);
+            assert_eq!(cpu.processor_status, 0b00000000);
 
             cpx_a(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0b10000000);
+            assert_eq!(cpu.processor_status, 0b10000000);
         }
 
         #[test]
@@ -2970,7 +2970,7 @@ mod ora {
 
             ora_im(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0x80);
+            assert_eq!(cpu.processor_status, 0x80);
         }
 
         #[test]
@@ -2988,7 +2988,7 @@ mod ora {
 
     #[cfg(test)]
     mod ora_zp {
-        use crate::cpu::{instructions::ora_zp, tests::MemoryMock, Byte, Word, CPU};
+        use crate::cpu::{instructions::ora_zp, tests::MemoryMock, Byte, CPU};
 
         const ZERO_PAGE_ADDR: Byte = 0x03;
         const VALUE: Byte = 0x22;
@@ -3022,7 +3022,7 @@ mod ora {
 
             ora_zp(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0x80);
+            assert_eq!(cpu.processor_status, 0x80);
         }
 
         #[test]
@@ -3045,7 +3045,7 @@ mod ora {
 
     #[cfg(test)]
     mod ora_zpx {
-        use crate::cpu::{instructions::ora_zpx, tests::MemoryMock, Byte, Word, CPU};
+        use crate::cpu::{instructions::ora_zpx, tests::MemoryMock, Byte, CPU};
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
         const VALUE: Byte = 0x22;
@@ -3082,7 +3082,7 @@ mod ora {
 
             ora_zpx(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0x80);
+            assert_eq!(cpu.processor_status, 0x80);
         }
 
         #[test]
@@ -3106,7 +3106,7 @@ mod ora {
 
     #[cfg(test)]
     mod ora_a {
-        use crate::cpu::{instructions::ora_a, tests::MemoryMock, Byte, Word, CPU};
+        use crate::cpu::{instructions::ora_a, tests::MemoryMock, Byte, CPU};
 
         const ADDR_LO: Byte = 0x04;
         const ADDR_HI: Byte = 0x00;
@@ -3135,7 +3135,7 @@ mod ora {
 
             ora_a(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0x80);
+            assert_eq!(cpu.processor_status, 0x80);
         }
 
         #[test]
@@ -3155,7 +3155,7 @@ mod ora {
 
     #[cfg(test)]
     mod ora_ax {
-        use crate::cpu::{instructions::ora_ax, tests::MemoryMock, Byte, Word, CPU};
+        use crate::cpu::{instructions::ora_ax, tests::MemoryMock, Byte, CPU};
 
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
@@ -3189,7 +3189,7 @@ mod ora {
 
             ora_ax(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0x80);
+            assert_eq!(cpu.processor_status, 0x80);
         }
 
         #[test]
@@ -3230,7 +3230,7 @@ mod ora {
 
     #[cfg(test)]
     mod ora_ay {
-        use crate::cpu::{instructions::ora_ay, tests::MemoryMock, Byte, Word, CPU};
+        use crate::cpu::{instructions::ora_ay, tests::MemoryMock, Byte, CPU};
 
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
@@ -3264,7 +3264,7 @@ mod ora {
 
             ora_ay(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0x80);
+            assert_eq!(cpu.processor_status, 0x80);
         }
 
         #[test]
@@ -3305,13 +3305,12 @@ mod ora {
 
     #[cfg(test)]
     mod ora_inx {
-        use crate::cpu::{instructions::ora_inx, tests::MemoryMock, Byte, Word, CPU};
+        use crate::cpu::{instructions::ora_inx, tests::MemoryMock, Byte, CPU};
 
         const ZP_ADDRESS: Byte = 0x02;
         const OFFSET: Byte = 0x01;
         const EFFECTIVE_ADDRESS_LO: Byte = 0x05;
         const EFFECTIVE_ADDRESS_HI: Byte = 0x00;
-        const EFFECTIVE_ADDRESS: Word = 0x0005;
         const VALUE: Byte = 0x22;
 
         #[test]
@@ -3350,7 +3349,7 @@ mod ora {
 
             ora_inx(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0x80);
+            assert_eq!(cpu.processor_status, 0x80);
         }
 
         #[test]
@@ -3423,7 +3422,7 @@ mod ora {
 
             ora_iny(&mut cpu);
 
-            assert_eq!(cpu.processor_status.flags, 0x80);
+            assert_eq!(cpu.processor_status, 0x80);
         }
 
         #[test]
@@ -3489,6 +3488,32 @@ mod nop {
         cpu.cycle = 0;
 
         nop(&mut cpu);
+
+        assert_eq!(cpu.cycle, 1);
+    }
+}
+
+#[cfg(test)]
+mod clc {
+    use crate::cpu::{instructions::clc, tests::MemoryMock, CPU};
+
+    #[test]
+    fn should_clear_carry_flag() {
+        let mut cpu = CPU::new(Box::new(MemoryMock::default()));
+        cpu.processor_status.set_carry_flag(true);
+
+        clc(&mut cpu);
+
+        assert_eq!(cpu.processor_status.get_carry_flag(), false);
+    }
+
+    #[test]
+    fn should_take_one_cycle() {
+        let mut cpu = CPU::new(Box::new(MemoryMock::default()));
+        cpu.processor_status.set_carry_flag(true);
+        cpu.cycle = 0;
+
+        clc(&mut cpu);
 
         assert_eq!(cpu.cycle, 1);
     }
