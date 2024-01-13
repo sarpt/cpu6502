@@ -477,7 +477,7 @@ mod sum_with_x {
 }
 
 #[cfg(test)]
-mod set_load_status {
+mod set_status_of_register {
     use super::MemoryMock;
     use crate::cpu::{Registers, CPU};
 
@@ -488,7 +488,7 @@ mod set_load_status {
         uut.accumulator = 0x00;
 
         let register = Registers::Accumulator;
-        uut.set_load_status(register);
+        uut.set_status_of_register(register);
 
         assert_eq!(uut.processor_status.flags, 0b00000010);
     }
@@ -500,7 +500,7 @@ mod set_load_status {
         uut.accumulator = 0xFF;
 
         let register = Registers::Accumulator;
-        uut.set_load_status(register);
+        uut.set_status_of_register(register);
 
         assert_eq!(uut.processor_status.flags, 0b11111101);
     }
@@ -512,7 +512,7 @@ mod set_load_status {
         uut.accumulator = 0x80;
 
         let register = Registers::Accumulator;
-        uut.set_load_status(register);
+        uut.set_status_of_register(register);
 
         assert_eq!(uut.processor_status.flags, 0b10000000);
     }
@@ -524,7 +524,7 @@ mod set_load_status {
         uut.accumulator = 0x00;
 
         let register = Registers::Accumulator;
-        uut.set_load_status(register);
+        uut.set_status_of_register(register);
 
         assert_eq!(uut.processor_status.flags, 0b01111111);
     }
@@ -1120,7 +1120,7 @@ mod get_address {
         }
 
         #[test]
-        fn should_incorrectly_fetch_fetch_target_address_when_indirect_address_is_falling_on_a_page_boundary_and_take_lo_from_correct_address_but_use_indirect_address_for_hi(
+        fn should_incorrectly_fetch_target_address_when_indirect_address_is_falling_on_a_page_boundary_and_take_lo_from_correct_address_but_use_indirect_address_for_hi(
         ) {
             const INDIRECT_ADDR_LO: Byte = 0xFF;
             const INDIRECT_ADDR_HI: Byte = 0x00;

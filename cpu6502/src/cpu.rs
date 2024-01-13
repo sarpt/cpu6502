@@ -74,6 +74,15 @@ const INSTRUCTION_STY_ZP: Byte = 0x84;
 const INSTRUCTION_STY_ZPX: Byte = 0x94;
 const INSTRUCTION_STY_A: Byte = 0x8C;
 
+const INSTRUCTION_ORA_IM: Byte = 0x09;
+const INSTRUCTION_ORA_ZP: Byte = 0x05;
+const INSTRUCTION_ORA_ZPX: Byte = 0x15;
+const INSTRUCTION_ORA_A: Byte = 0x0D;
+const INSTRUCTION_ORA_A_X: Byte = 0x1D;
+const INSTRUCTION_ORA_A_Y: Byte = 0x19;
+const INSTRUCTION_ORA_IN_X: Byte = 0x01;
+const INSTRUCTION_ORA_IN_Y: Byte = 0x11;
+
 enum Flags {
     Carry = 0,
     Zero = 1,
@@ -187,70 +196,78 @@ impl CPU {
     pub fn new(memory: Box<dyn Memory>) -> Self {
         let opcode_handlers: HashMap<Byte, OpcodeHandler> = HashMap::from([
             (INSTRUCTION_LDA_IM, lda_im as OpcodeHandler),
-            (INSTRUCTION_LDA_ZP, lda_zp as OpcodeHandler),
-            (INSTRUCTION_LDA_ZPX, lda_zpx as OpcodeHandler),
-            (INSTRUCTION_LDA_A, lda_a as OpcodeHandler),
-            (INSTRUCTION_LDA_A_X, lda_a_x as OpcodeHandler),
-            (INSTRUCTION_LDA_A_Y, lda_a_y as OpcodeHandler),
-            (INSTRUCTION_LDA_IN_X, lda_in_x as OpcodeHandler),
-            (INSTRUCTION_LDA_IN_Y, lda_in_y as OpcodeHandler),
-            (INSTRUCTION_LDY_IM, ldy_im as OpcodeHandler),
-            (INSTRUCTION_LDY_ZP, ldy_zp as OpcodeHandler),
-            (INSTRUCTION_LDY_ZPX, ldy_zpx as OpcodeHandler),
-            (INSTRUCTION_LDY_A, ldy_a as OpcodeHandler),
-            (INSTRUCTION_LDY_A_X, ldy_a_x as OpcodeHandler),
-            (INSTRUCTION_LDX_IM, ldx_im as OpcodeHandler),
-            (INSTRUCTION_LDX_ZP, ldx_zp as OpcodeHandler),
-            (INSTRUCTION_LDX_ZPY, ldx_zpy as OpcodeHandler),
-            (INSTRUCTION_LDX_A, ldx_a as OpcodeHandler),
-            (INSTRUCTION_LDX_A_Y, ldx_a_y as OpcodeHandler),
-            (INSTRUCTION_JMP_A, jmp_a as OpcodeHandler),
-            (INSTRUCTION_JMP_IN, jmp_in as OpcodeHandler),
-            (INSTRUCTION_JSR_A, jsr_a as OpcodeHandler),
-            (INSTRUCTION_RTS, rts as OpcodeHandler),
-            (INSTRUCTION_BCC, bcc as OpcodeHandler),
-            (INSTRUCTION_BCS, bcs as OpcodeHandler),
-            (INSTRUCTION_BEQ, beq as OpcodeHandler),
-            (INSTRUCTION_BNE, bne as OpcodeHandler),
-            (INSTRUCTION_CMP_IM, cmp_im as OpcodeHandler),
-            (INSTRUCTION_CMP_ZP, cmp_zp as OpcodeHandler),
-            (INSTRUCTION_CMP_ZPX, cmp_zpx as OpcodeHandler),
-            (INSTRUCTION_CMP_A, cmp_a as OpcodeHandler),
-            (INSTRUCTION_CMP_A_X, cmp_a_x as OpcodeHandler),
-            (INSTRUCTION_CMP_A_Y, cmp_a_y as OpcodeHandler),
-            (INSTRUCTION_CMP_IN_X, cmp_in_x as OpcodeHandler),
-            (INSTRUCTION_CMP_IN_Y, cmp_in_y as OpcodeHandler),
-            (INSTRUCTION_CPX_IM, cpx_im as OpcodeHandler),
-            (INSTRUCTION_CPX_ZP, cpx_zp as OpcodeHandler),
-            (INSTRUCTION_CPX_A, cpx_a as OpcodeHandler),
-            (INSTRUCTION_CPY_IM, cpy_im as OpcodeHandler),
-            (INSTRUCTION_CPY_ZP, cpy_zp as OpcodeHandler),
-            (INSTRUCTION_CPY_A, cpy_a as OpcodeHandler),
-            (INSTRUCTION_INC_ZP, inc_zp as OpcodeHandler),
-            (INSTRUCTION_INC_ZPX, inc_zpx as OpcodeHandler),
-            (INSTRUCTION_INC_A, inc_a as OpcodeHandler),
-            (INSTRUCTION_INC_A_X, inc_a_x as OpcodeHandler),
-            (INSTRUCTION_INX_IM, inx_im as OpcodeHandler),
-            (INSTRUCTION_INY_IM, iny_im as OpcodeHandler),
-            (INSTRUCTION_DEC_ZP, dec_zp as OpcodeHandler),
-            (INSTRUCTION_DEC_ZPX, dec_zpx as OpcodeHandler),
-            (INSTRUCTION_DEC_A, dec_a as OpcodeHandler),
-            (INSTRUCTION_DEC_A_X, dec_a_x as OpcodeHandler),
-            (INSTRUCTION_DEX_IM, dex_im as OpcodeHandler),
-            (INSTRUCTION_DEY_IM, dey_im as OpcodeHandler),
-            (INSTRUCTION_STA_ZP, sta_zp as OpcodeHandler),
-            (INSTRUCTION_STA_ZPX, sta_zpx as OpcodeHandler),
-            (INSTRUCTION_STA_A, sta_a as OpcodeHandler),
-            (INSTRUCTION_STA_A_X, sta_a_x as OpcodeHandler),
-            (INSTRUCTION_STA_A_Y, sta_a_y as OpcodeHandler),
-            (INSTRUCTION_STA_IN_X, sta_in_x as OpcodeHandler),
-            (INSTRUCTION_STA_IN_Y, sta_in_y as OpcodeHandler),
-            (INSTRUCTION_STX_ZP, stx_zp as OpcodeHandler),
-            (INSTRUCTION_STX_ZPY, stx_zpy as OpcodeHandler),
-            (INSTRUCTION_STX_A, stx_a as OpcodeHandler),
-            (INSTRUCTION_STY_ZP, sty_zp as OpcodeHandler),
-            (INSTRUCTION_STY_ZPX, sty_zpx as OpcodeHandler),
-            (INSTRUCTION_STY_A, sty_a as OpcodeHandler),
+            (INSTRUCTION_LDA_ZP, lda_zp),
+            (INSTRUCTION_LDA_ZPX, lda_zpx),
+            (INSTRUCTION_LDA_A, lda_a),
+            (INSTRUCTION_LDA_A_X, lda_a_x),
+            (INSTRUCTION_LDA_A_Y, lda_a_y),
+            (INSTRUCTION_LDA_IN_X, lda_in_x),
+            (INSTRUCTION_LDA_IN_Y, lda_in_y),
+            (INSTRUCTION_LDY_IM, ldy_im),
+            (INSTRUCTION_LDY_ZP, ldy_zp),
+            (INSTRUCTION_LDY_ZPX, ldy_zpx),
+            (INSTRUCTION_LDY_A, ldy_a),
+            (INSTRUCTION_LDY_A_X, ldy_a_x),
+            (INSTRUCTION_LDX_IM, ldx_im),
+            (INSTRUCTION_LDX_ZP, ldx_zp),
+            (INSTRUCTION_LDX_ZPY, ldx_zpy),
+            (INSTRUCTION_LDX_A, ldx_a),
+            (INSTRUCTION_LDX_A_Y, ldx_a_y),
+            (INSTRUCTION_JMP_A, jmp_a),
+            (INSTRUCTION_JMP_IN, jmp_in),
+            (INSTRUCTION_JSR_A, jsr_a),
+            (INSTRUCTION_RTS, rts),
+            (INSTRUCTION_BCC, bcc),
+            (INSTRUCTION_BCS, bcs),
+            (INSTRUCTION_BEQ, beq),
+            (INSTRUCTION_BNE, bne),
+            (INSTRUCTION_CMP_IM, cmp_im),
+            (INSTRUCTION_CMP_ZP, cmp_zp),
+            (INSTRUCTION_CMP_ZPX, cmp_zpx),
+            (INSTRUCTION_CMP_A, cmp_a),
+            (INSTRUCTION_CMP_A_X, cmp_a_x),
+            (INSTRUCTION_CMP_A_Y, cmp_a_y),
+            (INSTRUCTION_CMP_IN_X, cmp_in_x),
+            (INSTRUCTION_CMP_IN_Y, cmp_in_y),
+            (INSTRUCTION_CPX_IM, cpx_im),
+            (INSTRUCTION_CPX_ZP, cpx_zp),
+            (INSTRUCTION_CPX_A, cpx_a),
+            (INSTRUCTION_CPY_IM, cpy_im),
+            (INSTRUCTION_CPY_ZP, cpy_zp),
+            (INSTRUCTION_CPY_A, cpy_a),
+            (INSTRUCTION_INC_ZP, inc_zp),
+            (INSTRUCTION_INC_ZPX, inc_zpx),
+            (INSTRUCTION_INC_A, inc_a),
+            (INSTRUCTION_INC_A_X, inc_a_x),
+            (INSTRUCTION_INX_IM, inx_im),
+            (INSTRUCTION_INY_IM, iny_im),
+            (INSTRUCTION_DEC_ZP, dec_zp),
+            (INSTRUCTION_DEC_ZPX, dec_zpx),
+            (INSTRUCTION_DEC_A, dec_a),
+            (INSTRUCTION_DEC_A_X, dec_a_x),
+            (INSTRUCTION_DEX_IM, dex_im),
+            (INSTRUCTION_DEY_IM, dey_im),
+            (INSTRUCTION_STA_ZP, sta_zp),
+            (INSTRUCTION_STA_ZPX, sta_zpx),
+            (INSTRUCTION_STA_A, sta_a),
+            (INSTRUCTION_STA_A_X, sta_a_x),
+            (INSTRUCTION_STA_A_Y, sta_a_y),
+            (INSTRUCTION_STA_IN_X, sta_in_x),
+            (INSTRUCTION_STA_IN_Y, sta_in_y),
+            (INSTRUCTION_STX_ZP, stx_zp),
+            (INSTRUCTION_STX_ZPY, stx_zpy),
+            (INSTRUCTION_STX_A, stx_a),
+            (INSTRUCTION_STY_ZP, sty_zp),
+            (INSTRUCTION_STY_ZPX, sty_zpx),
+            (INSTRUCTION_STY_A, sty_a),
+            (INSTRUCTION_ORA_IM, ora_im),
+            (INSTRUCTION_ORA_ZP, ora_zp),
+            (INSTRUCTION_ORA_ZPX, ora_zpx),
+            (INSTRUCTION_ORA_A, ora_a),
+            (INSTRUCTION_ORA_A_X, ora_ax),
+            (INSTRUCTION_ORA_A_Y, ora_ay),
+            (INSTRUCTION_ORA_IN_X, ora_inx),
+            (INSTRUCTION_ORA_IN_Y, ora_iny),
         ]);
 
         return CPU {
@@ -333,7 +350,7 @@ impl CPU {
         };
 
         hi = hi.wrapping_add(1);
-        address = ((hi as u16) << 8) | new_lo as u16;
+        address = Word::from_le_bytes([new_lo, hi]);
         self.cycle += 1;
 
         return address;
@@ -388,7 +405,7 @@ impl CPU {
         return self.sum_with_x(zero_page_addr).into();
     }
 
-    fn set_load_status(&mut self, register: Registers) {
+    fn set_status_of_register(&mut self, register: Registers) {
         let target_register = self.get_register(register);
 
         self.processor_status.set_zero_flag(target_register == 0);
