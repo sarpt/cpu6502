@@ -386,5 +386,9 @@ pub fn ora_iny(cpu: &mut CPU) {
     ora(cpu, AddressingMode::IndirectIndexY);
 }
 
+pub fn nop(cpu: &mut CPU) {
+    cpu.increment_program_counter();
+}
+
 #[cfg(test)]
 mod tests;

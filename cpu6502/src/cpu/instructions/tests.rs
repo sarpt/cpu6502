@@ -3467,3 +3467,29 @@ mod ora {
         }
     }
 }
+
+#[cfg(test)]
+mod nop {
+    use crate::cpu::{instructions::nop, tests::MemoryMock, CPU};
+
+    #[test]
+    fn should_increment_program_counter() {
+        let mut cpu = CPU::new(Box::new(MemoryMock::default()));
+        cpu.program_counter = 0x05;
+
+        nop(&mut cpu);
+
+        assert_eq!(cpu.program_counter, 0x06);
+    }
+
+    #[test]
+    fn should_take_one_cycle() {
+        let mut cpu = CPU::new(Box::new(MemoryMock::default()));
+        cpu.program_counter = 0x05;
+        cpu.cycle = 0;
+
+        nop(&mut cpu);
+
+        assert_eq!(cpu.cycle, 1);
+    }
+}
