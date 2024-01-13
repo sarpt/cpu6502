@@ -73,7 +73,6 @@ const INSTRUCTION_STX_A: Byte = 0x8E;
 const INSTRUCTION_STY_ZP: Byte = 0x84;
 const INSTRUCTION_STY_ZPX: Byte = 0x94;
 const INSTRUCTION_STY_A: Byte = 0x8C;
-
 const INSTRUCTION_ORA_IM: Byte = 0x09;
 const INSTRUCTION_ORA_ZP: Byte = 0x05;
 const INSTRUCTION_ORA_ZPX: Byte = 0x15;
@@ -82,6 +81,7 @@ const INSTRUCTION_ORA_A_X: Byte = 0x1D;
 const INSTRUCTION_ORA_A_Y: Byte = 0x19;
 const INSTRUCTION_ORA_IN_X: Byte = 0x01;
 const INSTRUCTION_ORA_IN_Y: Byte = 0x11;
+const INSTRUCTION_NOP: Byte = 0xEA;
 
 enum Flags {
     Carry = 0,
@@ -268,6 +268,7 @@ impl CPU {
             (INSTRUCTION_ORA_A_Y, ora_ay),
             (INSTRUCTION_ORA_IN_X, ora_inx),
             (INSTRUCTION_ORA_IN_Y, ora_iny),
+            (INSTRUCTION_NOP, nop),
         ]);
 
         return CPU {
