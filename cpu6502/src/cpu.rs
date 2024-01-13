@@ -12,20 +12,20 @@ const INSTRUCTION_LDA_IM: Byte = 0xA9;
 const INSTRUCTION_LDA_ZP: Byte = 0xA5;
 const INSTRUCTION_LDA_ZPX: Byte = 0xB5;
 const INSTRUCTION_LDA_A: Byte = 0xAD;
-const INSTRUCTION_LDA_A_X: Byte = 0xBD;
-const INSTRUCTION_LDA_A_Y: Byte = 0xB9;
-const INSTRUCTION_LDA_IN_X: Byte = 0xA1;
-const INSTRUCTION_LDA_IN_Y: Byte = 0xB1;
+const INSTRUCTION_LDA_AX: Byte = 0xBD;
+const INSTRUCTION_LDA_AY: Byte = 0xB9;
+const INSTRUCTION_LDA_INX: Byte = 0xA1;
+const INSTRUCTION_LDA_INY: Byte = 0xB1;
 const INSTRUCTION_LDY_IM: Byte = 0xA0;
 const INSTRUCTION_LDY_ZP: Byte = 0xA4;
 const INSTRUCTION_LDY_ZPX: Byte = 0xB4;
 const INSTRUCTION_LDY_A: Byte = 0xAC;
-const INSTRUCTION_LDY_A_X: Byte = 0xBC;
+const INSTRUCTION_LDY_AX: Byte = 0xBC;
 const INSTRUCTION_LDX_IM: Byte = 0xA2;
 const INSTRUCTION_LDX_ZP: Byte = 0xA6;
 const INSTRUCTION_LDX_ZPY: Byte = 0xB6;
 const INSTRUCTION_LDX_A: Byte = 0xAE;
-const INSTRUCTION_LDX_A_Y: Byte = 0xBE;
+const INSTRUCTION_LDX_AY: Byte = 0xBE;
 const INSTRUCTION_JMP_A: Byte = 0x4C;
 const INSTRUCTION_JMP_IN: Byte = 0x6C;
 const INSTRUCTION_JSR_A: Byte = 0x20;
@@ -38,10 +38,10 @@ const INSTRUCTION_CMP_IM: Byte = 0xC9;
 const INSTRUCTION_CMP_ZP: Byte = 0xC5;
 const INSTRUCTION_CMP_ZPX: Byte = 0xD5;
 const INSTRUCTION_CMP_A: Byte = 0xCD;
-const INSTRUCTION_CMP_A_X: Byte = 0xDD;
-const INSTRUCTION_CMP_A_Y: Byte = 0xD9;
-const INSTRUCTION_CMP_IN_X: Byte = 0xC1;
-const INSTRUCTION_CMP_IN_Y: Byte = 0xD1;
+const INSTRUCTION_CMP_AX: Byte = 0xDD;
+const INSTRUCTION_CMP_AY: Byte = 0xD9;
+const INSTRUCTION_CMP_INX: Byte = 0xC1;
+const INSTRUCTION_CMP_INY: Byte = 0xD1;
 const INSTRUCTION_CPX_IM: Byte = 0xE0;
 const INSTRUCTION_CPX_ZP: Byte = 0xE4;
 const INSTRUCTION_CPX_A: Byte = 0xEC;
@@ -51,22 +51,22 @@ const INSTRUCTION_CPY_A: Byte = 0xCC;
 const INSTRUCTION_INC_ZP: Byte = 0xE6;
 const INSTRUCTION_INC_ZPX: Byte = 0xF6;
 const INSTRUCTION_INC_A: Byte = 0xEE;
-const INSTRUCTION_INC_A_X: Byte = 0xFE;
+const INSTRUCTION_INC_AX: Byte = 0xFE;
 const INSTRUCTION_INX_IM: Byte = 0xE8;
 const INSTRUCTION_INY_IM: Byte = 0xC8;
 const INSTRUCTION_DEC_ZP: Byte = 0xC6;
 const INSTRUCTION_DEC_ZPX: Byte = 0xD6;
 const INSTRUCTION_DEC_A: Byte = 0xCE;
-const INSTRUCTION_DEC_A_X: Byte = 0xDE;
+const INSTRUCTION_DEC_AX: Byte = 0xDE;
 const INSTRUCTION_DEX_IM: Byte = 0xCA;
 const INSTRUCTION_DEY_IM: Byte = 0x88;
 const INSTRUCTION_STA_ZP: Byte = 0x85;
 const INSTRUCTION_STA_ZPX: Byte = 0x95;
 const INSTRUCTION_STA_A: Byte = 0x8D;
-const INSTRUCTION_STA_A_X: Byte = 0x9D;
-const INSTRUCTION_STA_A_Y: Byte = 0x99;
-const INSTRUCTION_STA_IN_X: Byte = 0x81;
-const INSTRUCTION_STA_IN_Y: Byte = 0x91;
+const INSTRUCTION_STA_AX: Byte = 0x9D;
+const INSTRUCTION_STA_AY: Byte = 0x99;
+const INSTRUCTION_STA_INX: Byte = 0x81;
+const INSTRUCTION_STA_INY: Byte = 0x91;
 const INSTRUCTION_STX_ZP: Byte = 0x86;
 const INSTRUCTION_STX_ZPY: Byte = 0x96;
 const INSTRUCTION_STX_A: Byte = 0x8E;
@@ -77,10 +77,10 @@ const INSTRUCTION_ORA_IM: Byte = 0x09;
 const INSTRUCTION_ORA_ZP: Byte = 0x05;
 const INSTRUCTION_ORA_ZPX: Byte = 0x15;
 const INSTRUCTION_ORA_A: Byte = 0x0D;
-const INSTRUCTION_ORA_A_X: Byte = 0x1D;
-const INSTRUCTION_ORA_A_Y: Byte = 0x19;
-const INSTRUCTION_ORA_IN_X: Byte = 0x01;
-const INSTRUCTION_ORA_IN_Y: Byte = 0x11;
+const INSTRUCTION_ORA_AX: Byte = 0x1D;
+const INSTRUCTION_ORA_AY: Byte = 0x19;
+const INSTRUCTION_ORA_INX: Byte = 0x01;
+const INSTRUCTION_ORA_INY: Byte = 0x11;
 const INSTRUCTION_NOP: Byte = 0xEA;
 
 enum Flags {
@@ -199,20 +199,20 @@ impl CPU {
             (INSTRUCTION_LDA_ZP, lda_zp),
             (INSTRUCTION_LDA_ZPX, lda_zpx),
             (INSTRUCTION_LDA_A, lda_a),
-            (INSTRUCTION_LDA_A_X, lda_a_x),
-            (INSTRUCTION_LDA_A_Y, lda_a_y),
-            (INSTRUCTION_LDA_IN_X, lda_in_x),
-            (INSTRUCTION_LDA_IN_Y, lda_in_y),
+            (INSTRUCTION_LDA_AX, lda_ax),
+            (INSTRUCTION_LDA_AY, lda_ay),
+            (INSTRUCTION_LDA_INX, lda_inx),
+            (INSTRUCTION_LDA_INY, lda_iny),
             (INSTRUCTION_LDY_IM, ldy_im),
             (INSTRUCTION_LDY_ZP, ldy_zp),
             (INSTRUCTION_LDY_ZPX, ldy_zpx),
             (INSTRUCTION_LDY_A, ldy_a),
-            (INSTRUCTION_LDY_A_X, ldy_a_x),
+            (INSTRUCTION_LDY_AX, ldy_ax),
             (INSTRUCTION_LDX_IM, ldx_im),
             (INSTRUCTION_LDX_ZP, ldx_zp),
             (INSTRUCTION_LDX_ZPY, ldx_zpy),
             (INSTRUCTION_LDX_A, ldx_a),
-            (INSTRUCTION_LDX_A_Y, ldx_a_y),
+            (INSTRUCTION_LDX_AY, ldx_ay),
             (INSTRUCTION_JMP_A, jmp_a),
             (INSTRUCTION_JMP_IN, jmp_in),
             (INSTRUCTION_JSR_A, jsr_a),
@@ -225,10 +225,10 @@ impl CPU {
             (INSTRUCTION_CMP_ZP, cmp_zp),
             (INSTRUCTION_CMP_ZPX, cmp_zpx),
             (INSTRUCTION_CMP_A, cmp_a),
-            (INSTRUCTION_CMP_A_X, cmp_a_x),
-            (INSTRUCTION_CMP_A_Y, cmp_a_y),
-            (INSTRUCTION_CMP_IN_X, cmp_in_x),
-            (INSTRUCTION_CMP_IN_Y, cmp_in_y),
+            (INSTRUCTION_CMP_AX, cmp_ax),
+            (INSTRUCTION_CMP_AY, cmp_ay),
+            (INSTRUCTION_CMP_INX, cmp_inx),
+            (INSTRUCTION_CMP_INY, cmp_iny),
             (INSTRUCTION_CPX_IM, cpx_im),
             (INSTRUCTION_CPX_ZP, cpx_zp),
             (INSTRUCTION_CPX_A, cpx_a),
@@ -238,22 +238,22 @@ impl CPU {
             (INSTRUCTION_INC_ZP, inc_zp),
             (INSTRUCTION_INC_ZPX, inc_zpx),
             (INSTRUCTION_INC_A, inc_a),
-            (INSTRUCTION_INC_A_X, inc_a_x),
+            (INSTRUCTION_INC_AX, inc_ax),
             (INSTRUCTION_INX_IM, inx_im),
             (INSTRUCTION_INY_IM, iny_im),
             (INSTRUCTION_DEC_ZP, dec_zp),
             (INSTRUCTION_DEC_ZPX, dec_zpx),
             (INSTRUCTION_DEC_A, dec_a),
-            (INSTRUCTION_DEC_A_X, dec_a_x),
+            (INSTRUCTION_DEC_AX, dec_ax),
             (INSTRUCTION_DEX_IM, dex_im),
             (INSTRUCTION_DEY_IM, dey_im),
             (INSTRUCTION_STA_ZP, sta_zp),
             (INSTRUCTION_STA_ZPX, sta_zpx),
             (INSTRUCTION_STA_A, sta_a),
-            (INSTRUCTION_STA_A_X, sta_a_x),
-            (INSTRUCTION_STA_A_Y, sta_a_y),
-            (INSTRUCTION_STA_IN_X, sta_in_x),
-            (INSTRUCTION_STA_IN_Y, sta_in_y),
+            (INSTRUCTION_STA_AX, sta_ax),
+            (INSTRUCTION_STA_AY, sta_ay),
+            (INSTRUCTION_STA_INX, sta_inx),
+            (INSTRUCTION_STA_INY, sta_iny),
             (INSTRUCTION_STX_ZP, stx_zp),
             (INSTRUCTION_STX_ZPY, stx_zpy),
             (INSTRUCTION_STX_A, stx_a),
@@ -264,10 +264,10 @@ impl CPU {
             (INSTRUCTION_ORA_ZP, ora_zp),
             (INSTRUCTION_ORA_ZPX, ora_zpx),
             (INSTRUCTION_ORA_A, ora_a),
-            (INSTRUCTION_ORA_A_X, ora_ax),
-            (INSTRUCTION_ORA_A_Y, ora_ay),
-            (INSTRUCTION_ORA_IN_X, ora_inx),
-            (INSTRUCTION_ORA_IN_Y, ora_iny),
+            (INSTRUCTION_ORA_AX, ora_ax),
+            (INSTRUCTION_ORA_AY, ora_ay),
+            (INSTRUCTION_ORA_INX, ora_inx),
+            (INSTRUCTION_ORA_INY, ora_iny),
             (INSTRUCTION_NOP, nop),
         ]);
 

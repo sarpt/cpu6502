@@ -26,19 +26,19 @@ pub fn lda_a(cpu: &mut CPU) {
     ld(cpu, AddressingMode::Absolute, Registers::Accumulator);
 }
 
-pub fn lda_a_x(cpu: &mut CPU) {
+pub fn lda_ax(cpu: &mut CPU) {
     ld(cpu, AddressingMode::AbsoluteX, Registers::Accumulator);
 }
 
-pub fn lda_a_y(cpu: &mut CPU) {
+pub fn lda_ay(cpu: &mut CPU) {
     ld(cpu, AddressingMode::AbsoluteY, Registers::Accumulator);
 }
 
-pub fn lda_in_x(cpu: &mut CPU) {
+pub fn lda_inx(cpu: &mut CPU) {
     ld(cpu, AddressingMode::IndexIndirectX, Registers::Accumulator);
 }
 
-pub fn lda_in_y(cpu: &mut CPU) {
+pub fn lda_iny(cpu: &mut CPU) {
     ld(cpu, AddressingMode::IndirectIndexY, Registers::Accumulator);
 }
 
@@ -58,7 +58,7 @@ pub fn ldy_a(cpu: &mut CPU) {
     ld(cpu, AddressingMode::Absolute, Registers::IndexY);
 }
 
-pub fn ldy_a_x(cpu: &mut CPU) {
+pub fn ldy_ax(cpu: &mut CPU) {
     ld(cpu, AddressingMode::AbsoluteX, Registers::IndexY);
 }
 
@@ -78,7 +78,7 @@ pub fn ldx_a(cpu: &mut CPU) {
     ld(cpu, AddressingMode::Absolute, Registers::IndexX);
 }
 
-pub fn ldx_a_y(cpu: &mut CPU) {
+pub fn ldx_ay(cpu: &mut CPU) {
     ld(cpu, AddressingMode::AbsoluteY, Registers::IndexX);
 }
 
@@ -176,19 +176,19 @@ pub fn cmp_a(cpu: &mut CPU) {
     compare(cpu, AddressingMode::Absolute, Registers::Accumulator);
 }
 
-pub fn cmp_a_x(cpu: &mut CPU) {
+pub fn cmp_ax(cpu: &mut CPU) {
     compare(cpu, AddressingMode::AbsoluteX, Registers::Accumulator);
 }
 
-pub fn cmp_a_y(cpu: &mut CPU) {
+pub fn cmp_ay(cpu: &mut CPU) {
     compare(cpu, AddressingMode::AbsoluteY, Registers::Accumulator);
 }
 
-pub fn cmp_in_x(cpu: &mut CPU) {
+pub fn cmp_inx(cpu: &mut CPU) {
     compare(cpu, AddressingMode::IndexIndirectX, Registers::Accumulator);
 }
 
-pub fn cmp_in_y(cpu: &mut CPU) {
+pub fn cmp_iny(cpu: &mut CPU) {
     compare(cpu, AddressingMode::IndirectIndexY, Registers::Accumulator);
 }
 
@@ -237,7 +237,7 @@ pub fn dec_a(cpu: &mut CPU) {
     cpu.modify_memory(AddressingMode::Absolute, MemoryModifications::Decrement);
 }
 
-pub fn dec_a_x(cpu: &mut CPU) {
+pub fn dec_ax(cpu: &mut CPU) {
     cpu.modify_memory(AddressingMode::AbsoluteX, MemoryModifications::Decrement);
 }
 
@@ -270,7 +270,7 @@ pub fn inc_a(cpu: &mut CPU) {
     cpu.modify_memory(AddressingMode::Absolute, MemoryModifications::Increment);
 }
 
-pub fn inc_a_x(cpu: &mut CPU) {
+pub fn inc_ax(cpu: &mut CPU) {
     cpu.modify_memory(AddressingMode::AbsoluteX, MemoryModifications::Increment);
 }
 
@@ -302,19 +302,19 @@ pub fn sta_a(cpu: &mut CPU) {
     store(cpu, AddressingMode::Absolute, Registers::Accumulator);
 }
 
-pub fn sta_a_x(cpu: &mut CPU) {
+pub fn sta_ax(cpu: &mut CPU) {
     store(cpu, AddressingMode::AbsoluteX, Registers::Accumulator);
 }
 
-pub fn sta_a_y(cpu: &mut CPU) {
+pub fn sta_ay(cpu: &mut CPU) {
     store(cpu, AddressingMode::AbsoluteY, Registers::Accumulator);
 }
 
-pub fn sta_in_x(cpu: &mut CPU) {
+pub fn sta_inx(cpu: &mut CPU) {
     store(cpu, AddressingMode::IndexIndirectX, Registers::Accumulator);
 }
 
-pub fn sta_in_y(cpu: &mut CPU) {
+pub fn sta_iny(cpu: &mut CPU) {
     store(cpu, AddressingMode::IndirectIndexY, Registers::Accumulator);
 }
 

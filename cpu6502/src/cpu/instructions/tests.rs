@@ -166,10 +166,10 @@ mod lda {
     }
 
     #[cfg(test)]
-    mod lda_a_x {
+    mod lda_ax {
         use crate::{
             consts::Byte,
-            cpu::{instructions::lda_a_x, tests::MemoryMock, CPU},
+            cpu::{instructions::lda_ax, tests::MemoryMock, CPU},
         };
 
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
@@ -187,7 +187,7 @@ mod lda {
             cpu.index_register_x = 0x02;
             assert_eq!(cpu.accumulator, 0x0);
 
-            lda_a_x(&mut cpu);
+            lda_ax(&mut cpu);
 
             assert_eq!(cpu.accumulator, VALUE);
         }
@@ -200,7 +200,7 @@ mod lda {
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
 
-            lda_a_x(&mut cpu);
+            lda_ax(&mut cpu);
 
             assert_eq!(cpu.processor_status.flags, 0b10000000);
         }
@@ -214,7 +214,7 @@ mod lda {
             cpu.index_register_x = 0x02;
             cpu.cycle = 0;
 
-            lda_a_x(&mut cpu);
+            lda_ax(&mut cpu);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -233,17 +233,17 @@ mod lda {
             cpu.index_register_x = 0x02;
             cpu.cycle = 0;
 
-            lda_a_x(&mut cpu);
+            lda_ax(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
         }
     }
 
     #[cfg(test)]
-    mod lda_a_y {
+    mod lda_ay {
         use crate::{
             consts::Byte,
-            cpu::{instructions::lda_a_y, tests::MemoryMock, CPU},
+            cpu::{instructions::lda_ay, tests::MemoryMock, CPU},
         };
 
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
@@ -261,7 +261,7 @@ mod lda {
             cpu.index_register_y = 0x02;
             assert_eq!(cpu.accumulator, 0x0);
 
-            lda_a_y(&mut cpu);
+            lda_ay(&mut cpu);
 
             assert_eq!(cpu.accumulator, VALUE);
         }
@@ -274,7 +274,7 @@ mod lda {
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
 
-            lda_a_y(&mut cpu);
+            lda_ay(&mut cpu);
 
             assert_eq!(cpu.processor_status.flags, 0b10000000);
         }
@@ -288,7 +288,7 @@ mod lda {
             cpu.index_register_y = 0x02;
             cpu.cycle = 0;
 
-            lda_a_y(&mut cpu);
+            lda_ay(&mut cpu);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -307,17 +307,17 @@ mod lda {
             cpu.index_register_y = 0x02;
             cpu.cycle = 0;
 
-            lda_a_y(&mut cpu);
+            lda_ay(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
         }
     }
 
     #[cfg(test)]
-    mod lda_in_y {
+    mod lda_iny {
         use crate::{
             consts::Byte,
-            cpu::{instructions::lda_in_y, tests::MemoryMock, CPU},
+            cpu::{instructions::lda_iny, tests::MemoryMock, CPU},
         };
 
         const INDIRECT_ZERO_PAGE_ADDRESS_PLACE: Byte = 0x01;
@@ -341,7 +341,7 @@ mod lda {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.accumulator, 0x0);
 
-            lda_in_y(&mut cpu);
+            lda_iny(&mut cpu);
 
             assert_eq!(cpu.accumulator, VALUE);
         }
@@ -359,7 +359,7 @@ mod lda {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            lda_in_y(&mut cpu);
+            lda_iny(&mut cpu);
 
             assert_eq!(cpu.processor_status.flags, 0b10000000);
         }
@@ -379,7 +379,7 @@ mod lda {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            lda_in_y(&mut cpu);
+            lda_iny(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -397,7 +397,7 @@ mod lda {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            lda_in_y(&mut cpu);
+            lda_iny(&mut cpu);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -572,10 +572,10 @@ mod ldx {
     }
 
     #[cfg(test)]
-    mod ldx_a_y {
+    mod ldx_ay {
         use crate::{
             consts::Byte,
-            cpu::{instructions::ldx_a_y, tests::MemoryMock, CPU},
+            cpu::{instructions::ldx_ay, tests::MemoryMock, CPU},
         };
 
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
@@ -593,7 +593,7 @@ mod ldx {
             cpu.index_register_y = 0x02;
             assert_eq!(cpu.index_register_x, 0x0);
 
-            ldx_a_y(&mut cpu);
+            ldx_ay(&mut cpu);
 
             assert_eq!(cpu.index_register_x, VALUE);
         }
@@ -606,7 +606,7 @@ mod ldx {
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
 
-            ldx_a_y(&mut cpu);
+            ldx_ay(&mut cpu);
 
             assert_eq!(cpu.processor_status.flags, 0b10000000);
         }
@@ -620,7 +620,7 @@ mod ldx {
             cpu.index_register_y = 0x02;
             cpu.cycle = 0;
 
-            ldx_a_y(&mut cpu);
+            ldx_ay(&mut cpu);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -639,7 +639,7 @@ mod ldx {
             cpu.index_register_y = 0x02;
             cpu.cycle = 0;
 
-            ldx_a_y(&mut cpu);
+            ldx_ay(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -814,10 +814,10 @@ mod ldy {
     }
 
     #[cfg(test)]
-    mod ldy_a_x {
+    mod ldy_ax {
         use crate::{
             consts::Byte,
-            cpu::{instructions::ldy_a_x, tests::MemoryMock, CPU},
+            cpu::{instructions::ldy_ax, tests::MemoryMock, CPU},
         };
 
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
@@ -835,7 +835,7 @@ mod ldy {
             cpu.index_register_x = 0x02;
             assert_eq!(cpu.index_register_y, 0x0);
 
-            ldy_a_x(&mut cpu);
+            ldy_ax(&mut cpu);
 
             assert_eq!(cpu.index_register_y, VALUE);
         }
@@ -848,7 +848,7 @@ mod ldy {
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
 
-            ldy_a_x(&mut cpu);
+            ldy_ax(&mut cpu);
 
             assert_eq!(cpu.processor_status.flags, 0b10000000);
         }
@@ -862,7 +862,7 @@ mod ldy {
             cpu.index_register_x = 0x02;
             cpu.cycle = 0;
 
-            ldy_a_x(&mut cpu);
+            ldy_ax(&mut cpu);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -881,7 +881,7 @@ mod ldy {
             cpu.index_register_x = 0x02;
             cpu.cycle = 0;
 
-            ldy_a_x(&mut cpu);
+            ldy_ax(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1608,10 +1608,10 @@ mod cmp {
     }
 
     #[cfg(test)]
-    mod cmp_a_x {
+    mod cmp_ax {
         use crate::{
             consts::Byte,
-            cpu::{instructions::cmp_a_x, tests::MemoryMock, CPU},
+            cpu::{instructions::cmp_ax, tests::MemoryMock, CPU},
         };
 
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
@@ -1629,7 +1629,7 @@ mod cmp {
             cpu.index_register_x = 0x02;
             assert_eq!(cpu.processor_status.flags, 0b00000000);
 
-            cmp_a_x(&mut cpu);
+            cmp_ax(&mut cpu);
 
             assert_eq!(cpu.processor_status.flags, 0b10000000);
         }
@@ -1644,7 +1644,7 @@ mod cmp {
             cpu.index_register_x = 0x02;
             cpu.cycle = 0;
 
-            cmp_a_x(&mut cpu);
+            cmp_ax(&mut cpu);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1664,17 +1664,17 @@ mod cmp {
             cpu.index_register_x = 0x02;
             cpu.cycle = 0;
 
-            cmp_a_x(&mut cpu);
+            cmp_ax(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
         }
     }
 
     #[cfg(test)]
-    mod cmp_a_y {
+    mod cmp_ay {
         use crate::{
             consts::Byte,
-            cpu::{instructions::cmp_a_y, tests::MemoryMock, CPU},
+            cpu::{instructions::cmp_ay, tests::MemoryMock, CPU},
         };
 
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
@@ -1692,7 +1692,7 @@ mod cmp {
             cpu.index_register_y = 0x02;
             assert_eq!(cpu.processor_status.flags, 0b00000000);
 
-            cmp_a_y(&mut cpu);
+            cmp_ay(&mut cpu);
 
             assert_eq!(cpu.processor_status.flags, 0b10000000);
         }
@@ -1707,7 +1707,7 @@ mod cmp {
             cpu.index_register_y = 0x02;
             cpu.cycle = 0;
 
-            cmp_a_y(&mut cpu);
+            cmp_ay(&mut cpu);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1727,17 +1727,17 @@ mod cmp {
             cpu.index_register_y = 0x02;
             cpu.cycle = 0;
 
-            cmp_a_y(&mut cpu);
+            cmp_ay(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
         }
     }
 
     #[cfg(test)]
-    mod cmp_in_y {
+    mod cmp_iny {
         use crate::{
             consts::Byte,
-            cpu::{instructions::cmp_in_y, tests::MemoryMock, CPU},
+            cpu::{instructions::cmp_iny, tests::MemoryMock, CPU},
         };
 
         const INDIRECT_ZERO_PAGE_ADDRESS_PLACE: Byte = 0x01;
@@ -1762,7 +1762,7 @@ mod cmp {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status.flags, 0b00000000);
 
-            cmp_in_y(&mut cpu);
+            cmp_iny(&mut cpu);
 
             assert_eq!(cpu.processor_status.flags, 0b10000000);
         }
@@ -1783,7 +1783,7 @@ mod cmp {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cmp_in_y(&mut cpu);
+            cmp_iny(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1802,7 +1802,7 @@ mod cmp {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cmp_in_y(&mut cpu);
+            cmp_iny(&mut cpu);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -2161,8 +2161,8 @@ mod increment {
     }
 
     #[cfg(test)]
-    mod inc_a_x {
-        use crate::cpu::{instructions::inc_a_x, tests::MemoryMock, Byte, Word, CPU};
+    mod inc_ax {
+        use crate::cpu::{instructions::inc_ax, tests::MemoryMock, Byte, Word, CPU};
 
         const VALUE: Byte = 0x09;
         const ADDR_LO: Byte = 0x02;
@@ -2179,7 +2179,7 @@ mod increment {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            inc_a_x(&mut cpu);
+            inc_ax(&mut cpu);
 
             assert_eq!(cpu.memory[ADDR_OFFSET_BY_X], 0x0A);
         }
@@ -2193,7 +2193,7 @@ mod increment {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            inc_a_x(&mut cpu);
+            inc_ax(&mut cpu);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -2371,8 +2371,8 @@ mod decrement {
     }
 
     #[cfg(test)]
-    mod dec_a_x {
-        use crate::cpu::{instructions::dec_a_x, tests::MemoryMock, Byte, Word, CPU};
+    mod dec_ax {
+        use crate::cpu::{instructions::dec_ax, tests::MemoryMock, Byte, Word, CPU};
 
         const VALUE: Byte = 0x09;
         const ADDR_LO: Byte = 0x02;
@@ -2389,7 +2389,7 @@ mod decrement {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            dec_a_x(&mut cpu);
+            dec_ax(&mut cpu);
 
             assert_eq!(cpu.memory[ADDR_OFFSET_BY_X], 0x08);
         }
@@ -2403,7 +2403,7 @@ mod decrement {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            dec_a_x(&mut cpu);
+            dec_ax(&mut cpu);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -2533,8 +2533,8 @@ mod store {
     }
 
     #[cfg(test)]
-    mod sta_a_x {
-        use crate::cpu::{instructions::sta_a_x, tests::MemoryMock, Byte, Word, CPU};
+    mod sta_ax {
+        use crate::cpu::{instructions::sta_ax, tests::MemoryMock, Byte, Word, CPU};
 
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
@@ -2550,7 +2550,7 @@ mod store {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            sta_a_x(&mut cpu);
+            sta_ax(&mut cpu);
 
             assert_eq!(cpu.memory[ADDR_OFFSET_BY_X], 0x08);
         }
@@ -2565,15 +2565,15 @@ mod store {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            sta_a_x(&mut cpu);
+            sta_ax(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
         }
     }
 
     #[cfg(test)]
-    mod sta_a_y {
-        use crate::cpu::{instructions::sta_a_y, tests::MemoryMock, Byte, Word, CPU};
+    mod sta_ay {
+        use crate::cpu::{instructions::sta_ay, tests::MemoryMock, Byte, Word, CPU};
 
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
@@ -2589,7 +2589,7 @@ mod store {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            sta_a_y(&mut cpu);
+            sta_ay(&mut cpu);
 
             assert_eq!(cpu.memory[ADDR_OFFSET_BY_Y], 0x08);
         }
@@ -2604,15 +2604,15 @@ mod store {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            sta_a_y(&mut cpu);
+            sta_ay(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
         }
     }
 
     #[cfg(test)]
-    mod sta_in_x {
-        use crate::cpu::{instructions::sta_in_x, tests::MemoryMock, Byte, Word, CPU};
+    mod sta_inx {
+        use crate::cpu::{instructions::sta_inx, tests::MemoryMock, Byte, Word, CPU};
 
         const ZP_ADDRESS: Byte = 0x02;
         const OFFSET: Byte = 0x01;
@@ -2636,7 +2636,7 @@ mod store {
             cpu.accumulator = 0xA9;
             cpu.index_register_x = OFFSET;
 
-            sta_in_x(&mut cpu);
+            sta_inx(&mut cpu);
 
             assert_eq!(cpu.memory[EFFECTIVE_ADDRESS], 0xA9);
         }
@@ -2657,15 +2657,15 @@ mod store {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            sta_in_x(&mut cpu);
+            sta_inx(&mut cpu);
 
             assert_eq!(cpu.cycle, 5);
         }
     }
 
     #[cfg(test)]
-    mod sta_in_y {
-        use crate::cpu::{instructions::sta_in_y, tests::MemoryMock, Byte, Word, CPU};
+    mod sta_iny {
+        use crate::cpu::{instructions::sta_iny, tests::MemoryMock, Byte, Word, CPU};
 
         const ZP_ADDRESS: Byte = 0x01;
         const ADDRESS_LO: Byte = 0x03;
@@ -2683,7 +2683,7 @@ mod store {
             cpu.index_register_y = OFFSET;
             cpu.program_counter = 0x00;
 
-            sta_in_y(&mut cpu);
+            sta_iny(&mut cpu);
 
             assert_eq!(cpu.memory[EFFECTIVE_ADDRESS], 0xDF);
         }
@@ -2698,7 +2698,7 @@ mod store {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            sta_in_y(&mut cpu);
+            sta_iny(&mut cpu);
 
             assert_eq!(cpu.cycle, 5);
         }
