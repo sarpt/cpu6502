@@ -55,7 +55,7 @@ mod new {
         assert_eq!(uut.index_register_x, 0);
         assert_eq!(uut.index_register_y, 0);
         assert_eq!(uut.stack_pointer, 0);
-        assert_eq!(uut.processor_status.flags, 0);
+        assert_eq!(uut.processor_status, 0);
         assert_eq!(uut.program_counter, 0xFFFC);
     }
 }
@@ -78,11 +78,11 @@ mod reset {
     #[test]
     fn should_set_negative_flag_in_processor_status_to_zero_after_reset() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b11111111;
+        uut.processor_status.set(0b11111111);
 
         uut.reset();
 
-        assert_eq!(uut.processor_status.flags, 0b11110111);
+        assert_eq!(uut.processor_status, 0b11110111);
     }
 }
 
@@ -484,49 +484,49 @@ mod set_status_of_register {
     #[test]
     fn should_set_zero_flag_on_processor_status_when_register_is_zero() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b00000000;
+        uut.processor_status.set(0b00000000);
         uut.accumulator = 0x00;
 
         let register = Registers::Accumulator;
         uut.set_status_of_register(register);
 
-        assert_eq!(uut.processor_status.flags, 0b00000010);
+        assert_eq!(uut.processor_status, 0b00000010);
     }
 
     #[test]
     fn should_unset_zero_flag_on_processor_status_when_register_is_not_zero() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b11111111;
+        uut.processor_status.set(0b11111111);
         uut.accumulator = 0xFF;
 
         let register = Registers::Accumulator;
         uut.set_status_of_register(register);
 
-        assert_eq!(uut.processor_status.flags, 0b11111101);
+        assert_eq!(uut.processor_status, 0b11111101);
     }
 
     #[test]
     fn should_set_negative_flag_on_processor_status_when_register_has_bit_7_set() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b00000000;
+        uut.processor_status.set(0b00000000);
         uut.accumulator = 0x80;
 
         let register = Registers::Accumulator;
         uut.set_status_of_register(register);
 
-        assert_eq!(uut.processor_status.flags, 0b10000000);
+        assert_eq!(uut.processor_status, 0b10000000);
     }
 
     #[test]
     fn should_unset_negative_flag_on_processor_status_when_register_has_bit_7_unset() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b11111111;
+        uut.processor_status.set(0b11111111);
         uut.accumulator = 0x00;
 
         let register = Registers::Accumulator;
         uut.set_status_of_register(register);
 
-        assert_eq!(uut.processor_status.flags, 0b01111111);
+        assert_eq!(uut.processor_status, 0b01111111);
     }
 }
 
@@ -538,7 +538,7 @@ mod set_cmp_status {
     #[test]
     fn should_set_zero_flag_on_processor_status_when_register_is_the_same_as_provided_value() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b00000000;
+        uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd3;
 
         let value = 0xd3;
@@ -551,7 +551,7 @@ mod set_cmp_status {
     #[test]
     fn should_clear_zero_flag_on_processor_status_when_register_is_different_as_provided_value() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b00000010;
+        uut.processor_status.set(0b00000010);
         uut.accumulator = 0xd5;
 
         let value = 0xd3;
@@ -564,7 +564,7 @@ mod set_cmp_status {
     #[test]
     fn should_set_carry_flag_on_processor_status_when_register_is_the_same_as_provided_value() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b00000000;
+        uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd3;
 
         let value = 0xd3;
@@ -577,7 +577,7 @@ mod set_cmp_status {
     #[test]
     fn should_set_carry_flag_on_processor_status_when_register_is_bigger_than_provided_value() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b00000000;
+        uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd5;
 
         let value = 0xd3;
@@ -590,7 +590,7 @@ mod set_cmp_status {
     #[test]
     fn should_clear_zero_flag_on_processor_status_when_register_is_smaller_than_provided_value() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b00000001;
+        uut.processor_status.set(0b00000001);
         uut.accumulator = 0x01;
 
         let value = 0xd3;
@@ -604,7 +604,7 @@ mod set_cmp_status {
     fn should_set_negative_flag_on_processor_status_when_difference_with_provided_value_has_most_significant_byte_set(
     ) {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b00000000;
+        uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd3;
 
         let value = 0xd5;
@@ -618,7 +618,7 @@ mod set_cmp_status {
     fn should_clear_negative_flag_on_processor_status_when_difference_with_provided_value_has_most_significant_byte_clear(
     ) {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
-        uut.processor_status.flags = 0b00000010;
+        uut.processor_status.set(0b00000010);
         uut.accumulator = 0xd5;
 
         let value = 0xd3;

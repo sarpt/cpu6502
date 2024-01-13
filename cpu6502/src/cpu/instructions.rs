@@ -1,4 +1,4 @@
-use super::{AddressingMode, MemoryModifications, Registers, CPU};
+use super::{processor_status::Flags, AddressingMode, MemoryModifications, Registers, CPU};
 
 fn ld(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     let value = match cpu.read_memory(addr_mode) {
@@ -83,13 +83,13 @@ pub fn ldx_ay(cpu: &mut CPU) {
 }
 
 pub fn jsr_a(cpu: &mut CPU) {
-    let jump_addr_hi = cpu.fetch_zero_page_address();
-    let jump_addr_lo: u16 = cpu.access_memory(cpu.program_counter).into();
-    cpu.cycle += 1;
+    let jump_addr = match cpu.get_address(AddressingMode::Absolute, super::MemoryOperation::Read) {
+        Some(address) => address,
+        None => panic!("couldn't fetch address during a jsr"),
+    };
 
-    cpu.push_word_to_stack(cpu.program_counter);
-
-    cpu.program_counter = (jump_addr_lo << 8) | jump_addr_hi;
+    cpu.push_word_to_stack(cpu.program_counter - 1);
+    cpu.program_counter = jump_addr;
     cpu.cycle += 1;
 }
 
@@ -388,6 +388,39 @@ pub fn ora_iny(cpu: &mut CPU) {
 
 pub fn nop(cpu: &mut CPU) {
     cpu.increment_program_counter();
+}
+
+fn change_flag_value(cpu: &mut CPU, flag: Flags, value: bool) {
+    cpu.processor_status.set_flag(flag, value);
+    cpu.cycle += 1;
+}
+
+pub fn clc(cpu: &mut CPU) {
+    change_flag_value(cpu, Flags::Carry, false);
+}
+
+pub fn cld(cpu: &mut CPU) {
+    change_flag_value(cpu, Flags::DecimalMode, false);
+}
+
+pub fn cli(cpu: &mut CPU) {
+    change_flag_value(cpu, Flags::InterruptDisable, false);
+}
+
+pub fn clv(cpu: &mut CPU) {
+    change_flag_value(cpu, Flags::Overflow, false);
+}
+
+pub fn sec(cpu: &mut CPU) {
+    change_flag_value(cpu, Flags::Carry, true);
+}
+
+pub fn sed(cpu: &mut CPU) {
+    change_flag_value(cpu, Flags::DecimalMode, true);
+}
+
+pub fn sei(cpu: &mut CPU) {
+    change_flag_value(cpu, Flags::InterruptDisable, true);
 }
 
 #[cfg(test)]

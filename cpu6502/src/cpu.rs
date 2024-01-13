@@ -5,6 +5,7 @@ use super::consts::{Byte, Word};
 use crate::{consts::STACK_PAGE_HI, memory::Memory};
 
 mod instructions;
+mod processor_status;
 
 type Instruction = Byte;
 
@@ -82,17 +83,13 @@ const INSTRUCTION_ORA_AY: Byte = 0x19;
 const INSTRUCTION_ORA_INX: Byte = 0x01;
 const INSTRUCTION_ORA_INY: Byte = 0x11;
 const INSTRUCTION_NOP: Byte = 0xEA;
-
-enum Flags {
-    Carry = 0,
-    Zero = 1,
-    DecimalMode = 3,
-    Negative = 7,
-}
-
-struct ProcessorStatus {
-    flags: Byte,
-}
+const INSTRUCTION_CLC: Byte = 0x18;
+const INSTRUCTION_CLD: Byte = 0xD8;
+const INSTRUCTION_CLI: Byte = 0x58;
+const INSTRUCTION_CLV: Byte = 0xB8;
+const INSTRUCTION_SEC: Byte = 0x38;
+const INSTRUCTION_SED: Byte = 0xF8;
+const INSTRUCTION_SEI: Byte = 0x78;
 
 #[derive(Copy, Clone, PartialEq)]
 enum AddressingMode {
@@ -134,50 +131,6 @@ enum MemoryOperation {
     Write,
 }
 
-impl ProcessorStatus {
-    pub fn set_decimal_mode_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::DecimalMode, value_set);
-    }
-
-    pub fn set_zero_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::Zero, value_set);
-    }
-
-    pub fn set_carry_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::Carry, value_set);
-    }
-
-    pub fn get_carry_flag(&self) -> bool {
-        return self.get_flag(Flags::Carry);
-    }
-
-    pub fn get_zero_flag(&self) -> bool {
-        return self.get_flag(Flags::Zero);
-    }
-
-    pub fn set_negative_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::Negative, value_set);
-    }
-
-    pub fn get_negative_flag(&self) -> bool {
-        return self.get_flag(Flags::Negative);
-    }
-
-    fn set_flag(&mut self, flag: Flags, value_set: bool) {
-        let shift: u8 = flag as u8;
-        if value_set {
-            self.flags |= 1 << shift;
-        } else {
-            self.flags &= !(1 << shift);
-        }
-    }
-
-    fn get_flag(&self, flag: Flags) -> bool {
-        let shift: u8 = flag as u8;
-        return (self.flags & (1 << shift)) > 0;
-    }
-}
-
 type OpcodeHandler = fn(&mut CPU) -> ();
 
 pub struct CPU {
@@ -187,7 +140,7 @@ pub struct CPU {
     accumulator: Byte,
     index_register_x: Byte,
     index_register_y: Byte,
-    processor_status: ProcessorStatus,
+    processor_status: processor_status::ProcessorStatus,
     memory: Box<dyn Memory>,
     opcode_handlers: HashMap<Byte, OpcodeHandler>,
 }
@@ -269,6 +222,13 @@ impl CPU {
             (INSTRUCTION_ORA_INX, ora_inx),
             (INSTRUCTION_ORA_INY, ora_iny),
             (INSTRUCTION_NOP, nop),
+            (INSTRUCTION_CLC, clc),
+            (INSTRUCTION_CLD, cld),
+            (INSTRUCTION_CLI, cli),
+            (INSTRUCTION_CLV, clv),
+            (INSTRUCTION_SEC, sec),
+            (INSTRUCTION_SED, sed),
+            (INSTRUCTION_SEI, sei),
         ]);
 
         return CPU {
@@ -278,7 +238,7 @@ impl CPU {
             accumulator: 0,
             index_register_x: 0,
             index_register_y: 0,
-            processor_status: ProcessorStatus { flags: 0 },
+            processor_status: processor_status::ProcessorStatus::default(),
             memory: memory,
             opcode_handlers,
         };
@@ -322,7 +282,7 @@ impl CPU {
             Registers::Accumulator => self.accumulator = value,
             Registers::IndexX => self.index_register_x = value,
             Registers::IndexY => self.index_register_y = value,
-            Registers::ProcessorStatus => self.processor_status.flags = value,
+            Registers::ProcessorStatus => self.processor_status.set(value),
             Registers::StackPointer => self.stack_pointer = value,
         };
     }
@@ -332,7 +292,7 @@ impl CPU {
             Registers::Accumulator => self.accumulator,
             Registers::IndexX => self.index_register_x,
             Registers::IndexY => self.index_register_y,
-            Registers::ProcessorStatus => self.processor_status.flags,
+            Registers::ProcessorStatus => self.processor_status.into(),
             Registers::StackPointer => self.stack_pointer,
         };
     }

@@ -1,0 +1,114 @@
+use crate::consts::Byte;
+
+pub enum Flags {
+    Carry = 0,
+    Zero = 1,
+    InterruptDisable = 2,
+    DecimalMode = 3,
+    Break = 4,
+    Overflow = 6,
+    Negative = 7,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct ProcessorStatus {
+    flags: Byte,
+}
+
+impl Default for ProcessorStatus {
+    fn default() -> Self {
+        return ProcessorStatus { flags: 0 };
+    }
+}
+
+impl PartialEq<Byte> for ProcessorStatus {
+    fn eq(&self, other: &Byte) -> bool {
+        self.flags == *other
+    }
+}
+
+impl PartialEq for ProcessorStatus {
+    fn eq(&self, other: &Self) -> bool {
+        self.flags == other.flags
+    }
+}
+
+impl Eq for ProcessorStatus {}
+
+impl Into<Byte> for ProcessorStatus {
+    fn into(self) -> Byte {
+        return self.flags;
+    }
+}
+
+impl ProcessorStatus {
+    pub fn set_break_flag(&mut self, value_set: bool) {
+        self.set_flag(Flags::Break, value_set);
+    }
+
+    pub fn get_break_flag(&self) -> bool {
+        return self.get_flag(Flags::Break);
+    }
+
+    pub fn set_carry_flag(&mut self, value_set: bool) {
+        self.set_flag(Flags::Carry, value_set);
+    }
+
+    pub fn get_carry_flag(&self) -> bool {
+        return self.get_flag(Flags::Carry);
+    }
+
+    pub fn set_decimal_mode_flag(&mut self, value_set: bool) {
+        self.set_flag(Flags::DecimalMode, value_set);
+    }
+
+    pub fn set_interrupt_disable_flag(&mut self, value_set: bool) {
+        self.set_flag(Flags::InterruptDisable, value_set);
+    }
+
+    pub fn get_interrupt_disable_flag(&self) -> bool {
+        return self.get_flag(Flags::InterruptDisable);
+    }
+
+    pub fn set_overflow_flag(&mut self, value_set: bool) {
+        self.set_flag(Flags::Overflow, value_set);
+    }
+
+    pub fn get_overflow_flag(&self) -> bool {
+        return self.get_flag(Flags::Overflow);
+    }
+
+    pub fn set_negative_flag(&mut self, value_set: bool) {
+        self.set_flag(Flags::Negative, value_set);
+    }
+
+    pub fn get_negative_flag(&self) -> bool {
+        return self.get_flag(Flags::Negative);
+    }
+
+    pub fn set(&mut self, val: Byte) {
+        self.flags = val;
+    }
+
+    pub fn set_zero_flag(&mut self, value_set: bool) {
+        self.set_flag(Flags::Zero, value_set);
+    }
+
+    pub fn get_zero_flag(&self) -> bool {
+        return self.get_flag(Flags::Zero);
+    }
+
+    pub fn set_flag(&mut self, flag: Flags, value_set: bool) {
+        let shift: u8 = flag as u8;
+        if value_set {
+            self.flags |= 1 << shift;
+        } else {
+            self.flags &= !(1 << shift);
+        }
+    }
+
+    pub fn get_flag(&self, flag: Flags) -> bool {
+        let shift: u8 = flag as u8;
+        return (self.flags & (1 << shift)) > 0;
+    }
+}
