@@ -391,7 +391,7 @@ pub fn nop(cpu: &mut CPU) {
 }
 
 fn change_flag_value(cpu: &mut CPU, flag: Flags, value: bool) {
-    cpu.processor_status.set_flag(flag, value);
+    cpu.processor_status.change_flag(flag, value);
     cpu.cycle += 1;
 }
 

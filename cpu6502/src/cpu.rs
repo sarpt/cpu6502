@@ -248,7 +248,7 @@ impl CPU {
         self.cycle = 0;
         self.program_counter = 0xFFFC;
         self.stack_pointer = 0x00;
-        self.processor_status.set_decimal_mode_flag(false);
+        self.processor_status.change_decimal_mode_flag(false);
         self.accumulator = 0;
         self.index_register_x = 0;
         self.index_register_y = 0;
@@ -369,20 +369,20 @@ impl CPU {
     fn set_status_of_register(&mut self, register: Registers) {
         let target_register = self.get_register(register);
 
-        self.processor_status.set_zero_flag(target_register == 0);
+        self.processor_status.change_zero_flag(target_register == 0);
         self.processor_status
-            .set_negative_flag((target_register & 0b10000000) > 1);
+            .change_negative_flag((target_register & 0b10000000) > 1);
     }
 
     fn set_cmp_status(&mut self, register: Registers, value: Byte) {
         let target_register = self.get_register(register);
 
         self.processor_status
-            .set_carry_flag(target_register >= value);
+            .change_carry_flag(target_register >= value);
         self.processor_status
-            .set_zero_flag(target_register == value);
+            .change_zero_flag(target_register == value);
         self.processor_status
-            .set_negative_flag(((target_register.wrapping_sub(value)) & 0b10000000) > 1);
+            .change_negative_flag(((target_register.wrapping_sub(value)) & 0b10000000) > 1);
     }
 
     fn sum_with_x(&mut self, val: Byte) -> Byte {

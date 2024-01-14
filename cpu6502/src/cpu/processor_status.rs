@@ -42,48 +42,48 @@ impl Into<Byte> for ProcessorStatus {
 }
 
 impl ProcessorStatus {
-    pub fn set_break_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::Break, value_set);
+    pub fn change_break_flag(&mut self, value_set: bool) {
+        self.change_flag(Flags::Break, value_set);
     }
 
     pub fn get_break_flag(&self) -> bool {
         return self.get_flag(Flags::Break);
     }
 
-    pub fn set_carry_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::Carry, value_set);
+    pub fn change_carry_flag(&mut self, value_set: bool) {
+        self.change_flag(Flags::Carry, value_set);
     }
 
     pub fn get_carry_flag(&self) -> bool {
         return self.get_flag(Flags::Carry);
     }
 
-    pub fn set_decimal_mode_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::DecimalMode, value_set);
+    pub fn change_decimal_mode_flag(&mut self, value_set: bool) {
+        self.change_flag(Flags::DecimalMode, value_set);
     }
 
     pub fn get_decimal_mode_flag(&self) -> bool {
         return self.get_flag(Flags::DecimalMode);
     }
 
-    pub fn set_interrupt_disable_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::InterruptDisable, value_set);
+    pub fn change_interrupt_disable_flag(&mut self, value_set: bool) {
+        self.change_flag(Flags::InterruptDisable, value_set);
     }
 
     pub fn get_interrupt_disable_flag(&self) -> bool {
         return self.get_flag(Flags::InterruptDisable);
     }
 
-    pub fn set_overflow_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::Overflow, value_set);
+    pub fn change_overflow_flag(&mut self, value_set: bool) {
+        self.change_flag(Flags::Overflow, value_set);
     }
 
     pub fn get_overflow_flag(&self) -> bool {
         return self.get_flag(Flags::Overflow);
     }
 
-    pub fn set_negative_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::Negative, value_set);
+    pub fn change_negative_flag(&mut self, value_set: bool) {
+        self.change_flag(Flags::Negative, value_set);
     }
 
     pub fn get_negative_flag(&self) -> bool {
@@ -94,15 +94,15 @@ impl ProcessorStatus {
         self.flags = val;
     }
 
-    pub fn set_zero_flag(&mut self, value_set: bool) {
-        self.set_flag(Flags::Zero, value_set);
+    pub fn change_zero_flag(&mut self, value_set: bool) {
+        self.change_flag(Flags::Zero, value_set);
     }
 
     pub fn get_zero_flag(&self) -> bool {
         return self.get_flag(Flags::Zero);
     }
 
-    pub fn set_flag(&mut self, flag: Flags, value_set: bool) {
+    pub fn change_flag(&mut self, flag: Flags, value_set: bool) {
         let shift: u8 = flag as u8;
         if value_set {
             self.flags |= 1 << shift;
