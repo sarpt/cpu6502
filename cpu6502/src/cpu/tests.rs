@@ -562,7 +562,7 @@ mod set_cmp_status {
     }
 
     #[test]
-    fn should_set_carry_flag_on_processor_status_when_register_is_the_same_as_provided_value() {
+    fn should_change_carry_flag_on_processor_status_when_register_is_the_same_as_provided_value() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd3;
@@ -575,7 +575,7 @@ mod set_cmp_status {
     }
 
     #[test]
-    fn should_set_carry_flag_on_processor_status_when_register_is_bigger_than_provided_value() {
+    fn should_change_carry_flag_on_processor_status_when_register_is_bigger_than_provided_value() {
         let mut uut = CPU::new(Box::new(MemoryMock::default()));
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd5;
