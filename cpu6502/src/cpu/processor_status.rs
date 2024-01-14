@@ -62,6 +62,10 @@ impl ProcessorStatus {
         self.set_flag(Flags::DecimalMode, value_set);
     }
 
+    pub fn get_decimal_mode_flag(&self) -> bool {
+        return self.get_flag(Flags::DecimalMode);
+    }
+
     pub fn set_interrupt_disable_flag(&mut self, value_set: bool) {
         self.set_flag(Flags::InterruptDisable, value_set);
     }
