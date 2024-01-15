@@ -90,6 +90,7 @@ const INSTRUCTION_CLV: Byte = 0xB8;
 const INSTRUCTION_SEC: Byte = 0x38;
 const INSTRUCTION_SED: Byte = 0xF8;
 const INSTRUCTION_SEI: Byte = 0x78;
+const INSTRUCTION_BRK: Byte = 0x00;
 
 #[derive(Copy, Clone, PartialEq)]
 enum AddressingMode {
@@ -144,6 +145,9 @@ pub struct CPU {
     memory: Box<dyn Memory>,
     opcode_handlers: HashMap<Byte, OpcodeHandler>,
 }
+
+const BRK_INTERRUPT_VECTOR: Word = 0xFFFE;
+const RESET_VECTOR: Word = 0xFFFC;
 
 impl CPU {
     pub fn new(memory: Box<dyn Memory>) -> Self {
@@ -229,11 +233,12 @@ impl CPU {
             (INSTRUCTION_SEC, sec),
             (INSTRUCTION_SED, sed),
             (INSTRUCTION_SEI, sei),
+            (INSTRUCTION_BRK, brk),
         ]);
 
         return CPU {
             cycle: 0,
-            program_counter: 0xFFFC,
+            program_counter: RESET_VECTOR,
             stack_pointer: 0x00,
             accumulator: 0,
             index_register_x: 0,
@@ -245,7 +250,7 @@ impl CPU {
     }
 
     pub fn reset(&mut self) -> () {
-        self.program_counter = self.fetch_address_from(0xFFFC);
+        self.program_counter = self.fetch_address_from(RESET_VECTOR);
         self.cycle = 0;
         self.stack_pointer = 0x00;
         self.processor_status.change_decimal_mode_flag(false);
@@ -580,20 +585,21 @@ impl CPU {
         }
     }
 
-    pub fn execute(&mut self, cycles: u64) -> u64 {
-        let cycles_before_execution = self.cycle;
-        let stop_cycle = cycles_before_execution + cycles;
+    pub fn execute_next_instruction(&mut self) {
+        let opcode = self.fetch_instruction();
+        let handler = self.opcode_handlers.get(&opcode);
+        match handler {
+            Some(cb) => cb(self),
+            None => panic!("illegal opcode found: {opcode}"),
+        }
+    }
 
-        while self.cycle < stop_cycle {
-            let opcode = self.fetch_instruction();
-            let handler = self.opcode_handlers.get(&opcode);
-            match handler {
-                Some(cb) => cb(self),
-                None => panic!("illegal opcode found: {opcode}"),
-            }
+    pub fn execute_until_break(&mut self) -> u64 {
+        while !self.processor_status.get_break_flag() {
+            self.execute_next_instruction();
         }
 
-        return stop_cycle;
+        return self.cycle;
     }
 }
 

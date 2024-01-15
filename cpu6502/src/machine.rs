@@ -13,8 +13,8 @@ impl Machine {
         return Machine { cpu };
     }
 
-    pub fn execute_cycles(&mut self, program: &[(u16, u8)], cycles: u64) {
+    pub fn execute_until_break(&mut self, program: &[(u16, u8)]) {
         self.cpu.set_memory(Box::new(VecMemory::from(program)));
-        self.cpu.execute(cycles);
+        self.cpu.execute_until_break();
     }
 }

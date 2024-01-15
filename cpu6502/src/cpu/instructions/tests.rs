@@ -3674,3 +3674,43 @@ mod sei {
         assert_eq!(cpu.cycle, 1);
     }
 }
+
+#[cfg(test)]
+mod brk {
+    use crate::cpu::{instructions::brk, tests::MemoryMock, CPU};
+
+    // #[test]
+    // fn should_put_program_counter_and_processor_status_on_stack() {
+    //     let mut cpu = CPU::new(Box::new(MemoryMock::default()));
+
+    //     brk(&mut cpu);
+
+    // }
+
+    // #[test]
+    // fn should_jump_to_address_put_in_brk_vector() {
+    //     let mut cpu = CPU::new(Box::new(MemoryMock::default()));
+
+    //     brk(&mut cpu);
+
+    // }
+
+    // fn should_set_break_processor_status_flag() {
+    //     let mut cpu = CPU::new(Box::new(MemoryMock::default()));
+    //     cpu.processor_status.change_interrupt_disable_flag(false);
+
+    //     brk(&mut cpu);
+
+    // }
+
+    #[test]
+    fn should_take_six_cycles() {
+        let mut cpu = CPU::new(Box::new(MemoryMock::default()));
+        cpu.program_counter = 0;
+        cpu.cycle = 0;
+
+        brk(&mut cpu);
+
+        assert_eq!(cpu.cycle, 6);
+    }
+}
