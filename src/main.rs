@@ -14,6 +14,5 @@ fn main() {
         (0x0301, 0xFF),
     ];
     let mut machine = machine::Machine::new();
-    let cycles = 14;
-    machine.execute_cycles(program, cycles);
+    machine.execute_until_break(program);
 }
