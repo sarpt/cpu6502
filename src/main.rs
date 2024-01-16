@@ -2,9 +2,8 @@ use cpu6502::machine;
 
 fn main() {
     let program: &[(u16, u8)] = &[
-        (0xFFFC, 0x4C), // JMP $1234
-        (0xFFFD, 0x34),
-        (0xFFFE, 0x12),
+        (0xFFFC, 0x34), // JMP $1234
+        (0xFFFD, 0x12),
         (0x1234, 0xB5), // LDA $AB,X
         (0x1235, 0xAB),
         (0x00AB, 0x42),

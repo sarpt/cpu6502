@@ -234,7 +234,7 @@ impl CPU {
         return CPU {
             cycle: 0,
             program_counter: 0xFFFC,
-            stack_pointer: 0,
+            stack_pointer: 0x00,
             accumulator: 0,
             index_register_x: 0,
             index_register_y: 0,
@@ -245,8 +245,8 @@ impl CPU {
     }
 
     pub fn reset(&mut self) -> () {
+        self.program_counter = self.fetch_address_from(0xFFFC);
         self.cycle = 0;
-        self.program_counter = 0xFFFC;
         self.stack_pointer = 0x00;
         self.processor_status.change_decimal_mode_flag(false);
         self.accumulator = 0;
