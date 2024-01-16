@@ -579,7 +579,9 @@ impl CPU {
                 return Some(incorrect_jmp_address);
             }
             AddressingMode::Immediate => {
-                return Some(self.program_counter);
+                let addr = self.program_counter;
+                self.program_counter += 1;
+                return Some(addr);
             }
             _ => None,
         }
