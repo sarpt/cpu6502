@@ -8,17 +8,13 @@ pub struct Machine {
 
 impl Machine {
     pub fn new() -> Self {
-        return Machine {
-            cpu: CPU::new(Box::new(VecMemory::new())),
-        };
+        let mut cpu = CPU::new(Box::new(VecMemory::new()));
+        cpu.reset();
+        return Machine { cpu };
     }
 
     pub fn execute_cycles(&mut self, program: &[(u16, u8)], cycles: u64) {
         self.cpu.set_memory(Box::new(VecMemory::from(program)));
         self.cpu.execute(cycles);
-    }
-
-    pub fn reset(&mut self) {
-        self.cpu.reset();
     }
 }

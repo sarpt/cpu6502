@@ -5,13 +5,13 @@ use crate::{
 use std::ops::{Index, IndexMut};
 
 pub struct MemoryMock {
-    data: [u8; 512],
+    data: [u8; 64 * 1024],
 }
 impl Memory for MemoryMock {}
 
 impl MemoryMock {
     pub fn new(payload: &[u8]) -> Self {
-        let mut mock = MemoryMock { data: [0; 512] };
+        let mut mock = MemoryMock { data: [0; 64 * 1024] };
         mock.data[..payload.len()].copy_from_slice(payload);
 
         return mock;
@@ -66,13 +66,19 @@ mod reset {
     use super::MemoryMock;
 
     #[test]
-    fn should_set_program_counter_to_fffc_after_reset() {
-        let mut uut = CPU::new(Box::new(MemoryMock::default()));
+    fn should_set_program_counter_to_address_found_at_fffc_after_reset() {
+        const RESET_VECTOR_HI: Byte = 0x00;        
+        const RESET_VECTOR_LO: Byte = 0x00;        
+
+        let mut memory = MemoryMock::default();
+        memory[0xFFFC] = 0xAD;
+        memory[0xFFFD] = 0x00;
+        let mut uut = CPU::new(Box::new(memory));
         uut.program_counter = 0xFFFF;
 
         uut.reset();
 
-        assert_eq!(uut.program_counter, 0xFFFC);
+        assert_eq!(uut.program_counter, 0x00AD);
     }
 
     #[test]
