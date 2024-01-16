@@ -654,13 +654,13 @@ mod get_address {
         }
 
         #[test]
-        fn should_not_change_program_counter() {
+        fn should_advance_program_counter() {
             let mut uut = CPU::new(Box::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52])));
             uut.program_counter = 0xCB;
 
             uut.get_address(AddressingMode::Immediate, MemoryOperation::Read);
 
-            assert_eq!(uut.program_counter, 0xCB);
+            assert_eq!(uut.program_counter, 0xCC);
         }
 
         #[test]
