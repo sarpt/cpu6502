@@ -8,13 +8,14 @@ pub struct Machine {
 
 impl Machine {
     pub fn new() -> Self {
-        let mut cpu = CPU::new(Box::new(VecMemory::new()));
-        cpu.reset();
-        return Machine { cpu };
+        return Machine {
+            cpu: CPU::new(Box::new(VecMemory::new())),
+        };
     }
 
     pub fn execute_until_break(&mut self, program: &[(u16, u8)]) {
         self.cpu.set_memory(Box::new(VecMemory::from(program)));
+        self.cpu.reset();
         self.cpu.execute_until_break();
     }
 }
