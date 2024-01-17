@@ -11,7 +11,9 @@ impl Memory for MemoryMock {}
 
 impl MemoryMock {
     pub fn new(payload: &[u8]) -> Self {
-        let mut mock = MemoryMock { data: [0; 64 * 1024] };
+        let mut mock = MemoryMock {
+            data: [0; 64 * 1024],
+        };
         mock.data[..payload.len()].copy_from_slice(payload);
 
         return mock;
@@ -67,8 +69,8 @@ mod reset {
 
     #[test]
     fn should_set_program_counter_to_address_found_at_fffc_after_reset() {
-        const RESET_VECTOR_HI: Byte = 0x00;        
-        const RESET_VECTOR_LO: Byte = 0x00;        
+        const RESET_VECTOR_HI: Byte = 0x00;
+        const RESET_VECTOR_LO: Byte = 0x00;
 
         let mut memory = MemoryMock::default();
         memory[0xFFFC] = 0xAD;

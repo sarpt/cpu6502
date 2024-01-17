@@ -1,4 +1,7 @@
-use super::{processor_status::Flags, AddressingMode, MemoryModifications, Registers, CPU, BRK_INTERRUPT_VECTOR};
+use super::{
+    processor_status::Flags, AddressingMode, MemoryModifications, Registers, BRK_INTERRUPT_VECTOR,
+    CPU,
+};
 
 fn ld(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     let value = match cpu.read_memory(addr_mode) {
@@ -426,11 +429,12 @@ pub fn sei(cpu: &mut CPU) {
 pub fn brk(cpu: &mut CPU) {
     cpu.access_memory(cpu.program_counter); // fetch and discard
     cpu.increment_program_counter();
-    cpu.cycle += 1;
 
     cpu.push_word_to_stack(cpu.program_counter);
     cpu.push_byte_to_stack(cpu.processor_status.into());
     cpu.program_counter = cpu.fetch_address_from(BRK_INTERRUPT_VECTOR);
+
+    cpu.processor_status.change_break_flag(true);
 }
 
 #[cfg(test)]
