@@ -219,29 +219,39 @@ pub fn cpy_a(cpu: &mut CPU) {
     compare(cpu, AddressingMode::Absolute, Registers::IndexY);
 }
 
+fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
+    match cpu.modify_memory(addr_mode, MemoryModifications::Decrement) {
+        Some(modified_value) => {
+            cpu.set_status_of_value(modified_value);
+        }
+        None => panic!("decrement_memory used with incorrect addressing mode"),
+    };
+}
+
 fn decrement_register(cpu: &mut CPU, register: Registers) {
     match register {
         Registers::IndexX | Registers::IndexY => {
             cpu.decrement_register(register);
+            cpu.set_status_of_register(register);
         }
         _ => panic!("decrement_register used with incorrect register"),
     }
 }
 
 pub fn dec_zp(cpu: &mut CPU) {
-    cpu.modify_memory(AddressingMode::ZeroPage, MemoryModifications::Decrement);
+    decrement_memory(cpu, AddressingMode::ZeroPage);
 }
 
 pub fn dec_zpx(cpu: &mut CPU) {
-    cpu.modify_memory(AddressingMode::ZeroPageX, MemoryModifications::Decrement);
+    decrement_memory(cpu, AddressingMode::ZeroPageX);
 }
 
 pub fn dec_a(cpu: &mut CPU) {
-    cpu.modify_memory(AddressingMode::Absolute, MemoryModifications::Decrement);
+    decrement_memory(cpu, AddressingMode::Absolute);
 }
 
 pub fn dec_ax(cpu: &mut CPU) {
-    cpu.modify_memory(AddressingMode::AbsoluteX, MemoryModifications::Decrement);
+    decrement_memory(cpu, AddressingMode::AbsoluteX);
 }
 
 pub fn dex_im(cpu: &mut CPU) {
@@ -252,29 +262,39 @@ pub fn dey_im(cpu: &mut CPU) {
     decrement_register(cpu, Registers::IndexY);
 }
 
+fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
+    match cpu.modify_memory(addr_mode, MemoryModifications::Increment) {
+        Some(modified_value) => {
+            cpu.set_status_of_value(modified_value);
+        }
+        None => panic!("increment_memory used with incorrect addressing mode"),
+    };
+}
+
 fn increment_register(cpu: &mut CPU, register: Registers) {
     match register {
         Registers::IndexX | Registers::IndexY => {
             cpu.increment_register(register);
+            cpu.set_status_of_register(register);
         }
         _ => panic!("increment_register used with incorrect register"),
     }
 }
 
 pub fn inc_zp(cpu: &mut CPU) {
-    cpu.modify_memory(AddressingMode::ZeroPage, MemoryModifications::Increment);
+    increment_memory(cpu, AddressingMode::ZeroPage);
 }
 
 pub fn inc_zpx(cpu: &mut CPU) {
-    cpu.modify_memory(AddressingMode::ZeroPageX, MemoryModifications::Increment);
+    increment_memory(cpu, AddressingMode::ZeroPageX);
 }
 
 pub fn inc_a(cpu: &mut CPU) {
-    cpu.modify_memory(AddressingMode::Absolute, MemoryModifications::Increment);
+    increment_memory(cpu, AddressingMode::Absolute);
 }
 
 pub fn inc_ax(cpu: &mut CPU) {
-    cpu.modify_memory(AddressingMode::AbsoluteX, MemoryModifications::Increment);
+    increment_memory(cpu, AddressingMode::AbsoluteX);
 }
 
 pub fn inx_im(cpu: &mut CPU) {

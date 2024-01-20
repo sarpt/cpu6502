@@ -379,6 +379,12 @@ impl CPU {
             .change_negative_flag((target_register & 0b10000000) > 1);
     }
 
+    fn set_status_of_value(&mut self, value: Byte) {
+        self.processor_status.change_zero_flag(value == 0);
+        self.processor_status
+            .change_negative_flag((value & 0b10000000) > 1);
+    }
+
     fn set_cmp_status(&mut self, register: Registers, value: Byte) {
         let target_register = self.get_register(register);
 
@@ -433,10 +439,6 @@ impl CPU {
         return Word::from_le_bytes([lo, hi]);
     }
 
-    pub fn set_memory(&mut self, memory: Rc<RefCell<dyn Memory>>) {
-        self.memory = memory;
-    }
-
     pub fn offset_program_counter(&mut self, offset: u8) {
         let [program_counter_lo, program_counter_hi] = self.program_counter.to_le_bytes();
         let negative_offset_direction = 0b10000000 & offset > 0;
@@ -485,7 +487,7 @@ impl CPU {
         &mut self,
         addr_mode: AddressingMode,
         modification: MemoryModifications,
-    ) -> Option<()> {
+    ) -> Option<u8> {
         let address = match self.get_address(addr_mode, MemoryOperation::Modify) {
             Some(address) => address,
             None => return None,
@@ -507,7 +509,7 @@ impl CPU {
         self.put_into_memory(address, modified_value);
         self.cycle += 1;
 
-        return Some(());
+        return Some(modified_value);
     }
 
     fn write_memory(&mut self, addr_mode: AddressingMode, value: Byte) -> Option<()> {
