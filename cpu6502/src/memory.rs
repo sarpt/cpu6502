@@ -1,7 +1,7 @@
 use crate::consts::Word;
 
 use super::consts::Byte;
-use std::ops::{Index, IndexMut};
+use std::ops::{Index, IndexMut, Range};
 
 const MAX_MEMORY_KB: usize = 64 * 1024;
 
@@ -34,6 +34,16 @@ impl Index<Word> for VecMemory {
     fn index(&self, idx: Word) -> &Self::Output {
         let mem_address: usize = idx.into();
         return &self.data[mem_address];
+    }
+}
+
+impl Index<Range<Word>> for VecMemory {
+    type Output = [Byte];
+
+    fn index(&self, idx: Range<Word>) -> &Self::Output {
+        let start: usize = idx.start.into();
+        let end: usize = idx.end.into();
+        return &self.data[start..end];
     }
 }
 
