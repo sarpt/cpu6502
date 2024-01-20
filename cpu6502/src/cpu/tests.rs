@@ -74,11 +74,11 @@ mod reset {
     #[test]
     fn should_set_program_counter_to_address_found_at_fffc_after_reset() {
         const RESET_VECTOR_HI: Byte = 0x00;
-        const RESET_VECTOR_LO: Byte = 0x00;
+        const RESET_VECTOR_LO: Byte = 0xAD;
 
         let mut memory = MemoryMock::default();
-        memory[0xFFFC] = 0xAD;
-        memory[0xFFFD] = 0x00;
+        memory[0xFFFC] = RESET_VECTOR_LO;
+        memory[0xFFFD] = RESET_VECTOR_HI;
         let mut uut = CPU::new(Rc::new(RefCell::new(memory)));
         uut.program_counter = 0xFFFF;
 

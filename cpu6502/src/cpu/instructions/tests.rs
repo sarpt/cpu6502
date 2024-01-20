@@ -4166,6 +4166,7 @@ mod brk {
         assert_eq!(cpu.program_counter, 0x9BAD);
     }
 
+    #[test]
     fn should_set_break_processor_status_flag() {
         let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
         cpu.program_counter = 0x00;
