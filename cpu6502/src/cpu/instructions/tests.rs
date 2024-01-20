@@ -2226,6 +2226,16 @@ mod increment {
 
             assert_eq!(cpu.cycle, 1);
         }
+
+        #[test]
+        fn should_set_processor_status_of_x_register_after_increment() {
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+            cpu.index_register_x = 0xFF;
+
+            inx_im(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
+        }
     }
 
     #[cfg(test)]
@@ -2253,6 +2263,16 @@ mod increment {
             iny_im(&mut cpu);
 
             assert_eq!(cpu.cycle, 1);
+        }
+
+        #[test]
+        fn should_set_processor_status_of_x_register_after_increment() {
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+            cpu.index_register_y = 0xFF;
+
+            iny_im(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
         }
     }
 
@@ -2294,6 +2314,22 @@ mod increment {
             inc_zp(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
+        }
+
+        #[test]
+        fn should_set_processor_status_of_value_in_memory() {
+            const VALUE: Byte = 0xFF;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ZERO_PAGE_ADDR,
+                0xFF,
+                0x00,
+                VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+
+            inc_zp(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
         }
     }
 
@@ -2340,6 +2376,23 @@ mod increment {
 
             assert_eq!(cpu.cycle, 5);
         }
+
+        #[test]
+        fn should_set_processor_status_of_value_in_memory() {
+            const VALUE: Byte = 0xFF;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ZERO_PAGE_ADDR,
+                0xFF,
+                0x00,
+                VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+            cpu.index_register_x = 0x02;
+
+            inc_zpx(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
+        }
     }
 
     #[cfg(test)]
@@ -2376,6 +2429,19 @@ mod increment {
             inc_a(&mut cpu);
 
             assert_eq!(cpu.cycle, 5);
+        }
+
+        #[test]
+        fn should_set_processor_status_of_value_in_memory() {
+            const VALUE: Byte = 0xFF;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+
+            inc_a(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
         }
     }
 
@@ -2418,8 +2484,23 @@ mod increment {
 
             assert_eq!(cpu.cycle, 6);
         }
+
+        #[test]
+        fn should_set_processor_status_of_value_in_memory() {
+            const VALUE: Byte = 0xFF;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+            cpu.index_register_x = OFFSET;
+
+            inc_ax(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
+        }
     }
 }
+
 #[cfg(test)]
 mod decrement {
     #[cfg(test)]
@@ -2448,6 +2529,16 @@ mod decrement {
 
             assert_eq!(cpu.cycle, 1);
         }
+
+        #[test]
+        fn should_set_processor_status_of_x_register_after_decrement() {
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+            cpu.index_register_x = 0x01;
+
+            dex_im(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
+        }
     }
 
     #[cfg(test)]
@@ -2475,6 +2566,16 @@ mod decrement {
             dey_im(&mut cpu);
 
             assert_eq!(cpu.cycle, 1);
+        }
+
+        #[test]
+        fn should_set_processor_status_of_y_register_after_decrement() {
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+            cpu.index_register_y = 0x01;
+
+            dey_im(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
         }
     }
 
@@ -2516,6 +2617,22 @@ mod decrement {
             dec_zp(&mut cpu);
 
             assert_eq!(cpu.cycle, 4);
+        }
+
+        #[test]
+        fn should_set_processor_status_of_value_in_memory() {
+            const VALUE: Byte = 0x01;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ZERO_PAGE_ADDR,
+                0xFF,
+                0x00,
+                VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+
+            dec_zp(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
         }
     }
 
@@ -2562,6 +2679,23 @@ mod decrement {
 
             assert_eq!(cpu.cycle, 5);
         }
+
+        #[test]
+        fn should_set_processor_status_of_value_in_memory() {
+            const VALUE: Byte = 0x01;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ZERO_PAGE_ADDR,
+                0xFF,
+                0x00,
+                VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+            cpu.index_register_x = 0x02;
+
+            dec_zpx(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
+        }
     }
 
     #[cfg(test)]
@@ -2598,6 +2732,19 @@ mod decrement {
             dec_a(&mut cpu);
 
             assert_eq!(cpu.cycle, 5);
+        }
+
+        #[test]
+        fn should_set_processor_status_of_value_in_memory() {
+            const VALUE: Byte = 0x01;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+
+            dec_a(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
         }
     }
 
@@ -2639,6 +2786,20 @@ mod decrement {
             dec_ax(&mut cpu);
 
             assert_eq!(cpu.cycle, 6);
+        }
+
+        #[test]
+        fn should_set_processor_status_of_value_in_memory() {
+            const VALUE: Byte = 0x01;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+            cpu.index_register_x = OFFSET;
+
+            dec_ax(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b00000010);
         }
     }
 }
