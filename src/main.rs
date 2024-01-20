@@ -13,6 +13,6 @@ fn main() {
         (0x0300, 0xA9), // LDA #FF
         (0x0301, 0xFF),
     ];
-    let mut machine = machine::Machine::new();
-    machine.execute_until_break(program);
+    let mut machine = machine::Machine::new(program);
+    machine.execute_until_break();
 }

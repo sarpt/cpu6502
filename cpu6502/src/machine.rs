@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::memory::VecMemory;
 
 use super::cpu::CPU;
@@ -7,14 +9,13 @@ pub struct Machine {
 }
 
 impl Machine {
-    pub fn new() -> Self {
+    pub fn new(program: &[(u16, u8)]) -> Self {
         return Machine {
-            cpu: CPU::new(Box::new(VecMemory::new())),
+            cpu: CPU::new(Rc::new(RefCell::new(VecMemory::from(program)))),
         };
     }
 
-    pub fn execute_until_break(&mut self, program: &[(u16, u8)]) {
-        self.cpu.set_memory(Box::new(VecMemory::from(program)));
+    pub fn execute_until_break(&mut self) {
         self.cpu.reset();
         self.cpu.execute_until_break();
     }
