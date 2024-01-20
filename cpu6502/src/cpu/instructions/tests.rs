@@ -1173,11 +1173,15 @@ mod beq {
     }
 
     #[test]
-    fn should_take_branch_when_zero_flag_is_set_and_offset_program_counter_backwards_by_negative_operand(
+    fn should_take_branch_when_zero_flag_is_set_and_offset_program_counter_backwards_by_negative_operand_in_twos_complement(
     ) {
-        const OFFSET: Byte = 0x83;
+        const OFFSET: Byte = 0x03;
+        const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
         let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x22, 0x00, OFFSET, 0x00,
+            0x22,
+            0x00,
+            NEGATIVE_OFFSET_TWOS_COMPLEMENT,
+            0x00,
         ]))));
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x02;
@@ -1204,11 +1208,15 @@ mod beq {
     }
 
     #[test]
-    fn should_take_branch_when_zero_flag_is_set_and_offset_program_counter_backwards_over_page_flip_by_negative_operand(
+    fn should_take_branch_when_zero_flag_is_set_and_offset_program_counter_backwards_over_page_flip_by_negative_operand_in_twos_complement(
     ) {
-        const OFFSET: Byte = 0x83;
+        const OFFSET: Byte = 0x03;
+        const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
         let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x00, 0x00,
+            NEGATIVE_OFFSET_TWOS_COMPLEMENT,
+            0x00,
+            0x00,
+            0x00,
         ]))));
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
@@ -1299,11 +1307,15 @@ mod bne {
     }
 
     #[test]
-    fn should_take_branch_when_zero_flag_is_clear_and_offset_program_counter_backwards_by_negative_operand(
+    fn should_take_branch_when_zero_flag_is_clear_and_offset_program_counter_backwards_by_negative_operand_in_twos_complement(
     ) {
-        const OFFSET: Byte = 0x83;
+        const OFFSET: Byte = 0x03;
+        const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
         let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x22, 0x00, OFFSET, 0x00,
+            0x22,
+            0x00,
+            NEGATIVE_OFFSET_TWOS_COMPLEMENT,
+            0x00,
         ]))));
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x02;
@@ -1330,11 +1342,15 @@ mod bne {
     }
 
     #[test]
-    fn should_take_branch_when_zero_flag_is_clear_and_offset_program_counter_backwards_over_page_flip_by_negative_operand(
+    fn should_take_branch_when_zero_flag_is_clear_and_offset_program_counter_backwards_over_page_flip_by_negative_operand_in_twos_complement(
     ) {
-        const OFFSET: Byte = 0x83;
+        const OFFSET: Byte = 0x03;
+        const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
         let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x00, 0x00,
+            NEGATIVE_OFFSET_TWOS_COMPLEMENT,
+            0x00,
+            0x00,
+            0x00,
         ]))));
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
@@ -1425,11 +1441,15 @@ mod bcs {
     }
 
     #[test]
-    fn should_take_branch_when_carry_flag_is_set_and_offset_program_counter_backwards_by_negative_operand(
+    fn should_take_branch_when_carry_flag_is_set_and_offset_program_counter_backwards_by_negative_operand_in_twos_complement(
     ) {
-        const OFFSET: Byte = 0x83;
+        const OFFSET: Byte = 0x03;
+        const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
         let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x22, 0x00, OFFSET, 0x00,
+            0x22,
+            0x00,
+            NEGATIVE_OFFSET_TWOS_COMPLEMENT,
+            0x00,
         ]))));
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x02;
@@ -1456,11 +1476,15 @@ mod bcs {
     }
 
     #[test]
-    fn should_take_branch_when_carry_flag_is_set_and_offset_program_counter_backwards_over_page_flip_by_negative_operand(
+    fn should_take_branch_when_carry_flag_is_set_and_offset_program_counter_backwards_over_page_flip_by_negative_operand_in_twos_complement(
     ) {
-        const OFFSET: Byte = 0x83;
+        const OFFSET: Byte = 0x03;
+        const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
         let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x00, 0x00,
+            NEGATIVE_OFFSET_TWOS_COMPLEMENT,
+            0x00,
+            0x00,
+            0x00,
         ]))));
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
@@ -1551,11 +1575,15 @@ mod bcc {
     }
 
     #[test]
-    fn should_take_branch_when_carry_flag_is_clear_and_offset_program_counter_backwards_by_negative_operand(
+    fn should_take_branch_when_carry_flag_is_clear_and_offset_program_counter_backwards_by_negative_operand_in_twos_complement(
     ) {
-        const OFFSET: Byte = 0x83;
+        const OFFSET: Byte = 0x03;
+        const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
         let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x22, 0x00, OFFSET, 0x00,
+            0x22,
+            0x00,
+            NEGATIVE_OFFSET_TWOS_COMPLEMENT,
+            0x00,
         ]))));
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x02;
@@ -1582,11 +1610,15 @@ mod bcc {
     }
 
     #[test]
-    fn should_take_branch_when_carry_flag_is_clear_and_offset_program_counter_backwards_over_page_flip_by_negative_operand(
+    fn should_take_branch_when_carry_flag_is_clear_and_offset_program_counter_backwards_over_page_flip_by_negative_operand_in_twos_complement(
     ) {
-        const OFFSET: Byte = 0x83;
+        const OFFSET: Byte = 0x03;
+        const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
         let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x00, 0x00,
+            NEGATIVE_OFFSET_TWOS_COMPLEMENT,
+            0x00,
+            0x00,
+            0x00,
         ]))));
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;

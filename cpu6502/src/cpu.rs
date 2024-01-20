@@ -442,14 +442,20 @@ impl CPU {
     pub fn offset_program_counter(&mut self, offset: u8) {
         let [program_counter_lo, program_counter_hi] = self.program_counter.to_le_bytes();
         let negative_offset_direction = 0b10000000 & offset > 0;
-        let offset = 0b01111111 & offset;
+        let directionless_offset = if negative_offset_direction {
+            (offset ^ 0b11111111) + 1
+        } else {
+            offset
+        };
         let offset_program_counter_lo: Byte;
         let carry: bool;
 
         if negative_offset_direction {
-            (offset_program_counter_lo, carry) = program_counter_lo.overflowing_sub(offset);
+            (offset_program_counter_lo, carry) =
+                program_counter_lo.overflowing_sub(directionless_offset);
         } else {
-            (offset_program_counter_lo, carry) = program_counter_lo.overflowing_add(offset);
+            (offset_program_counter_lo, carry) =
+                program_counter_lo.overflowing_add(directionless_offset);
         }
 
         self.program_counter = Word::from_le_bytes([offset_program_counter_lo, program_counter_hi]);
