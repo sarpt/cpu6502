@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use self::instructions::*;
 use super::consts::{Byte, Word};
@@ -142,7 +142,7 @@ pub struct CPU {
     index_register_x: Byte,
     index_register_y: Byte,
     processor_status: processor_status::ProcessorStatus,
-    memory: Box<dyn Memory>,
+    memory: Rc<RefCell<dyn Memory>>,
     opcode_handlers: HashMap<Byte, OpcodeHandler>,
 }
 
@@ -150,7 +150,7 @@ const BRK_INTERRUPT_VECTOR: Word = 0xFFFE;
 const RESET_VECTOR: Word = 0xFFFC;
 
 impl CPU {
-    pub fn new(memory: Box<dyn Memory>) -> Self {
+    pub fn new(memory: Rc<RefCell<dyn Memory>>) -> Self {
         let opcode_handlers: HashMap<Byte, OpcodeHandler> = HashMap::from([
             (INSTRUCTION_LDA_IM, lda_im as OpcodeHandler),
             (INSTRUCTION_LDA_ZP, lda_zp),
@@ -260,11 +260,11 @@ impl CPU {
     }
 
     fn access_memory(&mut self, addr: Word) -> Byte {
-        return self.memory[addr];
+        return self.memory.borrow()[addr];
     }
 
     fn put_into_memory(&mut self, addr: Word, value: Byte) {
-        self.memory[addr] = value;
+        self.memory.borrow_mut()[addr] = value;
     }
 
     fn increment_program_counter(&mut self) {
@@ -408,7 +408,7 @@ impl CPU {
 
     fn push_byte_to_stack(&mut self, val: Byte) {
         let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
-        self.memory[stack_addr] = val;
+        self.put_into_memory(stack_addr, val);
         self.decrement_register(Registers::StackPointer);
     }
 
@@ -421,7 +421,7 @@ impl CPU {
     fn pop_byte_from_stack(&mut self) -> Byte {
         self.increment_register(Registers::StackPointer);
         let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
-        let val = self.memory[stack_addr];
+        let val = self.access_memory(stack_addr);
 
         return val;
     }
@@ -433,7 +433,7 @@ impl CPU {
         return Word::from_le_bytes([lo, hi]);
     }
 
-    pub fn set_memory(&mut self, memory: Box<dyn Memory>) {
+    pub fn set_memory(&mut self, memory: Rc<RefCell<dyn Memory>>) {
         self.memory = memory;
     }
 
