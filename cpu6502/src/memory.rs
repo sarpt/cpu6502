@@ -24,6 +24,14 @@ impl VecMemory {
             self.data[idx] = *value;
         }
     }
+
+    pub fn embed(&mut self, addr: Word, payload: &[Byte]) {
+        let mut tgt_addr = addr as usize;
+        for value in payload {
+            self.data[tgt_addr] = *value;
+            tgt_addr += 1;
+        }
+    }
 }
 
 impl Memory for VecMemory {}
