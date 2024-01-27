@@ -259,6 +259,10 @@ impl CPU {
         self.index_register_y = 0;
     }
 
+    pub fn get_processor_status(&self) -> Byte {
+        return self.processor_status.into();
+    }
+
     fn access_memory(&mut self, addr: Word) -> Byte {
         return self.memory.borrow()[addr];
     }
