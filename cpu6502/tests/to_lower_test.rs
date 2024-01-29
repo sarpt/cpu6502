@@ -69,17 +69,14 @@ fn should_change_word_to_lower_case() {
         str::from_utf8(&(memory.borrow()[0x0500..0x050C])),
         Ok("some message")
     );
-    assert_eq!(
-        cpu.get_processor_status() & 0b00000001,
-        0
-    );
+    assert_eq!(cpu.get_processor_status() & 0b00000001, 0);
 }
 
 #[test]
 fn should_report_string_too_long() {
     let program: &[(u16, u8)] = &[TO_LOWER_PROCEDURE, BOOTSTRAP].concat();
     let memory = Rc::new(RefCell::new(VecMemory::from(program)));
-    memory.borrow_mut().embed(0x0400, &[0x53;256]);
+    memory.borrow_mut().insert(0x0400, &[0x53; 256]);
 
     let mut cpu = CPU::new(memory.clone());
     cpu.reset();
@@ -89,8 +86,18 @@ fn should_report_string_too_long() {
         str::from_utf8(&(memory.borrow()[0x0500..0x050C])),
         Ok("ssssssssssss")
     );
-    assert_eq!(
-        cpu.get_processor_status() & 0b00000001,
-        1
-    );
+    assert_eq!(cpu.get_processor_status() & 0b00000001, 1);
+}
+
+#[test]
+fn should_handle_empty_string() {
+    let program: &[(u16, u8)] = &[TO_LOWER_PROCEDURE, BOOTSTRAP].concat();
+    let memory = Rc::new(RefCell::new(VecMemory::from(program)));
+
+    let mut cpu = CPU::new(memory.clone());
+    cpu.reset();
+    cpu.execute_until_break();
+
+    assert_eq!(memory.borrow()[0x0500], 0);
+    assert_eq!(cpu.get_processor_status() & 0b00000001, 0);
 }
