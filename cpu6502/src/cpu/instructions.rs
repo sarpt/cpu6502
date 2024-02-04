@@ -1,5 +1,7 @@
+use crate::consts::BRK_INTERRUPT_VECTOR;
+
 use super::{
-    processor_status::Flags, AddressingMode, MemoryModifications, Registers, BRK_INTERRUPT_VECTOR,
+    processor_status::Flags, AddressingMode, MemoryModifications, Registers,
     CPU,
 };
 
