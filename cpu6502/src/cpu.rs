@@ -1,98 +1,16 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use self::instructions::*;
+use self::opcodes::*;
 use super::consts::{Byte, Word};
+use crate::consts::RESET_VECTOR;
 use crate::{consts::STACK_PAGE_HI, memory::Memory};
 
 mod instructions;
 mod processor_status;
+mod opcodes;
 
 type Instruction = Byte;
-
-const INSTRUCTION_LDA_IM: Byte = 0xA9;
-const INSTRUCTION_LDA_ZP: Byte = 0xA5;
-const INSTRUCTION_LDA_ZPX: Byte = 0xB5;
-const INSTRUCTION_LDA_A: Byte = 0xAD;
-const INSTRUCTION_LDA_AX: Byte = 0xBD;
-const INSTRUCTION_LDA_AY: Byte = 0xB9;
-const INSTRUCTION_LDA_INX: Byte = 0xA1;
-const INSTRUCTION_LDA_INY: Byte = 0xB1;
-const INSTRUCTION_LDY_IM: Byte = 0xA0;
-const INSTRUCTION_LDY_ZP: Byte = 0xA4;
-const INSTRUCTION_LDY_ZPX: Byte = 0xB4;
-const INSTRUCTION_LDY_A: Byte = 0xAC;
-const INSTRUCTION_LDY_AX: Byte = 0xBC;
-const INSTRUCTION_LDX_IM: Byte = 0xA2;
-const INSTRUCTION_LDX_ZP: Byte = 0xA6;
-const INSTRUCTION_LDX_ZPY: Byte = 0xB6;
-const INSTRUCTION_LDX_A: Byte = 0xAE;
-const INSTRUCTION_LDX_AY: Byte = 0xBE;
-const INSTRUCTION_JMP_A: Byte = 0x4C;
-const INSTRUCTION_JMP_IN: Byte = 0x6C;
-const INSTRUCTION_JSR_A: Byte = 0x20;
-const INSTRUCTION_RTS: Byte = 0x60;
-const INSTRUCTION_BEQ: Byte = 0xF0;
-const INSTRUCTION_BCC: Byte = 0x90;
-const INSTRUCTION_BCS: Byte = 0xB0;
-const INSTRUCTION_BNE: Byte = 0xD0;
-const INSTRUCTION_CMP_IM: Byte = 0xC9;
-const INSTRUCTION_CMP_ZP: Byte = 0xC5;
-const INSTRUCTION_CMP_ZPX: Byte = 0xD5;
-const INSTRUCTION_CMP_A: Byte = 0xCD;
-const INSTRUCTION_CMP_AX: Byte = 0xDD;
-const INSTRUCTION_CMP_AY: Byte = 0xD9;
-const INSTRUCTION_CMP_INX: Byte = 0xC1;
-const INSTRUCTION_CMP_INY: Byte = 0xD1;
-const INSTRUCTION_CPX_IM: Byte = 0xE0;
-const INSTRUCTION_CPX_ZP: Byte = 0xE4;
-const INSTRUCTION_CPX_A: Byte = 0xEC;
-const INSTRUCTION_CPY_IM: Byte = 0xC0;
-const INSTRUCTION_CPY_ZP: Byte = 0xC4;
-const INSTRUCTION_CPY_A: Byte = 0xCC;
-const INSTRUCTION_INC_ZP: Byte = 0xE6;
-const INSTRUCTION_INC_ZPX: Byte = 0xF6;
-const INSTRUCTION_INC_A: Byte = 0xEE;
-const INSTRUCTION_INC_AX: Byte = 0xFE;
-const INSTRUCTION_INX_IM: Byte = 0xE8;
-const INSTRUCTION_INY_IM: Byte = 0xC8;
-const INSTRUCTION_DEC_ZP: Byte = 0xC6;
-const INSTRUCTION_DEC_ZPX: Byte = 0xD6;
-const INSTRUCTION_DEC_A: Byte = 0xCE;
-const INSTRUCTION_DEC_AX: Byte = 0xDE;
-const INSTRUCTION_DEX_IM: Byte = 0xCA;
-const INSTRUCTION_DEY_IM: Byte = 0x88;
-const INSTRUCTION_STA_ZP: Byte = 0x85;
-const INSTRUCTION_STA_ZPX: Byte = 0x95;
-const INSTRUCTION_STA_A: Byte = 0x8D;
-const INSTRUCTION_STA_AX: Byte = 0x9D;
-const INSTRUCTION_STA_AY: Byte = 0x99;
-const INSTRUCTION_STA_INX: Byte = 0x81;
-const INSTRUCTION_STA_INY: Byte = 0x91;
-const INSTRUCTION_STX_ZP: Byte = 0x86;
-const INSTRUCTION_STX_ZPY: Byte = 0x96;
-const INSTRUCTION_STX_A: Byte = 0x8E;
-const INSTRUCTION_STY_ZP: Byte = 0x84;
-const INSTRUCTION_STY_ZPX: Byte = 0x94;
-const INSTRUCTION_STY_A: Byte = 0x8C;
-const INSTRUCTION_ORA_IM: Byte = 0x09;
-const INSTRUCTION_ORA_ZP: Byte = 0x05;
-const INSTRUCTION_ORA_ZPX: Byte = 0x15;
-const INSTRUCTION_ORA_A: Byte = 0x0D;
-const INSTRUCTION_ORA_AX: Byte = 0x1D;
-const INSTRUCTION_ORA_AY: Byte = 0x19;
-const INSTRUCTION_ORA_INX: Byte = 0x01;
-const INSTRUCTION_ORA_INY: Byte = 0x11;
-const INSTRUCTION_NOP: Byte = 0xEA;
-const INSTRUCTION_CLC: Byte = 0x18;
-const INSTRUCTION_CLD: Byte = 0xD8;
-const INSTRUCTION_CLI: Byte = 0x58;
-const INSTRUCTION_CLV: Byte = 0xB8;
-const INSTRUCTION_SEC: Byte = 0x38;
-const INSTRUCTION_SED: Byte = 0xF8;
-const INSTRUCTION_SEI: Byte = 0x78;
-const INSTRUCTION_BRK: Byte = 0x00;
-const INSTRUCTION_BIT_ZP: Byte = 0x24;
-const INSTRUCTION_BIT_A: Byte = 0x2C;
 
 #[derive(Copy, Clone, PartialEq)]
 enum AddressingMode {
@@ -148,96 +66,94 @@ pub struct CPU {
     opcode_handlers: HashMap<Byte, OpcodeHandler>,
 }
 
-const BRK_INTERRUPT_VECTOR: Word = 0xFFFE;
-const RESET_VECTOR: Word = 0xFFFC;
 
 impl CPU {
     pub fn new(memory: Rc<RefCell<dyn Memory>>) -> Self {
         let opcode_handlers: HashMap<Byte, OpcodeHandler> = HashMap::from([
-            (INSTRUCTION_LDA_IM, lda_im as OpcodeHandler),
-            (INSTRUCTION_LDA_ZP, lda_zp),
-            (INSTRUCTION_LDA_ZPX, lda_zpx),
-            (INSTRUCTION_LDA_A, lda_a),
-            (INSTRUCTION_LDA_AX, lda_ax),
-            (INSTRUCTION_LDA_AY, lda_ay),
-            (INSTRUCTION_LDA_INX, lda_inx),
-            (INSTRUCTION_LDA_INY, lda_iny),
-            (INSTRUCTION_LDY_IM, ldy_im),
-            (INSTRUCTION_LDY_ZP, ldy_zp),
-            (INSTRUCTION_LDY_ZPX, ldy_zpx),
-            (INSTRUCTION_LDY_A, ldy_a),
-            (INSTRUCTION_LDY_AX, ldy_ax),
-            (INSTRUCTION_LDX_IM, ldx_im),
-            (INSTRUCTION_LDX_ZP, ldx_zp),
-            (INSTRUCTION_LDX_ZPY, ldx_zpy),
-            (INSTRUCTION_LDX_A, ldx_a),
-            (INSTRUCTION_LDX_AY, ldx_ay),
-            (INSTRUCTION_JMP_A, jmp_a),
-            (INSTRUCTION_JMP_IN, jmp_in),
-            (INSTRUCTION_JSR_A, jsr_a),
-            (INSTRUCTION_RTS, rts),
-            (INSTRUCTION_BCC, bcc),
-            (INSTRUCTION_BCS, bcs),
-            (INSTRUCTION_BEQ, beq),
-            (INSTRUCTION_BNE, bne),
-            (INSTRUCTION_CMP_IM, cmp_im),
-            (INSTRUCTION_CMP_ZP, cmp_zp),
-            (INSTRUCTION_CMP_ZPX, cmp_zpx),
-            (INSTRUCTION_CMP_A, cmp_a),
-            (INSTRUCTION_CMP_AX, cmp_ax),
-            (INSTRUCTION_CMP_AY, cmp_ay),
-            (INSTRUCTION_CMP_INX, cmp_inx),
-            (INSTRUCTION_CMP_INY, cmp_iny),
-            (INSTRUCTION_CPX_IM, cpx_im),
-            (INSTRUCTION_CPX_ZP, cpx_zp),
-            (INSTRUCTION_CPX_A, cpx_a),
-            (INSTRUCTION_CPY_IM, cpy_im),
-            (INSTRUCTION_CPY_ZP, cpy_zp),
-            (INSTRUCTION_CPY_A, cpy_a),
-            (INSTRUCTION_INC_ZP, inc_zp),
-            (INSTRUCTION_INC_ZPX, inc_zpx),
-            (INSTRUCTION_INC_A, inc_a),
-            (INSTRUCTION_INC_AX, inc_ax),
-            (INSTRUCTION_INX_IM, inx_im),
-            (INSTRUCTION_INY_IM, iny_im),
-            (INSTRUCTION_DEC_ZP, dec_zp),
-            (INSTRUCTION_DEC_ZPX, dec_zpx),
-            (INSTRUCTION_DEC_A, dec_a),
-            (INSTRUCTION_DEC_AX, dec_ax),
-            (INSTRUCTION_DEX_IM, dex_im),
-            (INSTRUCTION_DEY_IM, dey_im),
-            (INSTRUCTION_STA_ZP, sta_zp),
-            (INSTRUCTION_STA_ZPX, sta_zpx),
-            (INSTRUCTION_STA_A, sta_a),
-            (INSTRUCTION_STA_AX, sta_ax),
-            (INSTRUCTION_STA_AY, sta_ay),
-            (INSTRUCTION_STA_INX, sta_inx),
-            (INSTRUCTION_STA_INY, sta_iny),
-            (INSTRUCTION_STX_ZP, stx_zp),
-            (INSTRUCTION_STX_ZPY, stx_zpy),
-            (INSTRUCTION_STX_A, stx_a),
-            (INSTRUCTION_STY_ZP, sty_zp),
-            (INSTRUCTION_STY_ZPX, sty_zpx),
-            (INSTRUCTION_STY_A, sty_a),
-            (INSTRUCTION_ORA_IM, ora_im),
-            (INSTRUCTION_ORA_ZP, ora_zp),
-            (INSTRUCTION_ORA_ZPX, ora_zpx),
-            (INSTRUCTION_ORA_A, ora_a),
-            (INSTRUCTION_ORA_AX, ora_ax),
-            (INSTRUCTION_ORA_AY, ora_ay),
-            (INSTRUCTION_ORA_INX, ora_inx),
-            (INSTRUCTION_ORA_INY, ora_iny),
-            (INSTRUCTION_NOP, nop),
-            (INSTRUCTION_CLC, clc),
-            (INSTRUCTION_CLD, cld),
-            (INSTRUCTION_CLI, cli),
-            (INSTRUCTION_CLV, clv),
-            (INSTRUCTION_SEC, sec),
-            (INSTRUCTION_SED, sed),
-            (INSTRUCTION_SEI, sei),
-            (INSTRUCTION_BRK, brk),
-            (INSTRUCTION_BIT_A, bit_a),
-            (INSTRUCTION_BIT_ZP, bit_zp),
+            (LDA_IM, lda_im as OpcodeHandler),
+            (LDA_ZP, lda_zp),
+            (LDA_ZPX, lda_zpx),
+            (LDA_A, lda_a),
+            (LDA_AX, lda_ax),
+            (LDA_AY, lda_ay),
+            (LDA_INX, lda_inx),
+            (LDA_INY, lda_iny),
+            (LDY_IM, ldy_im),
+            (LDY_ZP, ldy_zp),
+            (LDY_ZPX, ldy_zpx),
+            (LDY_A, ldy_a),
+            (LDY_AX, ldy_ax),
+            (LDX_IM, ldx_im),
+            (LDX_ZP, ldx_zp),
+            (LDX_ZPY, ldx_zpy),
+            (LDX_A, ldx_a),
+            (LDX_AY, ldx_ay),
+            (JMP_A, jmp_a),
+            (JMP_IN, jmp_in),
+            (JSR_A, jsr_a),
+            (RTS, rts),
+            (BCC, bcc),
+            (BCS, bcs),
+            (BEQ, beq),
+            (BNE, bne),
+            (CMP_IM, cmp_im),
+            (CMP_ZP, cmp_zp),
+            (CMP_ZPX, cmp_zpx),
+            (CMP_A, cmp_a),
+            (CMP_AX, cmp_ax),
+            (CMP_AY, cmp_ay),
+            (CMP_INX, cmp_inx),
+            (CMP_INY, cmp_iny),
+            (CPX_IM, cpx_im),
+            (CPX_ZP, cpx_zp),
+            (CPX_A, cpx_a),
+            (CPY_IM, cpy_im),
+            (CPY_ZP, cpy_zp),
+            (CPY_A, cpy_a),
+            (INC_ZP, inc_zp),
+            (INC_ZPX, inc_zpx),
+            (INC_A, inc_a),
+            (INC_AX, inc_ax),
+            (INX_IM, inx_im),
+            (INY_IM, iny_im),
+            (DEC_ZP, dec_zp),
+            (DEC_ZPX, dec_zpx),
+            (DEC_A, dec_a),
+            (DEC_AX, dec_ax),
+            (DEX_IM, dex_im),
+            (DEY_IM, dey_im),
+            (STA_ZP, sta_zp),
+            (STA_ZPX, sta_zpx),
+            (STA_A, sta_a),
+            (STA_AX, sta_ax),
+            (STA_AY, sta_ay),
+            (STA_INX, sta_inx),
+            (STA_INY, sta_iny),
+            (STX_ZP, stx_zp),
+            (STX_ZPY, stx_zpy),
+            (STX_A, stx_a),
+            (STY_ZP, sty_zp),
+            (STY_ZPX, sty_zpx),
+            (STY_A, sty_a),
+            (ORA_IM, ora_im),
+            (ORA_ZP, ora_zp),
+            (ORA_ZPX, ora_zpx),
+            (ORA_A, ora_a),
+            (ORA_AX, ora_ax),
+            (ORA_AY, ora_ay),
+            (ORA_INX, ora_inx),
+            (ORA_INY, ora_iny),
+            (NOP, nop),
+            (CLC, clc),
+            (CLD, cld),
+            (CLI, cli),
+            (CLV, clv),
+            (SEC, sec),
+            (SED, sed),
+            (SEI, sei),
+            (BRK, brk),
+            (BIT_A, bit_a),
+            (BIT_ZP, bit_zp),
         ]);
 
         return CPU {
