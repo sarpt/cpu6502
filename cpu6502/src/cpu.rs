@@ -91,6 +91,8 @@ const INSTRUCTION_SEC: Byte = 0x38;
 const INSTRUCTION_SED: Byte = 0xF8;
 const INSTRUCTION_SEI: Byte = 0x78;
 const INSTRUCTION_BRK: Byte = 0x00;
+const INSTRUCTION_BIT_ZP: Byte = 0x24;
+const INSTRUCTION_BIT_A: Byte = 0x2C;
 
 #[derive(Copy, Clone, PartialEq)]
 enum AddressingMode {
@@ -234,6 +236,8 @@ impl CPU {
             (INSTRUCTION_SED, sed),
             (INSTRUCTION_SEI, sei),
             (INSTRUCTION_BRK, brk),
+            (INSTRUCTION_BIT_A, bit_a),
+            (INSTRUCTION_BIT_ZP, bit_zp),
         ]);
 
         return CPU {
@@ -398,6 +402,14 @@ impl CPU {
             .change_zero_flag(target_register == value);
         self.processor_status
             .change_negative_flag(((target_register.wrapping_sub(value)) & 0b10000000) > 1);
+    }
+
+    fn set_bit_status(&mut self, value: Byte) {
+        self.processor_status.change_zero_flag(value == 0);
+        self.processor_status
+            .change_overflow_flag((value & 0b01000000) > 0);
+        self.processor_status
+            .change_negative_flag((value & 0b10000000) > 0);
     }
 
     fn sum_with_x(&mut self, val: Byte) -> Byte {

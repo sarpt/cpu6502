@@ -457,5 +457,22 @@ pub fn brk(cpu: &mut CPU) {
     cpu.processor_status.change_break_flag(true);
 }
 
+pub fn bit(cpu: &mut CPU, addr_mode: AddressingMode) {
+    let value = match cpu.read_memory(addr_mode) {
+        Some(value) => value,
+        None => panic!("bit used with incorrect addressing mode"),
+    };
+
+    cpu.set_bit_status(cpu.accumulator & value);
+}
+
+pub fn bit_zp(cpu: &mut CPU) {
+    bit(cpu, AddressingMode::ZeroPage);
+}
+
+pub fn bit_a(cpu: &mut CPU) {
+    bit(cpu, AddressingMode::Absolute);
+}
+
 #[cfg(test)]
 mod tests;
