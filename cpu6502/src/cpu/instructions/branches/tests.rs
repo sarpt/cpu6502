@@ -4,7 +4,7 @@ mod beq {
 
     use crate::{
         consts::Byte,
-        cpu::{beq, tests::MemoryMock, CPU},
+        cpu::{instructions::beq, tests::MemoryMock, CPU},
     };
 
     #[test]
@@ -140,7 +140,7 @@ mod bne {
 
     use crate::{
         consts::Byte,
-        cpu::{bne, tests::MemoryMock, CPU},
+        cpu::{instructions::bne, tests::MemoryMock, CPU},
     };
 
     #[test]
@@ -276,7 +276,7 @@ mod bcs {
 
     use crate::{
         consts::Byte,
-        cpu::{bcs, tests::MemoryMock, CPU},
+        cpu::{instructions::bcs, tests::MemoryMock, CPU},
     };
 
     #[test]
@@ -412,7 +412,7 @@ mod bcc {
 
     use crate::{
         consts::Byte,
-        cpu::{bcc, tests::MemoryMock, CPU},
+        cpu::{instructions::bcc, tests::MemoryMock, CPU},
     };
 
     #[test]
