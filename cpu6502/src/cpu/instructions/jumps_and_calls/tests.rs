@@ -2,7 +2,7 @@
 mod jsr_a {
     use std::{cell::RefCell, rc::Rc};
 
-    use crate::cpu::{jsr_a, tests::MemoryMock, CPU};
+    use crate::cpu::{instructions::jsr_a, tests::MemoryMock, CPU};
 
     #[test]
     fn should_fetch_address_pointed_by_program_counter_and_put_in_program_counter() {
@@ -54,7 +54,7 @@ mod jsr_a {
 mod rts {
     use std::{cell::RefCell, rc::Rc};
 
-    use crate::cpu::{rts, tests::MemoryMock, CPU};
+    use crate::cpu::{instructions::rts, tests::MemoryMock, CPU};
 
     #[test]
     fn should_fetch_address_from_stack_and_put_it_in_program_counter_incremented_by_one() {
@@ -101,7 +101,7 @@ mod rts {
 mod jmp_a {
     use std::{cell::RefCell, rc::Rc};
 
-    use crate::cpu::{jmp_a, tests::MemoryMock, CPU};
+    use crate::cpu::{instructions::jmp_a, tests::MemoryMock, CPU};
 
     #[test]
     fn should_put_address_stored_in_memory_at_program_counter_as_a_new_program_counter() {
@@ -129,7 +129,7 @@ mod jmp_a {
 mod jmp_in {
     use std::{cell::RefCell, rc::Rc};
 
-    use crate::cpu::{jmp_in, tests::MemoryMock, CPU};
+    use crate::cpu::{instructions::jmp_in, tests::MemoryMock, CPU};
 
     #[test]
     fn should_fetch_indirect_address_from_memory_and_put_in_program_counter() {
