@@ -305,10 +305,10 @@ mod set_register {
         let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
         uut.accumulator = 0x00;
 
-        let value = 0xf5;
+        let value = 0xF5;
         uut.set_register(Registers::Accumulator, value);
 
-        assert_eq!(uut.accumulator, 0xf5);
+        assert_eq!(uut.accumulator, 0xF5);
     }
 
     #[test]
@@ -316,10 +316,10 @@ mod set_register {
         let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
         uut.index_register_x = 0x00;
 
-        let value = 0xf5;
+        let value = 0xF5;
         uut.set_register(Registers::IndexX, value);
 
-        assert_eq!(uut.index_register_x, 0xf5);
+        assert_eq!(uut.index_register_x, 0xF5);
     }
 
     #[test]
@@ -327,10 +327,76 @@ mod set_register {
         let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
         uut.index_register_y = 0x00;
 
-        let value = 0xf5;
+        let value = 0xF5;
         uut.set_register(Registers::IndexY, value);
 
-        assert_eq!(uut.index_register_y, 0xf5);
+        assert_eq!(uut.index_register_y, 0xF5);
+    }
+
+    #[test]
+    fn should_set_stack_pointer() {
+        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        uut.stack_pointer = 0x00;
+
+        let value = 0xF5;
+        uut.set_register(Registers::StackPointer, value);
+
+        assert_eq!(uut.stack_pointer, 0xF5);
+    }
+
+    #[test]
+    fn should_set_processor_status() {
+        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        uut.processor_status = (0x00 as u8).into();
+
+        let value = 0xF5;
+        uut.set_register(Registers::ProcessorStatus, value);
+
+        assert_eq!(uut.processor_status, 0xF5);
+    }
+
+    #[test]
+    fn should_set_processor_status_when_provided_accumulator_value() {
+        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        uut.processor_status = (0x00 as u8).into();
+
+        let value = 0xF5;
+        uut.set_register(Registers::Accumulator, value);
+
+        assert_eq!(uut.processor_status, 0b10000000);
+    }
+
+    #[test]
+    fn should_set_processor_status_when_provided_index_register_x_value() {
+        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        uut.processor_status = (0x00 as u8).into();
+
+        let value = 0xF5;
+        uut.set_register(Registers::IndexX, value);
+
+        assert_eq!(uut.processor_status, 0b10000000);
+    }
+
+    #[test]
+    fn should_set_processor_status_when_provided_index_register_y_value() {
+        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        uut.processor_status = (0x00 as u8).into();
+
+        let value = 0xF5;
+        uut.set_register(Registers::IndexY, value);
+
+        assert_eq!(uut.processor_status, 0b10000000);
+    }
+
+    #[test]
+    fn should_not_set_processor_status_when_provided_stack_pointer_value() {
+        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        uut.processor_status = (0x00 as u8).into();
+
+        let value = 0xF5;
+        uut.set_register(Registers::StackPointer, value);
+
+        assert_eq!(uut.processor_status, 0x00);
     }
 }
 
