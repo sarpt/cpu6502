@@ -126,7 +126,7 @@ impl CPU {
         };
     }
 
-    fn get_register(&self, register: Registers) -> u8 {
+    fn get_register(&self, register: Registers) -> Byte {
         return match register {
             Registers::Accumulator => self.accumulator,
             Registers::IndexX => self.index_register_x,
@@ -372,6 +372,21 @@ impl CPU {
         }
 
         return Some(());
+    }
+
+    fn transfer_registers(&mut self, src: Registers, tgt: Registers) {
+        let value = self.get_register(src);
+        self.set_register(tgt, value);
+        self.tick();
+    }
+
+    fn dummy_fetch(&mut self) {
+        self.access_memory(self.program_counter); // fetch and discard
+        self.tick();
+    }
+
+    fn tick(&mut self) {
+        self.cycle += 1;
     }
 
     fn get_address(
