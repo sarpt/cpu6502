@@ -26,7 +26,7 @@ enum AddressingMode {
     IndirectIndexY,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 enum Registers {
     StackPointer,
     ProcessorStatus,
@@ -124,6 +124,11 @@ impl CPU {
             Registers::ProcessorStatus => self.processor_status.set(value),
             Registers::StackPointer => self.stack_pointer = value,
         };
+        if register == Registers::ProcessorStatus || register == Registers::StackPointer {
+            return;
+        };
+
+        self.set_status_of_register(register);
     }
 
     fn get_register(&self, register: Registers) -> Byte {

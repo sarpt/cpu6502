@@ -51,12 +51,23 @@ mod pla {
         let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
         cpu.stack_pointer = 0xFE;
         cpu.memory.borrow_mut()[0x01FF] = 0xDE;
-        cpu.accumulator = 0x00;
         cpu.cycle = 0;
 
         pla(&mut cpu);
 
         assert_eq!(cpu.cycle, 3);
+    }
+
+    #[test]
+    fn should_set_processor_status_based_on_accumulator_value() {
+        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        cpu.stack_pointer = 0xFE;
+        cpu.memory.borrow_mut()[0x01FF] = 0xDE;
+        cpu.processor_status = (0x00 as u8).into();
+
+        pla(&mut cpu);
+
+        assert_eq!(cpu.processor_status, 0b10000000);
     }
 }
 
@@ -175,5 +186,16 @@ mod tsx {
         tsx(&mut cpu);
 
         assert_eq!(cpu.cycle, 1);
+    }
+
+    #[test]
+    fn should_set_processor_status_based_on_index_x_register_value() {
+        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        cpu.stack_pointer = 0xDE;
+        cpu.processor_status = (0x00 as u8).into();
+
+        tsx(&mut cpu);
+
+        assert_eq!(cpu.processor_status, 0b10000000);
     }
 }

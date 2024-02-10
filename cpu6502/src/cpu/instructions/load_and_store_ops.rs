@@ -7,7 +7,6 @@ fn ld(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     };
 
     cpu.set_register(register, value);
-    cpu.set_status_of_register(register);
 }
 
 pub fn lda_im(cpu: &mut CPU) {

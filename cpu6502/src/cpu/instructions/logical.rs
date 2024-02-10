@@ -9,7 +9,6 @@ pub fn ora(cpu: &mut CPU, addr_mode: AddressingMode) {
     let result_value = cpu.get_register(Registers::Accumulator) | value;
 
     cpu.set_register(Registers::Accumulator, result_value);
-    cpu.set_status_of_register(Registers::Accumulator);
 }
 
 pub fn ora_im(cpu: &mut CPU) {
