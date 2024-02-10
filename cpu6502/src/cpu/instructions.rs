@@ -8,6 +8,7 @@ use self::inc_and_decrements::*;
 use self::jumps_and_calls::*;
 use self::load_and_store_ops::*;
 use self::logical::*;
+use self::register_transfers::*;
 use self::stack_operations::*;
 use self::status_flag_changes::*;
 use self::system_functions::*;
@@ -107,6 +108,10 @@ pub fn get_instructions() -> HashMap<Byte, OpcodeHandler> {
         (PLP, plp),
         (TSX, tsx),
         (TXS, txs),
+        (TAX, tax),
+        (TXA, txa),
+        (TAY, tay),
+        (TYA, tya),
     ]);
 }
 
@@ -116,6 +121,7 @@ mod inc_and_decrements;
 mod jumps_and_calls;
 mod load_and_store_ops;
 mod logical;
+mod register_transfers;
 mod stack_operations;
 mod status_flag_changes;
 mod system_functions;

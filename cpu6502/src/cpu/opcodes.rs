@@ -90,3 +90,7 @@ pub const PLA: Byte = 0x68;
 pub const PLP: Byte = 0x28;
 pub const TSX: Byte = 0xBA;
 pub const TXS: Byte = 0x9A;
+pub const TAX: Byte = 0xAA;
+pub const TXA: Byte = 0x8A;
+pub const TAY: Byte = 0xA8;
+pub const TYA: Byte = 0x98;
