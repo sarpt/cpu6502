@@ -8,15 +8,13 @@ pub fn jsr_a(cpu: &mut CPU) {
 
     cpu.push_word_to_stack(cpu.program_counter - 1);
     cpu.program_counter = jump_addr;
-    cpu.cycle += 1;
+    cpu.tick();
 }
 
 pub fn rts(cpu: &mut CPU) {
-    cpu.access_memory(cpu.program_counter); // fetch and discard
-    cpu.cycle += 1;
-
+    cpu.dummy_fetch();
     cpu.program_counter = cpu.pop_word_from_stack();
-    cpu.cycle += 1;
+    cpu.tick();
     cpu.increment_program_counter();
 }
 

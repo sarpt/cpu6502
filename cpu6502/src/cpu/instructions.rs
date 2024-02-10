@@ -8,6 +8,7 @@ use self::inc_and_decrements::*;
 use self::jumps_and_calls::*;
 use self::load_and_store_ops::*;
 use self::logical::*;
+use self::stack_operations::*;
 use self::status_flag_changes::*;
 use self::system_functions::*;
 
@@ -100,6 +101,12 @@ pub fn get_instructions() -> HashMap<Byte, OpcodeHandler> {
         (BRK, brk),
         (BIT_A, bit_a),
         (BIT_ZP, bit_zp),
+        (PHA, pha),
+        (PHP, php),
+        (PLA, pla),
+        (PLP, plp),
+        (TSX, tsx),
+        (TXS, txs),
     ]);
 }
 
@@ -109,5 +116,6 @@ mod inc_and_decrements;
 mod jumps_and_calls;
 mod load_and_store_ops;
 mod logical;
+mod stack_operations;
 mod status_flag_changes;
 mod system_functions;

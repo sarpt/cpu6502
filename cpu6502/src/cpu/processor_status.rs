@@ -41,6 +41,12 @@ impl Into<Byte> for ProcessorStatus {
     }
 }
 
+impl From<u8> for ProcessorStatus {
+    fn from(value: u8) -> Self {
+        return ProcessorStatus { flags: value };
+    }
+}
+
 impl ProcessorStatus {
     pub fn change_break_flag(&mut self, value_set: bool) {
         self.change_flag(Flags::Break, value_set);
