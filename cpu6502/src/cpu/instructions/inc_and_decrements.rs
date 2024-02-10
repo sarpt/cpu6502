@@ -13,7 +13,6 @@ fn decrement_register(cpu: &mut CPU, register: Registers) {
     match register {
         Registers::IndexX | Registers::IndexY => {
             cpu.decrement_register(register);
-            cpu.set_status_of_register(register);
         }
         _ => panic!("decrement_register used with incorrect register"),
     }
@@ -56,7 +55,6 @@ fn increment_register(cpu: &mut CPU, register: Registers) {
     match register {
         Registers::IndexX | Registers::IndexY => {
             cpu.increment_register(register);
-            cpu.set_status_of_register(register);
         }
         _ => panic!("increment_register used with incorrect register"),
     }
