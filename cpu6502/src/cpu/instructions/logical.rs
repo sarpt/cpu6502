@@ -1,5 +1,91 @@
 use crate::cpu::{AddressingMode, Registers, CPU};
 
+pub fn and(cpu: &mut CPU, addr_mode: AddressingMode) {
+    let value = match cpu.read_memory(addr_mode) {
+        Some(value) => value,
+        None => panic!("and used with incorrect addressing mode"),
+    };
+
+    let result_value = cpu.get_register(Registers::Accumulator) & value;
+
+    cpu.set_register(Registers::Accumulator, result_value);
+}
+
+pub fn and_im(cpu: &mut CPU) {
+    and(cpu, AddressingMode::Immediate);
+}
+
+pub fn and_zp(cpu: &mut CPU) {
+    and(cpu, AddressingMode::ZeroPage);
+}
+
+pub fn and_zpx(cpu: &mut CPU) {
+    and(cpu, AddressingMode::ZeroPageX);
+}
+
+pub fn and_a(cpu: &mut CPU) {
+    and(cpu, AddressingMode::Absolute);
+}
+
+pub fn and_ax(cpu: &mut CPU) {
+    and(cpu, AddressingMode::AbsoluteX);
+}
+
+pub fn and_ay(cpu: &mut CPU) {
+    and(cpu, AddressingMode::AbsoluteY);
+}
+
+pub fn and_inx(cpu: &mut CPU) {
+    and(cpu, AddressingMode::IndexIndirectX);
+}
+
+pub fn and_iny(cpu: &mut CPU) {
+    and(cpu, AddressingMode::IndirectIndexY);
+}
+
+pub fn eor(cpu: &mut CPU, addr_mode: AddressingMode) {
+    let value = match cpu.read_memory(addr_mode) {
+        Some(value) => value,
+        None => panic!("eor used with incorrect addressing mode"),
+    };
+
+    let result_value = cpu.get_register(Registers::Accumulator) ^ value;
+
+    cpu.set_register(Registers::Accumulator, result_value);
+}
+
+pub fn eor_im(cpu: &mut CPU) {
+    eor(cpu, AddressingMode::Immediate);
+}
+
+pub fn eor_zp(cpu: &mut CPU) {
+    eor(cpu, AddressingMode::ZeroPage);
+}
+
+pub fn eor_zpx(cpu: &mut CPU) {
+    eor(cpu, AddressingMode::ZeroPageX);
+}
+
+pub fn eor_a(cpu: &mut CPU) {
+    eor(cpu, AddressingMode::Absolute);
+}
+
+pub fn eor_ax(cpu: &mut CPU) {
+    eor(cpu, AddressingMode::AbsoluteX);
+}
+
+pub fn eor_ay(cpu: &mut CPU) {
+    eor(cpu, AddressingMode::AbsoluteY);
+}
+
+pub fn eor_inx(cpu: &mut CPU) {
+    eor(cpu, AddressingMode::IndexIndirectX);
+}
+
+pub fn eor_iny(cpu: &mut CPU) {
+    eor(cpu, AddressingMode::IndirectIndexY);
+}
+
 pub fn ora(cpu: &mut CPU, addr_mode: AddressingMode) {
     let value = match cpu.read_memory(addr_mode) {
         Some(value) => value,
@@ -59,3 +145,6 @@ pub fn bit_zp(cpu: &mut CPU) {
 pub fn bit_a(cpu: &mut CPU) {
     bit(cpu, AddressingMode::Absolute);
 }
+
+#[cfg(test)]
+mod tests;
