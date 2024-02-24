@@ -1243,7 +1243,7 @@ mod eor {
             cpu::{instructions::eor_im, tests::MemoryMock, CPU},
         };
 
-        const VALUE: Byte = 0x82;
+        const VALUE: Byte = 0x85;
 
         #[test]
         fn should_eor_accumulator_with_a_value_from_immediate_address() {
@@ -1253,14 +1253,14 @@ mod eor {
 
             eor_im(&mut cpu);
 
-            assert_eq!(cpu.accumulator, 0x02);
+            assert_eq!(cpu.accumulator, 0x82);
         }
 
         #[test]
         fn should_set_processor_status() {
             let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[VALUE, 0x00]))));
             cpu.program_counter = 0x00;
-            cpu.accumulator = 0x86;
+            cpu.accumulator = 0x07;
 
             eor_im(&mut cpu);
 
@@ -1287,7 +1287,7 @@ mod eor {
         use crate::cpu::{instructions::eor_zp, tests::MemoryMock, Byte, CPU};
 
         const ZERO_PAGE_ADDR: Byte = 0x03;
-        const VALUE: Byte = 0x82;
+        const VALUE: Byte = 0x85;
 
         #[test]
         fn should_eor_accumulator_with_a_value_from_zero_page_address() {
@@ -1302,7 +1302,7 @@ mod eor {
 
             eor_zp(&mut cpu);
 
-            assert_eq!(cpu.accumulator, 0x02);
+            assert_eq!(cpu.accumulator, 0x82);
         }
 
         #[test]
@@ -1313,7 +1313,7 @@ mod eor {
                 0x00,
                 VALUE,
             ]))));
-            cpu.accumulator = 0x86;
+            cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
             eor_zp(&mut cpu);
@@ -1346,7 +1346,7 @@ mod eor {
         use crate::cpu::{instructions::eor_zpx, tests::MemoryMock, Byte, CPU};
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
-        const VALUE: Byte = 0x82;
+        const VALUE: Byte = 0x85;
 
         #[test]
         fn should_eor_accumulator_with_a_value_at_a_zero_page_address_summed_with_index_register_x()
@@ -1363,7 +1363,7 @@ mod eor {
 
             eor_zpx(&mut cpu);
 
-            assert_eq!(cpu.accumulator, 0x02);
+            assert_eq!(cpu.accumulator, 0x82);
         }
 
         #[test]
@@ -1374,7 +1374,7 @@ mod eor {
                 0x00,
                 VALUE,
             ]))));
-            cpu.accumulator = 0x86;
+            cpu.accumulator = 0x07;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
@@ -1410,7 +1410,7 @@ mod eor {
 
         const ADDR_LO: Byte = 0x04;
         const ADDR_HI: Byte = 0x00;
-        const VALUE: Byte = 0x82;
+        const VALUE: Byte = 0x85;
 
         #[test]
         fn should_eor_accumulator_with_a_value_in_memory_at_an_absolute_address() {
@@ -1422,7 +1422,7 @@ mod eor {
 
             eor_a(&mut cpu);
 
-            assert_eq!(cpu.accumulator, 0x02);
+            assert_eq!(cpu.accumulator, 0x82);
         }
 
         #[test]
@@ -1430,7 +1430,7 @@ mod eor {
             let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
                 ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
             ]))));
-            cpu.accumulator = 0x86;
+            cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
             eor_a(&mut cpu);
@@ -1462,7 +1462,7 @@ mod eor {
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
         const OFFSET: Byte = 0x02;
-        const VALUE: Byte = 0x82;
+        const VALUE: Byte = 0x85;
         const ADDR_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
 
         #[test]
@@ -1477,7 +1477,7 @@ mod eor {
 
             eor_ax(&mut cpu);
 
-            assert_eq!(cpu.accumulator, 0x02);
+            assert_eq!(cpu.accumulator, 0x82);
         }
 
         #[test]
@@ -1485,7 +1485,7 @@ mod eor {
             let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
                 ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
             ]))));
-            cpu.accumulator = 0x86;
+            cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
@@ -1539,7 +1539,7 @@ mod eor {
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
         const OFFSET: Byte = 0x02;
-        const VALUE: Byte = 0x82;
+        const VALUE: Byte = 0x85;
         const ADDR_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
 
         #[test]
@@ -1554,7 +1554,7 @@ mod eor {
 
             eor_ay(&mut cpu);
 
-            assert_eq!(cpu.accumulator, 0x02);
+            assert_eq!(cpu.accumulator, 0x82);
         }
 
         #[test]
@@ -1562,7 +1562,7 @@ mod eor {
             let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
                 ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
             ]))));
-            cpu.accumulator = 0x86;
+            cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
@@ -1617,7 +1617,7 @@ mod eor {
         const OFFSET: Byte = 0x01;
         const EFFECTIVE_ADDRESS_LO: Byte = 0x05;
         const EFFECTIVE_ADDRESS_HI: Byte = 0x00;
-        const VALUE: Byte = 0x82;
+        const VALUE: Byte = 0x85;
 
         #[test]
         fn should_eor_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x(
@@ -1634,9 +1634,9 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
 
-            oer_inx(&mut cpu);
+            eor_inx(&mut cpu);
 
-            assert_eq!(cpu.accumulator, 0x02);
+            assert_eq!(cpu.accumulator, 0x82);
         }
 
         #[test]
@@ -1650,7 +1650,7 @@ mod eor {
                 VALUE,
             ]))));
             cpu.program_counter = 0x00;
-            cpu.accumulator = 0x86;
+            cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
 
             eor_inx(&mut cpu);
@@ -1692,7 +1692,7 @@ mod eor {
         const ADDRESS_LO: Byte = 0x03;
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
         const ADDRESS_HI: Byte = 0x00;
-        const VALUE: Byte = 0x82;
+        const VALUE: Byte = 0x85;
 
         #[test]
         fn should_eor_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
@@ -1711,7 +1711,7 @@ mod eor {
 
             eor_iny(&mut cpu);
 
-            assert_eq!(cpu.accumulator, 0x02);
+            assert_eq!(cpu.accumulator, 0x82);
         }
 
         #[test]
@@ -1724,7 +1724,7 @@ mod eor {
                 0xAF,
                 VALUE,
             ]))));
-            cpu.accumulator = 0x86;
+            cpu.accumulator = 0x07;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
