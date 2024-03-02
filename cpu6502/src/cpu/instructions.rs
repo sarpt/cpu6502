@@ -18,7 +18,15 @@ use crate::cpu::opcodes::*;
 
 pub fn get_instructions() -> HashMap<Byte, OpcodeHandler> {
     return HashMap::from([
-        (AND_IM, and_im as OpcodeHandler),
+        (ADC_IM, adc_im as OpcodeHandler),
+        (ADC_ZP, adc_zp),
+        (ADC_ZPX, adc_zpx),
+        (ADC_A, adc_a),
+        (ADC_AX, adc_ax),
+        (ADC_AY, adc_ay),
+        (ADC_INX, adc_inx),
+        (ADC_INY, adc_iny),
+        (AND_IM, and_im),
         (AND_ZP, and_zp),
         (AND_ZPX, and_zpx),
         (AND_A, and_a),
