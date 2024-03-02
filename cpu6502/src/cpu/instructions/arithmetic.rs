@@ -1,4 +1,7 @@
-use crate::cpu::{AddressingMode, Registers, CPU};
+use crate::{
+    consts::Byte,
+    cpu::{AddressingMode, Registers, CPU},
+};
 
 fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     let value = match cpu.read_memory(addr_mode) {
@@ -63,6 +66,69 @@ pub fn cpy_zp(cpu: &mut CPU) {
 
 pub fn cpy_a(cpu: &mut CPU) {
     compare(cpu, AddressingMode::Absolute, Registers::IndexY);
+}
+
+fn adc(val: Byte, acc: Byte, carry: bool) -> (Byte, bool) {
+    return acc.overflowing_add(val);
+}
+
+fn sbc(val: Byte, acc: Byte, carry: bool) -> (Byte, bool) {
+    return acc.overflowing_sub(val);
+}
+
+pub fn operations_with_carry(
+    cpu: &mut CPU,
+    addr_mode: AddressingMode,
+    op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, bool),
+) {
+    let value = match cpu.read_memory(addr_mode) {
+        Some(value) => value,
+        None => panic!("arithmetic operation with carry used with incorrect address mode"),
+    };
+
+    let accumulator = cpu.get_register(Registers::Accumulator);
+    let result = op(value, accumulator, cpu.processor_status.get_carry_flag());
+
+    cpu.set_register(Registers::Accumulator, result.0);
+    // if a sign (0x80) of a result differs from signs of inputs
+    if (value ^ result.0) & (accumulator ^ result.0) & 0x80 > 0 {
+        cpu.processor_status.change_overflow_flag(true)
+    }
+    if result.1 {
+        cpu.processor_status.change_carry_flag(true)
+    }
+}
+
+pub fn adc_im(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::Immediate, adc);
+}
+
+pub fn adc_zp(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::ZeroPage, adc);
+}
+
+pub fn adc_zpx(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::ZeroPageX, adc);
+}
+
+pub fn adc_a(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::Absolute, adc);
+}
+
+pub fn adc_ax(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::AbsoluteX, adc);
+}
+
+pub fn adc_ay(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::AbsoluteY, adc);
+}
+
+pub fn adc_inx(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::IndexIndirectX, adc);
+}
+
+pub fn adc_iny(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::IndirectIndexY, adc);
 }
 
 #[cfg(test)]

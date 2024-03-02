@@ -110,3 +110,21 @@ pub const EOR_AX: Byte = 0x3D;
 pub const EOR_AY: Byte = 0x39;
 pub const EOR_INX: Byte = 0x21;
 pub const EOR_INY: Byte = 0x31;
+
+pub const ADC_IM: Byte = 0x69;
+pub const ADC_ZP: Byte = 0x65;
+pub const ADC_ZPX: Byte = 0x75;
+pub const ADC_A: Byte = 0x6D;
+pub const ADC_AX: Byte = 0x7D;
+pub const ADC_AY: Byte = 0x79;
+pub const ADC_INX: Byte = 0x61;
+pub const ADC_INY: Byte = 0x71;
+
+pub const SBC_IM: Byte = 0xE9;
+pub const SBC_ZP: Byte = 0xE5;
+pub const SBC_ZPX: Byte = 0xF5;
+pub const SBC_A: Byte = 0xED;
+pub const SBC_AX: Byte = 0xFD;
+pub const SBC_AY: Byte = 0xF9;
+pub const SBC_INX: Byte = 0xE1;
+pub const SBC_INY: Byte = 0xF1;
