@@ -68,18 +68,25 @@ pub fn cpy_a(cpu: &mut CPU) {
     compare(cpu, AddressingMode::Absolute, Registers::IndexY);
 }
 
-fn adc(val: Byte, acc: Byte, carry: bool) -> (Byte, bool) {
-    return acc.overflowing_add(val);
+fn adc(val: Byte, acc: Byte) -> (Byte, bool, bool) {
+    let (result, carry) = acc.overflowing_add(val);
+    // if a sign (0x80) of a result differs from signs of both inputs
+    let overflow = (acc ^ result) & (val ^ result) & 0x80 > 0;
+    return (result, carry, overflow);
 }
 
-fn sbc(val: Byte, acc: Byte, carry: bool) -> (Byte, bool) {
-    return acc.overflowing_sub(val);
+fn sbc(val: Byte, acc: Byte) -> (Byte, bool, bool) {
+    let (result, carry) = acc.overflowing_sub(val);
+    // if a sign (0x80) of a result differs from sign of accumulator
+    // and ones-complement of value sign differs from sign of result
+    let overflow = (acc ^ result) & ((0xFF - val) ^ result) & 0x80 > 0;
+    return (result, carry, overflow);
 }
 
 pub fn operations_with_carry(
     cpu: &mut CPU,
     addr_mode: AddressingMode,
-    op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, bool),
+    op: fn(val: Byte, acc: Byte) -> (Byte, bool, bool),
 ) {
     let value = match cpu.read_memory(addr_mode) {
         Some(value) => value,
@@ -87,15 +94,15 @@ pub fn operations_with_carry(
     };
 
     let accumulator = cpu.get_register(Registers::Accumulator);
-    let result = op(value, accumulator, cpu.processor_status.get_carry_flag());
+    let result = op(value, accumulator);
 
     cpu.set_register(Registers::Accumulator, result.0);
-    // if a sign (0x80) of a result differs from signs of inputs
-    if (value ^ result.0) & (accumulator ^ result.0) & 0x80 > 0 {
-        cpu.processor_status.change_overflow_flag(true)
-    }
+
     if result.1 {
         cpu.processor_status.change_carry_flag(true)
+    }
+    if result.2 {
+        cpu.processor_status.change_overflow_flag(true)
     }
 }
 
