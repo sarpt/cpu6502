@@ -68,25 +68,54 @@ pub fn cpy_a(cpu: &mut CPU) {
     compare(cpu, AddressingMode::Absolute, Registers::IndexY);
 }
 
-fn adc(val: Byte, acc: Byte) -> (Byte, bool, bool) {
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum FlagOp {
+    Unchanged,
+    Set,
+    Clear,
+}
+
+fn adc(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp) {
     let (result, carry) = acc.overflowing_add(val);
     // if a sign (0x80) of a result differs from signs of both inputs
     let overflow = (acc ^ result) & (val ^ result) & 0x80 > 0;
-    return (result, carry, overflow);
+
+    let carry_op = if carry {
+        FlagOp::Set
+    } else {
+        FlagOp::Unchanged
+    };
+    let overflow_op = if overflow {
+        FlagOp::Set
+    } else {
+        FlagOp::Unchanged
+    };
+    return (result, carry_op, overflow_op);
 }
 
-fn sbc(val: Byte, acc: Byte) -> (Byte, bool, bool) {
-    let (result, carry) = acc.overflowing_sub(val);
+fn sbc(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp) {
+    let (result, carry) = acc.overflowing_add(0xFF - val + (carry as u8));
     // if a sign (0x80) of a result differs from sign of accumulator
     // and ones-complement of value sign differs from sign of result
     let overflow = (acc ^ result) & ((0xFF - val) ^ result) & 0x80 > 0;
-    return (result, carry, overflow);
+
+    let carry_op = if carry {
+        FlagOp::Clear
+    } else {
+        FlagOp::Unchanged
+    };
+    let overflow_op = if overflow {
+        FlagOp::Set
+    } else {
+        FlagOp::Unchanged
+    };
+    return (result, carry_op, overflow_op);
 }
 
 pub fn operations_with_carry(
     cpu: &mut CPU,
     addr_mode: AddressingMode,
-    op: fn(val: Byte, acc: Byte) -> (Byte, bool, bool),
+    op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
 ) {
     let value = match cpu.read_memory(addr_mode) {
         Some(value) => value,
@@ -94,15 +123,16 @@ pub fn operations_with_carry(
     };
 
     let accumulator = cpu.get_register(Registers::Accumulator);
-    let result = op(value, accumulator);
+    let (value, carry, overflow) = op(value, accumulator, cpu.processor_status.get_carry_flag());
 
-    cpu.set_register(Registers::Accumulator, result.0);
+    cpu.set_register(Registers::Accumulator, value);
 
-    if result.1 {
-        cpu.processor_status.change_carry_flag(true)
+    if carry != FlagOp::Unchanged {
+        cpu.processor_status.change_carry_flag(carry == FlagOp::Set)
     }
-    if result.2 {
-        cpu.processor_status.change_overflow_flag(true)
+    if overflow != FlagOp::Unchanged {
+        cpu.processor_status
+            .change_overflow_flag(overflow == FlagOp::Set)
     }
 }
 
@@ -136,6 +166,38 @@ pub fn adc_inx(cpu: &mut CPU) {
 
 pub fn adc_iny(cpu: &mut CPU) {
     operations_with_carry(cpu, AddressingMode::IndirectIndexY, adc);
+}
+
+pub fn sbc_im(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::Immediate, sbc);
+}
+
+pub fn sbc_zp(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::ZeroPage, sbc);
+}
+
+pub fn sbc_zpx(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::ZeroPageX, sbc);
+}
+
+pub fn sbc_a(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::Absolute, sbc);
+}
+
+pub fn sbc_ax(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::AbsoluteX, sbc);
+}
+
+pub fn sbc_ay(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::AbsoluteY, sbc);
+}
+
+pub fn sbc_inx(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::IndexIndirectX, sbc);
+}
+
+pub fn sbc_iny(cpu: &mut CPU) {
+    operations_with_carry(cpu, AddressingMode::IndirectIndexY, sbc);
 }
 
 #[cfg(test)]
