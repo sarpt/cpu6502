@@ -710,7 +710,9 @@ mod adc {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::adc_zp, processor_status::ProcessorStatus, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::adc_zp, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+            },
         };
         const VALUE: Byte = 0x03;
 
@@ -762,7 +764,9 @@ mod adc {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::adc_zpx, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::adc_zpx, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+            },
         };
         const VALUE: Byte = 0x03;
 
@@ -778,6 +782,22 @@ mod adc {
             adc_zpx(&mut cpu);
 
             assert_eq!(cpu.accumulator, 0x05);
+        }
+
+        #[test]
+        fn should_set_overflow_and_carry_flags() {
+            const VALUE: Byte = 0x90;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                0x01, 0x00, 0x00, VALUE,
+            ]))));
+            cpu.index_register_x = 0x02;
+            cpu.program_counter = 0x00;
+            cpu.accumulator = 0xd0;
+            cpu.processor_status = ProcessorStatus::from(0b00000000);
+
+            adc_zpx(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b01000001);
         }
 
         #[test]
@@ -802,7 +822,7 @@ mod adc {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::adc_a, tests::MemoryMock, CPU},
+            cpu::{instructions::adc_a, processor_status::ProcessorStatus, tests::MemoryMock, CPU},
         };
         const VALUE: Byte = 0x03;
 
@@ -817,6 +837,21 @@ mod adc {
             adc_a(&mut cpu);
 
             assert_eq!(cpu.accumulator, 0x05);
+        }
+
+        #[test]
+        fn should_set_overflow_and_carry_flags() {
+            const VALUE: Byte = 0x90;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                0x03, 0x00, 0x00, VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+            cpu.accumulator = 0xd0;
+            cpu.processor_status = ProcessorStatus::from(0b00000000);
+
+            adc_a(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b01000001);
         }
 
         #[test]
@@ -840,7 +875,9 @@ mod adc {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::adc_ax, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::adc_ax, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+            },
         };
 
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
@@ -860,6 +897,22 @@ mod adc {
             adc_ax(&mut cpu);
 
             assert_eq!(cpu.accumulator, 0x05);
+        }
+
+        #[test]
+        fn should_set_overflow_and_carry_flags() {
+            const VALUE: Byte = 0x90;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+            cpu.index_register_x = 0x02;
+            cpu.accumulator = 0xd0;
+            cpu.processor_status = ProcessorStatus::from(0b00000000);
+
+            adc_ax(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b01000001);
         }
 
         #[test]
@@ -902,7 +955,9 @@ mod adc {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::adc_ay, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::adc_ay, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+            },
         };
 
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
@@ -922,6 +977,22 @@ mod adc {
             adc_ay(&mut cpu);
 
             assert_eq!(cpu.accumulator, 0x05);
+        }
+
+        #[test]
+        fn should_set_overflow_and_carry_flags() {
+            const VALUE: Byte = 0x90;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+            cpu.index_register_y = 0x02;
+            cpu.accumulator = 0xd0;
+            cpu.processor_status = ProcessorStatus::from(0b00000000);
+
+            adc_ay(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b01000001);
         }
 
         #[test]
@@ -962,7 +1033,9 @@ mod adc {
     mod adc_iny {
         use crate::{
             consts::Byte,
-            cpu::{instructions::adc_iny, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::adc_iny, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+            },
         };
         use std::{cell::RefCell, rc::Rc};
 
@@ -990,6 +1063,27 @@ mod adc {
             adc_iny(&mut cpu);
 
             assert_eq!(cpu.accumulator, 0x05);
+        }
+
+        #[test]
+        fn should_set_overflow_and_carry_flags() {
+            const VALUE: Byte = 0x90;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
+                ADDRESS_LO,
+                ADDRESS_HI,
+                0x45,
+                0xAF,
+                VALUE,
+            ]))));
+            cpu.index_register_y = 0x02;
+            cpu.program_counter = 0x00;
+            cpu.accumulator = 0xd0;
+            cpu.processor_status = ProcessorStatus::from(0b00000000);
+
+            adc_iny(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b01000001);
         }
 
         #[test]
@@ -1037,7 +1131,9 @@ mod adc {
     mod adc_inx {
         use std::{cell::RefCell, rc::Rc};
 
-        use crate::cpu::{instructions::adc_inx, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::adc_inx, processor_status::ProcessorStatus, tests::MemoryMock, Byte, CPU,
+        };
 
         const ZP_ADDRESS: Byte = 0x02;
         const OFFSET: Byte = 0x01;
@@ -1063,6 +1159,27 @@ mod adc {
             adc_inx(&mut cpu);
 
             assert_eq!(cpu.accumulator, 0x05);
+        }
+
+        #[test]
+        fn should_set_overflow_and_carry_flags() {
+            const VALUE: Byte = 0x90;
+            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+                ZP_ADDRESS,
+                0x00,
+                0x00,
+                EFFECTIVE_ADDRESS_LO,
+                EFFECTIVE_ADDRESS_HI,
+                VALUE,
+            ]))));
+            cpu.program_counter = 0x00;
+            cpu.accumulator = 0xd0;
+            cpu.index_register_x = OFFSET;
+            cpu.processor_status = ProcessorStatus::from(0b00000000);
+
+            adc_inx(&mut cpu);
+
+            assert_eq!(cpu.processor_status, 0b01000001);
         }
 
         #[test]
