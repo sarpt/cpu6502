@@ -890,34 +890,6 @@ mod get_address {
 
             assert_eq!(uut.cycle, 4);
         }
-
-        #[test]
-        fn should_take_four_cycles_for_a_modification_operation_address() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
-            uut.program_counter = 0x02;
-            uut.index_register_x = 0x01;
-            uut.cycle = 0;
-
-            uut.get_address(AddressingMode::AbsoluteX, MemoryOperation::Modify);
-
-            assert_eq!(uut.cycle, 4);
-        }
-
-        #[test]
-        fn should_take_four_cycles_for_a_write_operation_address() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
-            uut.program_counter = 0x02;
-            uut.index_register_x = 0x01;
-            uut.cycle = 0;
-
-            uut.get_address(AddressingMode::AbsoluteX, MemoryOperation::Write);
-
-            assert_eq!(uut.cycle, 4);
-        }
     }
 
     #[cfg(test)]
@@ -980,34 +952,6 @@ mod get_address {
             uut.cycle = 0;
 
             uut.get_address(AddressingMode::AbsoluteY, MemoryOperation::Read);
-
-            assert_eq!(uut.cycle, 4);
-        }
-
-        #[test]
-        fn should_take_four_cycles_for_a_modification_operation_address() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
-            uut.program_counter = 0x02;
-            uut.index_register_y = 0x01;
-            uut.cycle = 0;
-
-            uut.get_address(AddressingMode::AbsoluteY, MemoryOperation::Modify);
-
-            assert_eq!(uut.cycle, 4);
-        }
-
-        #[test]
-        fn should_take_four_cycles_for_a_write_operation_address() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
-            uut.program_counter = 0x02;
-            uut.index_register_y = 0x01;
-            uut.cycle = 0;
-
-            uut.get_address(AddressingMode::AbsoluteY, MemoryOperation::Write);
 
             assert_eq!(uut.cycle, 4);
         }

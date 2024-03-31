@@ -12,6 +12,7 @@ type Instruction = Byte;
 
 #[derive(Copy, Clone, PartialEq)]
 enum AddressingMode {
+    Accumulator,
     Immediate,
     Indirect,
     Implicit,
@@ -39,6 +40,8 @@ enum Registers {
 enum MemoryModifications {
     Increment,
     Decrement,
+    ShiftLeft,
+    ShiftRight,
     RotateLeft,
     RotateRight,
 }
@@ -141,16 +144,13 @@ impl CPU {
         };
     }
 
-    fn offset_addr(&mut self, addr: Word, offset: Byte, operation: MemoryOperation) -> Word {
+    fn offset_addr(&mut self, addr: Word, offset: Byte) -> Word {
         let [lo, mut hi] = addr.to_le_bytes();
         let (new_lo, carry) = lo.overflowing_add(offset);
         let mut address = Word::from_le_bytes([new_lo, hi]);
         self.cycle += 1;
 
         if !carry {
-            if operation != MemoryOperation::Read {
-                self.cycle += 1
-            };
             return address;
         };
 
@@ -329,7 +329,7 @@ impl CPU {
         };
 
         let value = self.access_memory(address);
-        if !addressing_takes_extra_cycle_to_fix(addr_mode) {
+        if !access_cycle_has_been_done_during_address_fixing(addr_mode) {
             self.cycle += 1;
         }
 
@@ -347,15 +347,16 @@ impl CPU {
         };
 
         let value = self.access_memory(address);
-        if !addressing_takes_extra_cycle_to_fix(addr_mode) {
-            self.cycle += 1;
-        }
+        // extra cycle to fix address
+        self.cycle += 1;
 
         let modified_value = match modification {
             MemoryModifications::Increment => value.wrapping_add(1),
             MemoryModifications::Decrement => value.wrapping_sub(1),
             MemoryModifications::RotateLeft => panic!("rotate left not implemented yet"),
             MemoryModifications::RotateRight => panic!("rotate right not implemented yet"),
+            MemoryModifications::ShiftLeft => panic!("shift left not implemented yet"),
+            MemoryModifications::ShiftRight => panic!("shift right not implemented yet"),
         };
         self.cycle += 1;
 
@@ -370,11 +371,10 @@ impl CPU {
             Some(address) => address,
             None => return None,
         };
+        // extra cycle to fix address
+        self.cycle += 1;
 
         self.put_into_memory(address, value);
-        if !addressing_takes_extra_cycle_to_fix(addr_mode) {
-            self.cycle += 1;
-        }
 
         return Some(());
     }
@@ -412,7 +412,7 @@ impl CPU {
             AddressingMode::IndirectIndexY => {
                 let address = self.fetch_zero_page_address();
                 let partial = self.fetch_address_from(address);
-                let effective_address = self.offset_addr(partial, self.index_register_y, operation);
+                let effective_address = self.offset_addr(partial, self.index_register_y);
 
                 return Some(effective_address);
             }
@@ -427,12 +427,12 @@ impl CPU {
             }
             AddressingMode::AbsoluteX => {
                 let partial = self.fetch_address();
-                let effective_addr = self.offset_addr(partial, self.index_register_x, operation);
+                let effective_addr = self.offset_addr(partial, self.index_register_x);
                 return Some(effective_addr);
             }
             AddressingMode::AbsoluteY => {
                 let partial = self.fetch_address();
-                let effective_addr = self.offset_addr(partial, self.index_register_y, operation);
+                let effective_addr = self.offset_addr(partial, self.index_register_y);
                 return Some(effective_addr);
             }
             AddressingMode::Indirect => {
@@ -475,7 +475,7 @@ impl CPU {
     }
 }
 
-fn addressing_takes_extra_cycle_to_fix(addr_mode: AddressingMode) -> bool {
+fn access_cycle_has_been_done_during_address_fixing(addr_mode: AddressingMode) -> bool {
     return addr_mode == AddressingMode::AbsoluteX
         || addr_mode == AddressingMode::AbsoluteY
         || addr_mode == AddressingMode::IndirectIndexY;
