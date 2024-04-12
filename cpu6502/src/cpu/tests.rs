@@ -751,7 +751,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0xCB;
 
-            let result = uut.get_address(AddressingMode::Immediate, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::Immediate);
 
             assert_eq!(result.unwrap(), 0xCB);
         }
@@ -763,7 +763,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0xCB;
 
-            uut.get_address(AddressingMode::Immediate, MemoryOperation::Read);
+            uut.get_address(AddressingMode::Immediate);
 
             assert_eq!(uut.program_counter, 0xCC);
         }
@@ -776,7 +776,7 @@ mod get_address {
             uut.program_counter = 0xCB;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::Immediate, MemoryOperation::Read);
+            uut.get_address(AddressingMode::Immediate);
 
             assert_eq!(uut.cycle, 0);
         }
@@ -796,7 +796,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0x01;
 
-            let result = uut.get_address(AddressingMode::Absolute, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::Absolute);
 
             assert_eq!(result.unwrap(), 0xCBFF);
         }
@@ -808,7 +808,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0x01;
 
-            uut.get_address(AddressingMode::Absolute, MemoryOperation::Read);
+            uut.get_address(AddressingMode::Absolute);
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -821,7 +821,7 @@ mod get_address {
             uut.program_counter = 0x01;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::Absolute, MemoryOperation::Read);
+            uut.get_address(AddressingMode::Absolute);
 
             assert_eq!(uut.cycle, 2);
         }
@@ -843,7 +843,7 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.index_register_x = 0x01;
 
-            let result = uut.get_address(AddressingMode::AbsoluteX, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::AbsoluteX);
 
             assert_eq!(result.unwrap(), 0x52CC);
         }
@@ -856,7 +856,7 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.index_register_x = 0x01;
 
-            uut.get_address(AddressingMode::AbsoluteX, MemoryOperation::Read);
+            uut.get_address(AddressingMode::AbsoluteX);
 
             assert_eq!(uut.program_counter, 0x04);
         }
@@ -871,7 +871,7 @@ mod get_address {
             uut.index_register_x = 0x01;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::AbsoluteX, MemoryOperation::Read);
+            uut.get_address(AddressingMode::AbsoluteX);
 
             assert_eq!(uut.cycle, 3);
         }
@@ -886,7 +886,7 @@ mod get_address {
             uut.index_register_x = 0xFF;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::AbsoluteX, MemoryOperation::Read);
+            uut.get_address(AddressingMode::AbsoluteX);
 
             assert_eq!(uut.cycle, 4);
         }
@@ -908,7 +908,7 @@ mod get_address {
             uut.index_register_y = 0x01;
             uut.program_counter = 0x02;
 
-            let result = uut.get_address(AddressingMode::AbsoluteY, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::AbsoluteY);
 
             assert_eq!(result.unwrap(), 0x52CC);
         }
@@ -921,7 +921,7 @@ mod get_address {
             uut.index_register_y = 0x01;
             uut.program_counter = 0x02;
 
-            uut.get_address(AddressingMode::AbsoluteY, MemoryOperation::Read);
+            uut.get_address(AddressingMode::AbsoluteY);
 
             assert_eq!(uut.program_counter, 0x04);
         }
@@ -936,7 +936,7 @@ mod get_address {
             uut.index_register_y = 0x01;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::AbsoluteY, MemoryOperation::Read);
+            uut.get_address(AddressingMode::AbsoluteY);
 
             assert_eq!(uut.cycle, 3);
         }
@@ -951,7 +951,7 @@ mod get_address {
             uut.index_register_y = 0xFF;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::AbsoluteY, MemoryOperation::Read);
+            uut.get_address(AddressingMode::AbsoluteY);
 
             assert_eq!(uut.cycle, 4);
         }
@@ -972,7 +972,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0x02;
 
-            let result = uut.get_address(AddressingMode::ZeroPage, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::ZeroPage);
 
             assert_eq!(result.unwrap(), 0x00CB);
         }
@@ -984,7 +984,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0x02;
 
-            uut.get_address(AddressingMode::ZeroPage, MemoryOperation::Read);
+            uut.get_address(AddressingMode::ZeroPage);
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -997,7 +997,7 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::ZeroPage, MemoryOperation::Read);
+            uut.get_address(AddressingMode::ZeroPage);
 
             assert_eq!(uut.cycle, 1);
         }
@@ -1019,7 +1019,7 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.index_register_x = 0x03;
 
-            let result = uut.get_address(AddressingMode::ZeroPageX, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::ZeroPageX);
 
             assert_eq!(result.unwrap(), 0x00CE);
         }
@@ -1032,7 +1032,7 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.index_register_x = 0x03;
 
-            uut.get_address(AddressingMode::ZeroPageX, MemoryOperation::Read);
+            uut.get_address(AddressingMode::ZeroPageX);
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -1046,7 +1046,7 @@ mod get_address {
             uut.index_register_x = 0x03;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::ZeroPageX, MemoryOperation::Read);
+            uut.get_address(AddressingMode::ZeroPageX);
 
             assert_eq!(uut.cycle, 2);
         }
@@ -1068,7 +1068,7 @@ mod get_address {
             uut.program_counter = 0x03;
             uut.index_register_y = 0x03;
 
-            let result = uut.get_address(AddressingMode::ZeroPageY, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::ZeroPageY);
 
             assert_eq!(result.unwrap(), 0x0055);
         }
@@ -1081,7 +1081,7 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.index_register_y = 0x03;
 
-            uut.get_address(AddressingMode::ZeroPageY, MemoryOperation::Read);
+            uut.get_address(AddressingMode::ZeroPageY);
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -1095,7 +1095,7 @@ mod get_address {
             uut.index_register_y = 0x03;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::ZeroPageY, MemoryOperation::Read);
+            uut.get_address(AddressingMode::ZeroPageY);
 
             assert_eq!(uut.cycle, 2);
         }
@@ -1117,7 +1117,7 @@ mod get_address {
             uut.program_counter = 0x00;
             uut.index_register_x = 0x01;
 
-            let result = uut.get_address(AddressingMode::IndexIndirectX, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::IndexIndirectX);
 
             assert_eq!(result.unwrap(), 0xDD03);
         }
@@ -1130,7 +1130,7 @@ mod get_address {
             uut.program_counter = 0x00;
             uut.index_register_x = 0x01;
 
-            uut.get_address(AddressingMode::IndexIndirectX, MemoryOperation::Read);
+            uut.get_address(AddressingMode::IndexIndirectX);
 
             assert_eq!(uut.program_counter, 0x01);
         }
@@ -1144,7 +1144,7 @@ mod get_address {
             uut.index_register_x = 0x01;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::IndexIndirectX, MemoryOperation::Read);
+            uut.get_address(AddressingMode::IndexIndirectX);
 
             assert_eq!(uut.cycle, 4);
         }
@@ -1165,7 +1165,7 @@ mod get_address {
             uut.index_register_y = 0x02;
             uut.program_counter = 0x00;
 
-            let result = uut.get_address(AddressingMode::IndirectIndexY, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::IndirectIndexY);
 
             assert_eq!(result.unwrap(), 0xDD05);
         }
@@ -1178,7 +1178,7 @@ mod get_address {
             uut.index_register_y = 0x02;
             uut.program_counter = 0x00;
 
-            uut.get_address(AddressingMode::IndirectIndexY, MemoryOperation::Read);
+            uut.get_address(AddressingMode::IndirectIndexY);
 
             assert_eq!(uut.program_counter, 0x01);
         }
@@ -1193,7 +1193,7 @@ mod get_address {
             uut.program_counter = 0x00;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::IndirectIndexY, MemoryOperation::Read);
+            uut.get_address(AddressingMode::IndirectIndexY);
 
             assert_eq!(uut.cycle, 4);
         }
@@ -1208,7 +1208,7 @@ mod get_address {
             uut.program_counter = 0x00;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::IndirectIndexY, MemoryOperation::Read);
+            uut.get_address(AddressingMode::IndirectIndexY);
 
             assert_eq!(uut.cycle, 5);
         }
@@ -1232,7 +1232,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0x00;
 
-            let result = uut.get_address(AddressingMode::Indirect, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::Indirect);
 
             assert_eq!(result.unwrap(), 0x0001);
         }
@@ -1244,7 +1244,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0x00;
 
-            uut.get_address(AddressingMode::Indirect, MemoryOperation::Read);
+            uut.get_address(AddressingMode::Indirect);
 
             assert_eq!(uut.program_counter, 0x02);
         }
@@ -1257,7 +1257,7 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::Indirect, MemoryOperation::Read);
+            uut.get_address(AddressingMode::Indirect);
 
             assert_eq!(uut.cycle, 4);
         }
@@ -1282,7 +1282,7 @@ mod get_address {
             uut.program_counter = 0x0001;
             uut.cycle = 0;
 
-            let result = uut.get_address(AddressingMode::Indirect, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::Indirect);
 
             assert_eq!(result, Some(0x09A5));
         }
@@ -1302,7 +1302,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0x00;
 
-            let result = uut.get_address(AddressingMode::Implicit, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::Implicit);
 
             assert_eq!(result.is_none(), true);
         }
@@ -1314,7 +1314,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0x00;
 
-            uut.get_address(AddressingMode::Implicit, MemoryOperation::Read);
+            uut.get_address(AddressingMode::Implicit);
 
             assert_eq!(uut.program_counter, 0x00);
         }
@@ -1327,7 +1327,7 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::Implicit, MemoryOperation::Read);
+            uut.get_address(AddressingMode::Implicit);
 
             assert_eq!(uut.cycle, 0);
         }
@@ -1347,7 +1347,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0x00;
 
-            let result = uut.get_address(AddressingMode::Relative, MemoryOperation::Read);
+            let result = uut.get_address(AddressingMode::Relative);
 
             assert_eq!(result.is_none(), true);
         }
@@ -1359,7 +1359,7 @@ mod get_address {
             ]))));
             uut.program_counter = 0x00;
 
-            uut.get_address(AddressingMode::Relative, MemoryOperation::Read);
+            uut.get_address(AddressingMode::Relative);
 
             assert_eq!(uut.program_counter, 0x00);
         }
@@ -1372,7 +1372,7 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.cycle = 0;
 
-            uut.get_address(AddressingMode::Relative, MemoryOperation::Read);
+            uut.get_address(AddressingMode::Relative);
 
             assert_eq!(uut.cycle, 0);
         }
