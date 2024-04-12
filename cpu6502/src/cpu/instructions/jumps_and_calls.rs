@@ -1,7 +1,7 @@
-use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+use crate::cpu::{AddressingMode, CPU};
 
 pub fn jsr_a(cpu: &mut CPU) {
-    let jump_addr = match cpu.get_address(AddressingMode::Absolute, MemoryOperation::Read) {
+    let jump_addr = match cpu.get_address(AddressingMode::Absolute) {
         Some(address) => address,
         None => panic!("couldn't fetch address during a jsr"),
     };
@@ -19,7 +19,7 @@ pub fn rts(cpu: &mut CPU) {
 }
 
 fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) {
-    match cpu.get_address(addr_mode, MemoryOperation::Read) {
+    match cpu.get_address(addr_mode) {
         Some(address) => cpu.program_counter = address,
         None => panic!("jmp used with incorrect addressing mode"),
     }

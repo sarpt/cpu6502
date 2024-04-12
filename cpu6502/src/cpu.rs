@@ -323,7 +323,7 @@ impl CPU {
     }
 
     fn read_memory(&mut self, addr_mode: AddressingMode) -> Option<Byte> {
-        let address = match self.get_address(addr_mode, MemoryOperation::Read) {
+        let address = match self.get_address(addr_mode) {
             Some(address) => address,
             None => return None,
         };
@@ -341,7 +341,7 @@ impl CPU {
         addr_mode: AddressingMode,
         modification: MemoryModifications,
     ) -> Option<u8> {
-        let address = match self.get_address(addr_mode, MemoryOperation::Modify) {
+        let address = match self.get_address(addr_mode) {
             Some(address) => address,
             None => return None,
         };
@@ -355,8 +355,8 @@ impl CPU {
             MemoryModifications::Decrement => value.wrapping_sub(1),
             MemoryModifications::RotateLeft => panic!("rotate left not implemented yet"),
             MemoryModifications::RotateRight => panic!("rotate right not implemented yet"),
-            MemoryModifications::ShiftLeft => panic!("shift left not implemented yet"),
-            MemoryModifications::ShiftRight => panic!("shift right not implemented yet"),
+            MemoryModifications::ShiftLeft => value << 1,
+            MemoryModifications::ShiftRight => value >> 1,
         };
         self.cycle += 1;
 
@@ -367,7 +367,7 @@ impl CPU {
     }
 
     fn write_memory(&mut self, addr_mode: AddressingMode, value: Byte) -> Option<()> {
-        let address = match self.get_address(addr_mode, MemoryOperation::Write) {
+        let address = match self.get_address(addr_mode) {
             Some(address) => address,
             None => return None,
         };
@@ -394,11 +394,7 @@ impl CPU {
         self.cycle += 1;
     }
 
-    fn get_address(
-        &mut self,
-        addr_mode: AddressingMode,
-        operation: MemoryOperation,
-    ) -> Option<Word> {
+    fn get_address(&mut self, addr_mode: AddressingMode) -> Option<Word> {
         match addr_mode {
             AddressingMode::ZeroPage => {
                 return Some(self.fetch_zero_page_address());
