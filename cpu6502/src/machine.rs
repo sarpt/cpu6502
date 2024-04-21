@@ -1,21 +1,24 @@
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
 
 use crate::memory::VecMemory;
 
 use super::cpu::CPU;
 
-pub struct Machine {
-    cpu: CPU,
+pub struct Machine<'a> {
+    memory: &'a RefCell<VecMemory>,
+    cpu: CPU<'a>,
 }
 
-impl Machine {
-    pub fn new(program: &[(u16, u8)]) -> Self {
+impl<'a> Machine<'a> {
+    pub fn new(memory: &'a RefCell<VecMemory>) -> Self {
         return Machine {
-            cpu: CPU::new(Rc::new(RefCell::new(VecMemory::from(program)))),
+            memory: memory,
+            cpu: CPU::new(memory),
         };
     }
 
-    pub fn execute_until_break(&mut self) {
+    pub fn execute_until_break(&mut self, program: &[(u16, u8)]) {
+        self.memory.borrow_mut().store(program);
         self.cpu.reset();
         self.cpu.execute_until_break();
     }

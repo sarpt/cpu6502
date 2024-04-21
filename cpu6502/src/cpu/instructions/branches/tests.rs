@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod beq {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::{
         consts::Byte,
@@ -9,9 +9,8 @@ mod beq {
 
     #[test]
     fn should_not_take_branch_when_zero_flag_is_clear_and_advance_past_operand() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x22, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
 
@@ -23,9 +22,8 @@ mod beq {
     #[test]
     fn should_take_branch_when_zero_flag_is_set_and_offset_program_counter_by_operand() {
         const OFFSET: Byte = 0x03;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
 
@@ -39,12 +37,13 @@ mod beq {
     ) {
         const OFFSET: Byte = 0x03;
         const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+        let memory = &RefCell::new(MemoryMock::new(&[
             0x22,
             0x00,
             NEGATIVE_OFFSET_TWOS_COMPLEMENT,
             0x00,
-        ]))));
+        ]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x02;
 
@@ -57,9 +56,10 @@ mod beq {
     fn should_take_branch_when_zero_flag_is_set_and_offset_program_counter_over_page_flip_by_operand(
     ) {
         const OFFSET: Byte = 0x04;
-        let mut memory: [Byte; 512] = [0x00; 512];
-        memory[0x00FE] = OFFSET;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+        let mut payload: [Byte; 512] = [0x00; 512];
+        payload[0x00FE] = OFFSET;
+        let memory = &RefCell::new(MemoryMock::new(&payload));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00FE;
         cpu.cycle = 0;
@@ -74,12 +74,13 @@ mod beq {
     ) {
         const OFFSET: Byte = 0x03;
         const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+        let memory = &RefCell::new(MemoryMock::new(&[
             NEGATIVE_OFFSET_TWOS_COMPLEMENT,
             0x00,
             0x00,
             0x00,
-        ]))));
+        ]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -91,9 +92,8 @@ mod beq {
 
     #[test]
     fn should_take_one_cycle_when_not_branching() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x02, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -106,9 +106,8 @@ mod beq {
     #[test]
     fn should_take_two_cycles_when_branching_without_crossing_a_page_flip() {
         const OFFSET: Byte = 0x03;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -121,9 +120,10 @@ mod beq {
     #[test]
     fn should_take_three_cycles_when_branching_with_a_page_flips_crossing() {
         const OFFSET: Byte = 0x04;
-        let mut memory: [Byte; 512] = [0x00; 512];
-        memory[0x00FE] = OFFSET;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+        let mut payload: [Byte; 512] = [0x00; 512];
+        payload[0x00FE] = OFFSET;
+        let memory = &RefCell::new(MemoryMock::new(&payload));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00FE;
         cpu.cycle = 0;
@@ -136,7 +136,7 @@ mod beq {
 
 #[cfg(test)]
 mod bne {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::{
         consts::Byte,
@@ -145,9 +145,8 @@ mod bne {
 
     #[test]
     fn should_not_take_branch_when_zero_flag_is_set_and_advance_past_operand() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x22, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
 
@@ -159,9 +158,8 @@ mod bne {
     #[test]
     fn should_take_branch_when_zero_flag_is_clear_and_offset_program_counter_by_operand() {
         const OFFSET: Byte = 0x03;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
 
@@ -175,12 +173,13 @@ mod bne {
     ) {
         const OFFSET: Byte = 0x03;
         const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+        let memory = &RefCell::new(MemoryMock::new(&[
             0x22,
             0x00,
             NEGATIVE_OFFSET_TWOS_COMPLEMENT,
             0x00,
-        ]))));
+        ]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x02;
 
@@ -193,9 +192,10 @@ mod bne {
     fn should_take_branch_when_zero_flag_is_clear_and_offset_program_counter_over_page_flip_by_operand(
     ) {
         const OFFSET: Byte = 0x04;
-        let mut memory: [Byte; 512] = [0x00; 512];
-        memory[0x00FE] = OFFSET;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+        let mut paylod: [Byte; 512] = [0x00; 512];
+        paylod[0x00FE] = OFFSET;
+        let memory = &RefCell::new(MemoryMock::new(&paylod));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00FE;
         cpu.cycle = 0;
@@ -210,12 +210,13 @@ mod bne {
     ) {
         const OFFSET: Byte = 0x03;
         const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+        let memory = &RefCell::new(MemoryMock::new(&[
             NEGATIVE_OFFSET_TWOS_COMPLEMENT,
             0x00,
             0x00,
             0x00,
-        ]))));
+        ]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -227,9 +228,8 @@ mod bne {
 
     #[test]
     fn should_take_one_cycle_when_not_branching() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x02, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -242,9 +242,8 @@ mod bne {
     #[test]
     fn should_take_two_cycles_when_branching_without_crossing_a_page_flip() {
         const OFFSET: Byte = 0x03;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -257,9 +256,10 @@ mod bne {
     #[test]
     fn should_take_three_cycles_when_branching_with_a_page_flips_crossing() {
         const OFFSET: Byte = 0x04;
-        let mut memory: [Byte; 512] = [0x00; 512];
-        memory[0x00FE] = OFFSET;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+        let mut payload: [Byte; 512] = [0x00; 512];
+        payload[0x00FE] = OFFSET;
+        let memory = &RefCell::new(MemoryMock::new(&payload));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00FE;
         cpu.cycle = 0;
@@ -272,7 +272,7 @@ mod bne {
 
 #[cfg(test)]
 mod bcs {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::{
         consts::Byte,
@@ -281,9 +281,8 @@ mod bcs {
 
     #[test]
     fn should_not_take_branch_when_carry_flag_is_clear_and_advance_past_operand() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x22, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
 
@@ -295,9 +294,8 @@ mod bcs {
     #[test]
     fn should_take_branch_when_carry_flag_is_set_and_offset_program_counter_by_operand() {
         const OFFSET: Byte = 0x03;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
 
@@ -311,12 +309,13 @@ mod bcs {
     ) {
         const OFFSET: Byte = 0x03;
         const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+        let memory = &RefCell::new(MemoryMock::new(&[
             0x22,
             0x00,
             NEGATIVE_OFFSET_TWOS_COMPLEMENT,
             0x00,
-        ]))));
+        ]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x02;
 
@@ -329,9 +328,10 @@ mod bcs {
     fn should_take_branch_when_carry_flag_is_set_and_offset_program_counter_over_page_flip_by_operand(
     ) {
         const OFFSET: Byte = 0x04;
-        let mut memory: [Byte; 512] = [0x00; 512];
-        memory[0x00FE] = OFFSET;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+        let mut payload: [Byte; 512] = [0x00; 512];
+        payload[0x00FE] = OFFSET;
+        let memory = &RefCell::new(MemoryMock::new(&payload));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00FE;
         cpu.cycle = 0;
@@ -346,12 +346,13 @@ mod bcs {
     ) {
         const OFFSET: Byte = 0x03;
         const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+        let memory = &RefCell::new(MemoryMock::new(&[
             NEGATIVE_OFFSET_TWOS_COMPLEMENT,
             0x00,
             0x00,
             0x00,
-        ]))));
+        ]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -363,9 +364,8 @@ mod bcs {
 
     #[test]
     fn should_take_one_cycle_when_not_branching() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x02, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -378,9 +378,8 @@ mod bcs {
     #[test]
     fn should_take_two_cycles_when_branching_without_crossing_a_page_flip() {
         const OFFSET: Byte = 0x03;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -393,9 +392,10 @@ mod bcs {
     #[test]
     fn should_take_three_cycles_when_branching_with_a_page_flips_crossing() {
         const OFFSET: Byte = 0x04;
-        let mut memory: [Byte; 512] = [0x00; 512];
-        memory[0x00FE] = OFFSET;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+        let mut payload: [Byte; 512] = [0x00; 512];
+        payload[0x00FE] = OFFSET;
+        let memory = &RefCell::new(MemoryMock::new(&payload));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00FE;
         cpu.cycle = 0;
@@ -408,7 +408,7 @@ mod bcs {
 
 #[cfg(test)]
 mod bcc {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::{
         consts::Byte,
@@ -417,9 +417,8 @@ mod bcc {
 
     #[test]
     fn should_not_take_branch_when_carry_flag_is_set_and_advance_past_operand() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x22, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
 
@@ -431,9 +430,8 @@ mod bcc {
     #[test]
     fn should_take_branch_when_carry_flag_is_clear_and_offset_program_counter_by_operand() {
         const OFFSET: Byte = 0x03;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
 
@@ -447,12 +445,13 @@ mod bcc {
     ) {
         const OFFSET: Byte = 0x03;
         const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+        let memory = &RefCell::new(MemoryMock::new(&[
             0x22,
             0x00,
             NEGATIVE_OFFSET_TWOS_COMPLEMENT,
             0x00,
-        ]))));
+        ]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x02;
 
@@ -465,9 +464,10 @@ mod bcc {
     fn should_take_branch_when_carry_flag_is_clear_and_offset_program_counter_over_page_flip_by_operand(
     ) {
         const OFFSET: Byte = 0x04;
-        let mut memory: [Byte; 512] = [0x00; 512];
-        memory[0x00FE] = OFFSET;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+        let mut payload: [Byte; 512] = [0x00; 512];
+        payload[0x00FE] = OFFSET;
+        let memory = &RefCell::new(MemoryMock::new(&payload));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00FE;
         cpu.cycle = 0;
@@ -482,12 +482,13 @@ mod bcc {
     ) {
         const OFFSET: Byte = 0x03;
         const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+        let memory = &RefCell::new(MemoryMock::new(&[
             NEGATIVE_OFFSET_TWOS_COMPLEMENT,
             0x00,
             0x00,
             0x00,
-        ]))));
+        ]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -499,9 +500,8 @@ mod bcc {
 
     #[test]
     fn should_take_one_cycle_when_not_branching() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            0x02, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -514,9 +514,8 @@ mod bcc {
     #[test]
     fn should_take_two_cycles_when_branching_without_crossing_a_page_flip() {
         const OFFSET: Byte = 0x03;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            OFFSET, 0x00, 0x01, 0x00,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
@@ -529,9 +528,10 @@ mod bcc {
     #[test]
     fn should_take_three_cycles_when_branching_with_a_page_flips_crossing() {
         const OFFSET: Byte = 0x04;
-        let mut memory: [Byte; 512] = [0x00; 512];
-        memory[0x00FE] = OFFSET;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+        let mut payload: [Byte; 512] = [0x00; 512];
+        payload[0x00FE] = OFFSET;
+        let memory = &RefCell::new(MemoryMock::new(&payload));
+        let mut cpu = CPU::new(memory);
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00FE;
         cpu.cycle = 0;

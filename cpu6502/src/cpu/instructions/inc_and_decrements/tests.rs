@@ -1,12 +1,13 @@
 #[cfg(test)]
 mod inx_im {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::inx_im, tests::MemoryMock, CPU};
 
     #[test]
     fn should_increment_x_register() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_x = 0x02;
 
         inx_im(&mut cpu);
@@ -16,7 +17,8 @@ mod inx_im {
 
     #[test]
     fn should_take_one_cycle() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
 
@@ -27,7 +29,8 @@ mod inx_im {
 
     #[test]
     fn should_set_processor_status_of_x_register_after_increment() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_x = 0xFF;
 
         inx_im(&mut cpu);
@@ -38,13 +41,14 @@ mod inx_im {
 
 #[cfg(test)]
 mod iny_im {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::iny_im, tests::MemoryMock, CPU};
 
     #[test]
     fn should_increment_y_register() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_y = 0x02;
 
         iny_im(&mut cpu);
@@ -54,7 +58,8 @@ mod iny_im {
 
     #[test]
     fn should_take_one_cycle() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_y = 0x02;
         cpu.cycle = 0;
 
@@ -65,7 +70,8 @@ mod iny_im {
 
     #[test]
     fn should_set_processor_status_of_x_register_after_increment() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_y = 0xFF;
 
         iny_im(&mut cpu);
@@ -76,7 +82,7 @@ mod iny_im {
 
 #[cfg(test)]
 mod inc_zp {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::inc_zp, tests::MemoryMock, Byte, Word, CPU};
 
@@ -85,12 +91,8 @@ mod inc_zp {
 
     #[test]
     fn should_increment_value_stored_in_memory_at_zero_page_address() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
 
         inc_zp(&mut cpu);
@@ -100,12 +102,8 @@ mod inc_zp {
 
     #[test]
     fn should_take_four_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
@@ -117,12 +115,8 @@ mod inc_zp {
     #[test]
     fn should_set_processor_status_of_value_in_memory() {
         const VALUE: Byte = 0xFF;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
 
         inc_zp(&mut cpu);
@@ -133,7 +127,7 @@ mod inc_zp {
 
 #[cfg(test)]
 mod inc_zpx {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::inc_zpx, tests::MemoryMock, Byte, Word, CPU};
 
@@ -143,12 +137,8 @@ mod inc_zpx {
 
     #[test]
     fn should_increment_value_stored_in_memory_at_zero_page_address_summed_with_index_register_x() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
@@ -159,12 +149,8 @@ mod inc_zpx {
 
     #[test]
     fn should_take_five_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
@@ -177,12 +163,8 @@ mod inc_zpx {
     #[test]
     fn should_set_processor_status_of_value_in_memory() {
         const VALUE: Byte = 0xFF;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
@@ -194,7 +176,7 @@ mod inc_zpx {
 
 #[cfg(test)]
 mod inc_a {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::inc_a, tests::MemoryMock, Byte, Word, CPU};
 
@@ -205,9 +187,8 @@ mod inc_a {
 
     #[test]
     fn should_increment_value_stored_in_memory_at_absolute_address() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
 
         inc_a(&mut cpu);
@@ -217,9 +198,8 @@ mod inc_a {
 
     #[test]
     fn should_take_five_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
@@ -231,9 +211,8 @@ mod inc_a {
     #[test]
     fn should_set_processor_status_of_value_in_memory() {
         const VALUE: Byte = 0xFF;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
 
         inc_a(&mut cpu);
@@ -244,7 +223,7 @@ mod inc_a {
 
 #[cfg(test)]
 mod inc_ax {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::inc_ax, tests::MemoryMock, Byte, Word, CPU};
 
@@ -256,9 +235,8 @@ mod inc_ax {
 
     #[test]
     fn should_increment_value_stored_in_memory_at_absolute_address_offset_by_index_register_x() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
@@ -269,9 +247,8 @@ mod inc_ax {
 
     #[test]
     fn should_take_six_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
         cpu.cycle = 0;
@@ -284,9 +261,8 @@ mod inc_ax {
     #[test]
     fn should_set_processor_status_of_value_in_memory() {
         const VALUE: Byte = 0xFF;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
@@ -298,13 +274,14 @@ mod inc_ax {
 
 #[cfg(test)]
 mod dex_im {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::dex_im, tests::MemoryMock, CPU};
 
     #[test]
     fn should_decrement_x_register() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_x = 0x02;
 
         dex_im(&mut cpu);
@@ -314,7 +291,8 @@ mod dex_im {
 
     #[test]
     fn should_take_one_cycle() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
 
@@ -325,7 +303,8 @@ mod dex_im {
 
     #[test]
     fn should_set_processor_status_of_x_register_after_decrement() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_x = 0x01;
 
         dex_im(&mut cpu);
@@ -336,13 +315,14 @@ mod dex_im {
 
 #[cfg(test)]
 mod dey_im {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::dey_im, tests::MemoryMock, CPU};
 
     #[test]
     fn should_decrement_y_register() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_y = 0x02;
 
         dey_im(&mut cpu);
@@ -352,7 +332,8 @@ mod dey_im {
 
     #[test]
     fn should_take_one_cycle() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_y = 0x02;
         cpu.cycle = 0;
 
@@ -363,7 +344,8 @@ mod dey_im {
 
     #[test]
     fn should_set_processor_status_of_y_register_after_decrement() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_y = 0x01;
 
         dey_im(&mut cpu);
@@ -374,7 +356,7 @@ mod dey_im {
 
 #[cfg(test)]
 mod dec_zp {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::dec_zp, tests::MemoryMock, Byte, Word, CPU};
 
@@ -383,12 +365,8 @@ mod dec_zp {
 
     #[test]
     fn should_decrement_value_stored_in_memory_at_zero_page_address() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
 
         dec_zp(&mut cpu);
@@ -398,12 +376,8 @@ mod dec_zp {
 
     #[test]
     fn should_take_four_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
@@ -415,12 +389,8 @@ mod dec_zp {
     #[test]
     fn should_set_processor_status_of_value_in_memory() {
         const VALUE: Byte = 0x01;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
 
         dec_zp(&mut cpu);
@@ -431,7 +401,7 @@ mod dec_zp {
 
 #[cfg(test)]
 mod dec_zpx {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::dec_zpx, tests::MemoryMock, Byte, Word, CPU};
 
@@ -441,12 +411,8 @@ mod dec_zpx {
 
     #[test]
     fn should_decrement_value_stored_in_memory_at_zero_page_address_summed_with_index_register_x() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
@@ -457,12 +423,8 @@ mod dec_zpx {
 
     #[test]
     fn should_take_five_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
@@ -475,12 +437,8 @@ mod dec_zpx {
     #[test]
     fn should_set_processor_status_of_value_in_memory() {
         const VALUE: Byte = 0x01;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ZERO_PAGE_ADDR,
-            0xFF,
-            0x00,
-            VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
@@ -492,7 +450,7 @@ mod dec_zpx {
 
 #[cfg(test)]
 mod dec_a {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::dec_a, tests::MemoryMock, Byte, Word, CPU};
 
@@ -503,9 +461,8 @@ mod dec_a {
 
     #[test]
     fn should_decrement_value_stored_in_memory_at_absolute_address() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
 
         dec_a(&mut cpu);
@@ -515,9 +472,8 @@ mod dec_a {
 
     #[test]
     fn should_take_five_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
@@ -529,9 +485,8 @@ mod dec_a {
     #[test]
     fn should_set_processor_status_of_value_in_memory() {
         const VALUE: Byte = 0x01;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
 
         dec_a(&mut cpu);
@@ -542,7 +497,7 @@ mod dec_a {
 
 #[cfg(test)]
 mod dec_ax {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::dec_ax, tests::MemoryMock, Byte, Word, CPU};
 
@@ -554,9 +509,8 @@ mod dec_ax {
 
     #[test]
     fn should_decrement_value_stored_in_memory_at_absolute_address_offset_by_index_register_x() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
@@ -567,9 +521,8 @@ mod dec_ax {
 
     #[test]
     fn should_take_six_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
         cpu.cycle = 0;
@@ -582,9 +535,8 @@ mod dec_ax {
     #[test]
     fn should_set_processor_status_of_value_in_memory() {
         const VALUE: Byte = 0x01;
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-            ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE,
-        ]))));
+        let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
