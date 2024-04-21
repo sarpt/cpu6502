@@ -2,13 +2,14 @@
 mod cmp {
     #[cfg(test)]
     mod cmp_im {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{instructions::cmp_im, tests::MemoryMock, CPU};
 
         #[test]
         fn should_compare_accumulator_with_next_byte_from_memory() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
@@ -20,7 +21,8 @@ mod cmp {
 
         #[test]
         fn should_take_one_cycle() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -33,15 +35,14 @@ mod cmp {
 
     #[cfg(test)]
     mod cmp_zp {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{instructions::cmp_zp, tests::MemoryMock, CPU};
 
         #[test]
         fn should_compare_accumulator_with_a_value_from_a_zero_page_address() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, 0x04,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, 0x04]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
@@ -53,9 +54,8 @@ mod cmp {
 
         #[test]
         fn should_take_two_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, 0x04,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, 0x04]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -68,15 +68,14 @@ mod cmp {
 
     #[cfg(test)]
     mod cmp_zpx {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{instructions::cmp_zpx, tests::MemoryMock, CPU};
 
         #[test]
         fn should_compare_accumulator_with_a_value_from_a_zero_page_summed_with_index_register_x() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0x00, 0x00, 0x03,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x00, 0x00, 0x03]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -89,9 +88,8 @@ mod cmp {
 
         #[test]
         fn should_take_three_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0x00, 0x00, 0x03,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x00, 0x00, 0x03]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -105,15 +103,14 @@ mod cmp {
 
     #[cfg(test)]
     mod cmp_a {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{instructions::cmp_a, tests::MemoryMock, CPU};
 
         #[test]
         fn should_compare_accumulator_with_a_value_from_an_address() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, 0x03,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, 0x03]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
@@ -125,9 +122,8 @@ mod cmp {
 
         #[test]
         fn should_take_three_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, 0x03,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, 0x03]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -140,7 +136,7 @@ mod cmp {
 
     #[cfg(test)]
     mod cmp_ax {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -154,9 +150,10 @@ mod cmp {
 
         #[test]
         fn should_compare_accumulator_with_a_value_stored_in_address_ofset_by_x_register() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
@@ -169,9 +166,10 @@ mod cmp {
 
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
@@ -184,14 +182,15 @@ mod cmp {
 
         #[test]
         fn should_take_four_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY,
                 ADDRESS_HI,
                 0x45,
                 0xAF,
                 0xDD,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
@@ -205,7 +204,7 @@ mod cmp {
 
     #[cfg(test)]
     mod cmp_ay {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -219,9 +218,10 @@ mod cmp {
 
         #[test]
         fn should_compare_accumulator_with_a_value_stored_in_address_ofset_by_y_register() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
@@ -234,9 +234,10 @@ mod cmp {
 
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
@@ -249,14 +250,15 @@ mod cmp {
 
         #[test]
         fn should_take_four_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY,
                 ADDRESS_HI,
                 0x45,
                 0xAF,
                 0xDD,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
@@ -270,7 +272,7 @@ mod cmp {
 
     #[cfg(test)]
     mod cmp_iny {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -286,14 +288,15 @@ mod cmp {
         #[test]
         fn should_compare_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
         ) {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
                 ADDRESS_LO,
                 ADDRESS_HI,
                 0x45,
                 0xAF,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -307,14 +310,15 @@ mod cmp {
         #[test]
         fn should_take_four_cycles_when_summing_indirect_address_with_index_y_does_not_cross_page_flip(
         ) {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
                 ADDRESS_LO,
                 ADDRESS_HI,
                 0x45,
                 0xAF,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -327,13 +331,14 @@ mod cmp {
 
         #[test]
         fn should_take_five_cycles_when_summing_indirect_address_with_index_y_crosses_page_flip() {
-            let mut memory: [Byte; 512] = [0x00; 512];
-            memory[0x0000] = INDIRECT_ZERO_PAGE_ADDRESS_PLACE;
-            memory[0x0001] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
-            memory[0x0002] = ADDRESS_HI;
-            memory[0x0101] = VALUE;
+            let mut payload: [Byte; 512] = [0x00; 512];
+            payload[0x0000] = INDIRECT_ZERO_PAGE_ADDRESS_PLACE;
+            payload[0x0001] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
+            payload[0x0002] = ADDRESS_HI;
+            payload[0x0101] = VALUE;
 
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+            let memory = &RefCell::new(MemoryMock::new(&payload));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -350,13 +355,14 @@ mod cmp {
 mod cpy {
     #[cfg(test)]
     mod cpy_im {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{instructions::cpy_im, tests::MemoryMock, CPU};
 
         #[test]
         fn should_compare_y_register_with_next_byte_from_memory() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
@@ -368,7 +374,8 @@ mod cpy {
 
         #[test]
         fn should_take_one_cycle() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -381,15 +388,14 @@ mod cpy {
 
     #[cfg(test)]
     mod cpy_zp {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{instructions::cpy_zp, tests::MemoryMock, CPU};
 
         #[test]
         fn should_compare_y_register_with_a_value_from_a_zero_page_address() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, 0x04,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, 0x04]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
@@ -401,9 +407,8 @@ mod cpy {
 
         #[test]
         fn should_take_two_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, 0x04,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, 0x04]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -416,15 +421,14 @@ mod cpy {
 
     #[cfg(test)]
     mod cpy_a {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{instructions::cpy_a, tests::MemoryMock, CPU};
 
         #[test]
         fn should_compare_y_register_with_a_value_from_an_address() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, 0x03,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, 0x03]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
@@ -436,9 +440,8 @@ mod cpy {
 
         #[test]
         fn should_take_three_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, 0x03,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, 0x03]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -454,13 +457,14 @@ mod cpy {
 mod cpx {
     #[cfg(test)]
     mod cpx_im {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{instructions::cpx_im, tests::MemoryMock, CPU};
 
         #[test]
         fn should_compare_x_register_with_next_byte_from_memory() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
@@ -472,7 +476,8 @@ mod cpx {
 
         #[test]
         fn should_take_one_cycle() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -485,15 +490,14 @@ mod cpx {
 
     #[cfg(test)]
     mod cpx_zp {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{instructions::cpx_zp, tests::MemoryMock, CPU};
 
         #[test]
         fn should_compare_x_register_with_a_value_from_a_zero_page_address() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, 0x04,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, 0x04]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
@@ -505,9 +509,8 @@ mod cpx {
 
         #[test]
         fn should_take_two_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, 0x04,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, 0x04]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -520,15 +523,14 @@ mod cpx {
 
     #[cfg(test)]
     mod cpx_a {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{instructions::cpx_a, tests::MemoryMock, CPU};
 
         #[test]
         fn should_compare_x_register_with_a_value_from_an_address() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, 0x03,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, 0x03]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
@@ -540,9 +542,8 @@ mod cpx {
 
         #[test]
         fn should_take_three_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, 0x03,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, 0x03]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -565,7 +566,7 @@ mod adc {
             let memory_value = 0x05;
             let acc_value = 0xF0;
             let initial_carry = false;
-            let (value, carry, overflow) = adc(memory_value, acc_value, initial_carry);
+            let (value, carry, _overflow) = adc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0xF5);
             assert_eq!(carry, FlagOp::Unchanged);
@@ -576,7 +577,7 @@ mod adc {
             let memory_value = 0x05;
             let acc_value = 0xFE;
             let initial_carry = false;
-            let (value, carry, overflow) = adc(memory_value, acc_value, initial_carry);
+            let (value, carry, _overflow) = adc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0x03);
             assert_eq!(carry, FlagOp::Set);
@@ -588,7 +589,7 @@ mod adc {
             let memory_value = 0x05;
             let acc_value = 0x03;
             let initial_carry = false;
-            let (value, carry, overflow) = adc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0x08);
             assert_eq!(overflow, FlagOp::Unchanged);
@@ -600,7 +601,7 @@ mod adc {
             let memory_value = 0x50;
             let acc_value = 0xd0;
             let initial_carry = false;
-            let (value, carry, overflow) = adc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0x20);
             assert_eq!(overflow, FlagOp::Unchanged);
@@ -612,7 +613,7 @@ mod adc {
             let memory_value = 0x50;
             let acc_value = 0x90;
             let initial_carry = false;
-            let (value, carry, overflow) = adc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0xe0);
             assert_eq!(overflow, FlagOp::Unchanged);
@@ -624,7 +625,7 @@ mod adc {
             let memory_value = 0xd0;
             let acc_value = 0xd0;
             let initial_carry = false;
-            let (value, carry, overflow) = adc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0xa0);
             assert_eq!(overflow, FlagOp::Unchanged);
@@ -636,7 +637,7 @@ mod adc {
             let memory_value = 0x50;
             let acc_value = 0x50;
             let initial_carry = false;
-            let (value, carry, overflow) = adc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0xa0);
             assert_eq!(overflow, FlagOp::Set);
@@ -648,7 +649,7 @@ mod adc {
             let memory_value = 0xd0;
             let acc_value = 0x90;
             let initial_carry = false;
-            let (value, carry, overflow) = adc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0x60);
             assert_eq!(overflow, FlagOp::Set);
@@ -657,7 +658,7 @@ mod adc {
 
     #[cfg(test)]
     mod adc_im {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -669,7 +670,8 @@ mod adc {
 
         #[test]
         fn should_sum_accumulator_with_next_byte_from_memory() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[VALUE, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
 
@@ -681,7 +683,8 @@ mod adc {
         #[test]
         fn should_set_overflow_and_carry_flags() {
             const VALUE: Byte = 0x90;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[VALUE, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0xd0;
             cpu.program_counter = 0x00;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
@@ -693,7 +696,8 @@ mod adc {
 
         #[test]
         fn should_take_one_cycle() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[VALUE, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -706,7 +710,7 @@ mod adc {
 
     #[cfg(test)]
     mod adc_zp {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -718,9 +722,8 @@ mod adc {
 
         #[test]
         fn should_sum_accumulator_with_a_value_stored_in_a_zero_page_address() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
 
@@ -732,9 +735,8 @@ mod adc {
         #[test]
         fn should_set_overflow_and_carry_flags() {
             const VALUE: Byte = 0x90;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0xd0;
             cpu.program_counter = 0x00;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
@@ -746,9 +748,8 @@ mod adc {
 
         #[test]
         fn should_take_two_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
@@ -760,7 +761,7 @@ mod adc {
 
     #[cfg(test)]
     mod adc_zpx {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -772,9 +773,8 @@ mod adc {
 
         #[test]
         fn should_sum_accumulator_with_value_stored_in_zero_page_summed_with_index_register_x() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0x00, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
@@ -787,9 +787,8 @@ mod adc {
         #[test]
         fn should_set_overflow_and_carry_flags() {
             const VALUE: Byte = 0x90;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0x00, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xd0;
@@ -802,9 +801,8 @@ mod adc {
 
         #[test]
         fn should_take_three_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0x00, 0x00, 0x55,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
@@ -818,7 +816,7 @@ mod adc {
 
     #[cfg(test)]
     mod adc_a {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -828,9 +826,8 @@ mod adc {
 
         #[test]
         fn should_sum_accumulalator_with_a_value_from_absolute_address() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
 
@@ -842,9 +839,8 @@ mod adc {
         #[test]
         fn should_set_overflow_and_carry_flags() {
             const VALUE: Byte = 0x90;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
@@ -856,9 +852,8 @@ mod adc {
 
         #[test]
         fn should_take_three_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
             cpu.cycle = 0;
@@ -871,7 +866,7 @@ mod adc {
 
     #[cfg(test)]
     mod adc_ax {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -887,9 +882,10 @@ mod adc {
 
         #[test]
         fn should_sum_accumulator_with_a_value_in_absolute_address_offset_by_index_register_x() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
             cpu.accumulator = 0x02;
@@ -902,9 +898,10 @@ mod adc {
         #[test]
         fn should_set_overflow_and_carry_flags() {
             const VALUE: Byte = 0x90;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
             cpu.accumulator = 0xd0;
@@ -917,9 +914,10 @@ mod adc {
 
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
             cpu.accumulator = 0x02;
@@ -932,12 +930,13 @@ mod adc {
 
         #[test]
         fn should_take_four_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut memory: [Byte; 512] = [0x00; 512];
-            memory[0x0000] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
-            memory[0x0001] = ADDRESS_HI;
-            memory[0x0101] = VALUE;
+            let mut payload: [Byte; 512] = [0x00; 512];
+            payload[0x0000] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
+            payload[0x0001] = ADDRESS_HI;
+            payload[0x0101] = VALUE;
 
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+            let memory = &RefCell::new(MemoryMock::new(&payload));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
             cpu.accumulator = 0x02;
@@ -951,7 +950,7 @@ mod adc {
 
     #[cfg(test)]
     mod adc_ay {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -967,9 +966,10 @@ mod adc {
 
         #[test]
         fn should_sum_accumulator_with_value_in_an_absolute_address_offset_by_index_register_y() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
             cpu.accumulator = 0x02;
@@ -982,9 +982,10 @@ mod adc {
         #[test]
         fn should_set_overflow_and_carry_flags() {
             const VALUE: Byte = 0x90;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
             cpu.accumulator = 0xd0;
@@ -997,9 +998,10 @@ mod adc {
 
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
             cpu.accumulator = 0x02;
@@ -1012,12 +1014,13 @@ mod adc {
 
         #[test]
         fn should_take_four_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut memory: [Byte; 512] = [0x00; 512];
-            memory[0x0000] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
-            memory[0x0001] = ADDRESS_HI;
-            memory[0x0101] = VALUE;
+            let mut payload: [Byte; 512] = [0x00; 512];
+            payload[0x0000] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
+            payload[0x0001] = ADDRESS_HI;
+            payload[0x0101] = VALUE;
 
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+            let memory = &RefCell::new(MemoryMock::new(&payload));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
             cpu.accumulator = 0x02;
@@ -1037,7 +1040,7 @@ mod adc {
                 instructions::adc_iny, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
             },
         };
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         const INDIRECT_ZERO_PAGE_ADDRESS_PLACE: Byte = 0x01;
         const ADDRESS_LO: Byte = 0x03;
@@ -1048,14 +1051,15 @@ mod adc {
         #[test]
         fn should_sum_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
         ) {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
                 ADDRESS_LO,
                 ADDRESS_HI,
                 0x45,
                 0xAF,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
@@ -1068,14 +1072,15 @@ mod adc {
         #[test]
         fn should_set_overflow_and_carry_flags() {
             const VALUE: Byte = 0x90;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
                 ADDRESS_LO,
                 ADDRESS_HI,
                 0x45,
                 0xAF,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xd0;
@@ -1089,14 +1094,15 @@ mod adc {
         #[test]
         fn should_take_four_cycles_when_summing_indirect_address_with_index_y_does_not_cross_page_flip(
         ) {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
                 ADDRESS_LO,
                 ADDRESS_HI,
                 0x45,
                 0xAF,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
@@ -1109,13 +1115,14 @@ mod adc {
 
         #[test]
         fn should_take_five_cycles_when_summing_indirect_address_with_index_y_crosses_page_flip() {
-            let mut memory: [Byte; 512] = [0x00; 512];
-            memory[0x0000] = INDIRECT_ZERO_PAGE_ADDRESS_PLACE;
-            memory[0x0001] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
-            memory[0x0002] = ADDRESS_HI;
-            memory[0x0101] = VALUE;
+            let mut payload: [Byte; 512] = [0x00; 512];
+            payload[0x0000] = INDIRECT_ZERO_PAGE_ADDRESS_PLACE;
+            payload[0x0001] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
+            payload[0x0002] = ADDRESS_HI;
+            payload[0x0101] = VALUE;
 
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+            let memory = &RefCell::new(MemoryMock::new(&payload));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
@@ -1129,7 +1136,7 @@ mod adc {
 
     #[cfg(test)]
     mod adc_inx {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{
             instructions::adc_inx, processor_status::ProcessorStatus, tests::MemoryMock, Byte, CPU,
@@ -1144,14 +1151,15 @@ mod adc {
         #[test]
         fn should_sum_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x(
         ) {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ZP_ADDRESS,
                 0x00,
                 0x00,
                 EFFECTIVE_ADDRESS_LO,
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
             cpu.index_register_x = OFFSET;
@@ -1164,14 +1172,15 @@ mod adc {
         #[test]
         fn should_set_overflow_and_carry_flags() {
             const VALUE: Byte = 0x90;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ZP_ADDRESS,
                 0x00,
                 0x00,
                 EFFECTIVE_ADDRESS_LO,
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xd0;
             cpu.index_register_x = OFFSET;
@@ -1184,14 +1193,15 @@ mod adc {
 
         #[test]
         fn should_take_five_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ZP_ADDRESS,
                 0x00,
                 0x00,
                 EFFECTIVE_ADDRESS_LO,
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
             cpu.index_register_x = OFFSET;
@@ -1215,7 +1225,7 @@ mod sbc {
             let acc_value = 0x50;
             let memory_value = 0x30;
             let initial_carry = true;
-            let (value, carry, overflow) = sbc(memory_value, acc_value, initial_carry);
+            let (value, carry, _overflow) = sbc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0x20);
             assert_eq!(carry, FlagOp::Clear);
@@ -1227,7 +1237,7 @@ mod sbc {
             let acc_value = 0xd0;
             let memory_value = 0xf0;
             let initial_carry = false;
-            let (value, carry, overflow) = sbc(memory_value, acc_value, initial_carry);
+            let (value, carry, _overflow) = sbc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0xdf);
             assert_eq!(carry, FlagOp::Unchanged);
@@ -1239,7 +1249,7 @@ mod sbc {
             let acc_value = 0x50;
             let memory_value = 0xf0;
             let initial_carry = true;
-            let (value, carry, overflow) = sbc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0x60);
             assert_eq!(overflow, FlagOp::Unchanged);
@@ -1251,7 +1261,7 @@ mod sbc {
             let acc_value = 0xd0;
             let memory_value = 0xf0;
             let initial_carry = true;
-            let (value, carry, overflow) = sbc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0xe0);
             assert_eq!(overflow, FlagOp::Unchanged);
@@ -1263,7 +1273,7 @@ mod sbc {
             let acc_value = 0x50;
             let memory_value = 0x70;
             let initial_carry = false;
-            let (value, carry, overflow) = sbc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0xdf);
             assert_eq!(overflow, FlagOp::Unchanged);
@@ -1275,7 +1285,7 @@ mod sbc {
             let acc_value = 0xd0;
             let memory_value = 0x30;
             let initial_carry = true;
-            let (value, carry, overflow) = sbc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0xa0);
             assert_eq!(overflow, FlagOp::Unchanged);
@@ -1287,7 +1297,7 @@ mod sbc {
             let acc_value = 0x50;
             let memory_value = 0xb0;
             let initial_carry = false;
-            let (value, carry, overflow) = sbc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0x9f);
             assert_eq!(overflow, FlagOp::Set);
@@ -1299,7 +1309,7 @@ mod sbc {
             let acc_value = 0xd0;
             let memory_value = 0x70;
             let initial_carry = true;
-            let (value, carry, overflow) = sbc(memory_value, acc_value, initial_carry);
+            let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
             assert_eq!(value, 0x60);
             assert_eq!(overflow, FlagOp::Set);
@@ -1308,7 +1318,7 @@ mod sbc {
 
     #[cfg(test)]
     mod sbc_im {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -1320,7 +1330,8 @@ mod sbc {
 
         #[test]
         fn should_sub_accumulator_with_next_byte_from_memory() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[VALUE, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.accumulator = 0x50;
             cpu.program_counter = 0x00;
@@ -1333,7 +1344,8 @@ mod sbc {
         #[test]
         fn should_set_overflow_and_clear_carry_flag() {
             const VALUE: Byte = 0x70;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[VALUE, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.accumulator = 0xd0;
             cpu.program_counter = 0x00;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
@@ -1345,7 +1357,8 @@ mod sbc {
 
         #[test]
         fn should_take_one_cycle() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[VALUE, 0xFF]))));
+            let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0xFF]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.accumulator = 0x50;
             cpu.program_counter = 0x00;
@@ -1359,7 +1372,7 @@ mod sbc {
 
     #[cfg(test)]
     mod sbc_zp {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -1371,9 +1384,8 @@ mod sbc {
 
         #[test]
         fn should_sub_accumulator_with_a_value_stored_in_a_zero_page_address() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x50;
@@ -1386,9 +1398,8 @@ mod sbc {
         #[test]
         fn should_set_overflow_and_clear_carry_flag() {
             const VALUE: Byte = 0x70;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
@@ -1400,9 +1411,8 @@ mod sbc {
 
         #[test]
         fn should_take_two_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.accumulator = 0x50;
             cpu.program_counter = 0x00;
@@ -1416,7 +1426,7 @@ mod sbc {
 
     #[cfg(test)]
     mod sbc_zpx {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -1428,9 +1438,8 @@ mod sbc {
 
         #[test]
         fn should_sub_accumulator_with_value_stored_in_zero_page_summed_with_index_register_x() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0x00, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -1444,9 +1453,8 @@ mod sbc {
         #[test]
         fn should_set_overflow_and_clear_carry_flag() {
             const VALUE: Byte = 0x70;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0x00, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xd0;
@@ -1458,9 +1466,8 @@ mod sbc {
         }
         #[test]
         fn should_take_three_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0x00, 0x00, 0x55,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x00, 0x00, 0x55]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -1475,7 +1482,7 @@ mod sbc {
 
     #[cfg(test)]
     mod sbc_a {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -1485,9 +1492,8 @@ mod sbc {
 
         #[test]
         fn should_sub_accumulalator_with_a_value_from_absolute_address() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x50;
@@ -1500,9 +1506,8 @@ mod sbc {
         #[test]
         fn should_set_overflow_and_clear_carry_flag() {
             const VALUE: Byte = 0x70;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
@@ -1514,9 +1519,8 @@ mod sbc {
 
         #[test]
         fn should_take_three_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0x00, 0x00, VALUE,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0x00, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x50;
@@ -1530,7 +1534,7 @@ mod sbc {
 
     #[cfg(test)]
     mod sbc_ax {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -1546,9 +1550,10 @@ mod sbc {
 
         #[test]
         fn should_sub_accumulator_with_a_value_in_absolute_address_offset_by_index_register_x() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
@@ -1562,9 +1567,10 @@ mod sbc {
         #[test]
         fn should_set_overflow_and_clear_carry_flag() {
             const VALUE: Byte = 0x70;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
             cpu.accumulator = 0xd0;
@@ -1577,9 +1583,10 @@ mod sbc {
 
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
@@ -1593,12 +1600,13 @@ mod sbc {
 
         #[test]
         fn should_take_four_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut memory: [Byte; 512] = [0x00; 512];
-            memory[0x0000] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
-            memory[0x0001] = ADDRESS_HI;
-            memory[0x0101] = VALUE;
+            let mut payload: [Byte; 512] = [0x00; 512];
+            payload[0x0000] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
+            payload[0x0001] = ADDRESS_HI;
+            payload[0x0101] = VALUE;
 
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+            let memory = &RefCell::new(MemoryMock::new(&payload));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x02;
@@ -1613,7 +1621,7 @@ mod sbc {
 
     #[cfg(test)]
     mod sbc_ay {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::{
             consts::Byte,
@@ -1629,9 +1637,10 @@ mod sbc {
 
         #[test]
         fn should_sub_accumulator_with_value_in_an_absolute_address_offset_by_index_register_y() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
@@ -1645,9 +1654,10 @@ mod sbc {
         #[test]
         fn should_set_overflow_and_clear_carry_flag() {
             const VALUE: Byte = 0x70;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
             cpu.accumulator = 0xd0;
@@ -1660,9 +1670,10 @@ mod sbc {
 
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
@@ -1676,12 +1687,13 @@ mod sbc {
 
         #[test]
         fn should_take_four_cycles_when_adding_offset_crosses_over_page_flip() {
-            let mut memory: [Byte; 512] = [0x00; 512];
-            memory[0x0000] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
-            memory[0x0001] = ADDRESS_HI;
-            memory[0x0101] = VALUE;
+            let mut payload: [Byte; 512] = [0x00; 512];
+            payload[0x0000] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
+            payload[0x0001] = ADDRESS_HI;
+            payload[0x0101] = VALUE;
 
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+            let memory = &RefCell::new(MemoryMock::new(&payload));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.index_register_y = 0x02;
@@ -1702,7 +1714,7 @@ mod sbc {
                 instructions::sbc_iny, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
             },
         };
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         const INDIRECT_ZERO_PAGE_ADDRESS_PLACE: Byte = 0x01;
         const ADDRESS_LO: Byte = 0x03;
@@ -1713,14 +1725,15 @@ mod sbc {
         #[test]
         fn should_sub_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
         ) {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
                 ADDRESS_LO,
                 ADDRESS_HI,
                 0x45,
                 0xAF,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -1734,14 +1747,15 @@ mod sbc {
         #[test]
         fn should_set_overflow_and_clear_carry_flag() {
             const VALUE: Byte = 0x70;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
                 ADDRESS_LO,
                 ADDRESS_HI,
                 0x45,
                 0xAF,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xd0;
@@ -1755,14 +1769,15 @@ mod sbc {
         #[test]
         fn should_take_four_cycles_when_summing_indirect_address_with_index_y_does_not_cross_page_flip(
         ) {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
                 ADDRESS_LO,
                 ADDRESS_HI,
                 0x45,
                 0xAF,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -1776,13 +1791,14 @@ mod sbc {
 
         #[test]
         fn should_take_five_cycles_when_summing_indirect_address_with_index_y_crosses_page_flip() {
-            let mut memory: [Byte; 512] = [0x00; 512];
-            memory[0x0000] = INDIRECT_ZERO_PAGE_ADDRESS_PLACE;
-            memory[0x0001] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
-            memory[0x0002] = ADDRESS_HI;
-            memory[0x0101] = VALUE;
+            let mut payload: [Byte; 512] = [0x00; 512];
+            payload[0x0000] = INDIRECT_ZERO_PAGE_ADDRESS_PLACE;
+            payload[0x0001] = ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY;
+            payload[0x0002] = ADDRESS_HI;
+            payload[0x0101] = VALUE;
 
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+            let memory = &RefCell::new(MemoryMock::new(&payload));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -1797,7 +1813,7 @@ mod sbc {
 
     #[cfg(test)]
     mod sbc_inx {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use crate::cpu::{
             instructions::sbc_inx, processor_status::ProcessorStatus, tests::MemoryMock, Byte, CPU,
@@ -1812,14 +1828,15 @@ mod sbc {
         #[test]
         fn should_sub_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x(
         ) {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ZP_ADDRESS,
                 0x00,
                 0x00,
                 EFFECTIVE_ADDRESS_LO,
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x50;
@@ -1833,14 +1850,15 @@ mod sbc {
         #[test]
         fn should_set_overflow_and_clear_carry_flag() {
             const VALUE: Byte = 0x70;
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ZP_ADDRESS,
                 0x00,
                 0x00,
                 EFFECTIVE_ADDRESS_LO,
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xd0;
             cpu.index_register_x = OFFSET;
@@ -1853,14 +1871,15 @@ mod sbc {
 
         #[test]
         fn should_take_five_cycles() {
-            let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
+            let memory = &RefCell::new(MemoryMock::new(&[
                 ZP_ADDRESS,
                 0x00,
                 0x00,
                 EFFECTIVE_ADDRESS_LO,
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
-            ]))));
+            ]));
+            let mut cpu = CPU::new(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x50;

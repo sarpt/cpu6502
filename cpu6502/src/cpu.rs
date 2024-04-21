@@ -1,4 +1,5 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::cell::RefCell;
+use std::collections::HashMap;
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
@@ -55,7 +56,7 @@ enum MemoryOperation {
 
 type OpcodeHandler = fn(&mut CPU) -> ();
 
-pub struct CPU {
+pub struct CPU<'a> {
     cycle: u64,
     program_counter: Word,
     stack_pointer: Byte,
@@ -63,12 +64,12 @@ pub struct CPU {
     index_register_x: Byte,
     index_register_y: Byte,
     processor_status: processor_status::ProcessorStatus,
-    memory: Rc<RefCell<dyn Memory>>,
+    memory: &'a RefCell<dyn Memory>,
     opcode_handlers: HashMap<Byte, OpcodeHandler>,
 }
 
-impl CPU {
-    pub fn new(memory: Rc<RefCell<dyn Memory>>) -> Self {
+impl<'a> CPU<'a> {
+    pub fn new(memory: &'a RefCell<dyn Memory>) -> Self {
         return CPU {
             cycle: 0,
             program_counter: RESET_VECTOR,

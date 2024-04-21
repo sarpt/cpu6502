@@ -45,14 +45,15 @@ impl IndexMut<Word> for MemoryMock {
 
 #[cfg(test)]
 mod new {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::super::*;
     use super::MemoryMock;
 
     #[test]
     fn should_be_in_reset_state_after_creation() {
-        let uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let uut = CPU::new(memory);
 
         assert_eq!(uut.accumulator, 0);
         assert_eq!(uut.cycle, 0);
@@ -66,7 +67,7 @@ mod new {
 
 #[cfg(test)]
 mod reset {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::super::*;
     use super::MemoryMock;
@@ -76,10 +77,11 @@ mod reset {
         const RESET_VECTOR_HI: Byte = 0x00;
         const RESET_VECTOR_LO: Byte = 0xAD;
 
-        let mut memory = MemoryMock::default();
-        memory[0xFFFC] = RESET_VECTOR_LO;
-        memory[0xFFFD] = RESET_VECTOR_HI;
-        let mut uut = CPU::new(Rc::new(RefCell::new(memory)));
+        let mut payload = MemoryMock::default();
+        payload[0xFFFC] = RESET_VECTOR_LO;
+        payload[0xFFFD] = RESET_VECTOR_HI;
+        let memory = &RefCell::new(payload);
+        let mut uut = CPU::new(memory);
         uut.program_counter = 0xFFFF;
 
         uut.reset();
@@ -89,7 +91,8 @@ mod reset {
 
     #[test]
     fn should_set_negative_flag_in_processor_status_to_zero_after_reset() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b11111111);
 
         uut.reset();
@@ -100,7 +103,7 @@ mod reset {
 
 #[cfg(test)]
 mod access_memory {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::consts::Word;
@@ -110,7 +113,8 @@ mod access_memory {
 
     #[test]
     fn should_return_a_byte() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
 
         let result = uut.access_memory(ADDR);
 
@@ -120,14 +124,15 @@ mod access_memory {
 
 #[cfg(test)]
 mod fetch_address {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_return_an_address_pointed_by_a_program_counter_in_little_endian() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+        let mut uut = CPU::new(memory);
         uut.program_counter = 0x00;
 
         let result = uut.fetch_address();
@@ -137,7 +142,8 @@ mod fetch_address {
 
     #[test]
     fn should_increase_cycle_counter_and_a_program_counter_twice() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+        let mut uut = CPU::new(memory);
         uut.program_counter = 0x00;
 
         assert_eq!(uut.cycle, 0);
@@ -151,14 +157,15 @@ mod fetch_address {
 
 #[cfg(test)]
 mod fetch_zero_page_address {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_return_a_zero_page_address_pointed_by_a_program_counter_in_little_endian() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+        let mut uut = CPU::new(memory);
         uut.program_counter = 0x00;
 
         let result = uut.fetch_zero_page_address();
@@ -168,7 +175,8 @@ mod fetch_zero_page_address {
 
     #[test]
     fn should_increase_cycle_counter_and_a_program_counter_once() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+        let mut uut = CPU::new(memory);
         uut.program_counter = 0x00;
 
         assert_eq!(uut.cycle, 0);
@@ -182,7 +190,7 @@ mod fetch_zero_page_address {
 
 #[cfg(test)]
 mod fetch_zero_page_address_with_x_offset {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::CPU;
@@ -190,7 +198,8 @@ mod fetch_zero_page_address_with_x_offset {
     #[test]
     fn should_return_a_zero_page_address_pointed_by_a_program_counter_summed_with_index_register_x()
     {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+        let mut uut = CPU::new(memory);
         uut.index_register_x = 0x20;
         uut.program_counter = 0x00;
 
@@ -201,7 +210,8 @@ mod fetch_zero_page_address_with_x_offset {
 
     #[test]
     fn should_increase_cycle_counter_two_times() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+        let mut uut = CPU::new(memory);
         uut.program_counter = 0x00;
 
         assert_eq!(uut.cycle, 0);
@@ -213,7 +223,8 @@ mod fetch_zero_page_address_with_x_offset {
 
     #[test]
     fn should_increase_program_counter_once() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[0x03, 0xFF]))));
+        let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+        let mut uut = CPU::new(memory);
         uut.program_counter = 0x00;
 
         assert_eq!(uut.cycle, 0);
@@ -226,14 +237,15 @@ mod fetch_zero_page_address_with_x_offset {
 
 #[cfg(test)]
 mod fetch_instruction {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_return_an_instruction_pointed_by_a_program_counter() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.program_counter = 0x0001;
 
         let result = uut.fetch_instruction();
@@ -243,7 +255,8 @@ mod fetch_instruction {
 
     #[test]
     fn should_increase_cycle_counter_and_a_program_counter() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.program_counter = 0x0001;
 
         assert_eq!(uut.cycle, 0);
@@ -257,14 +270,15 @@ mod fetch_instruction {
 
 #[cfg(test)]
 mod get_register {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::{Registers, CPU};
 
     #[test]
     fn should_return_accumulator() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.accumulator = 0xdf;
 
         let result = uut.get_register(Registers::Accumulator);
@@ -274,7 +288,8 @@ mod get_register {
 
     #[test]
     fn should_return_index_register_x() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.index_register_x = 0xdf;
 
         let result = uut.get_register(Registers::IndexX);
@@ -284,7 +299,8 @@ mod get_register {
 
     #[test]
     fn should_return_index_register_y() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.index_register_y = 0xdf;
 
         let result = uut.get_register(Registers::IndexY);
@@ -295,14 +311,15 @@ mod get_register {
 
 #[cfg(test)]
 mod set_register {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::{Registers, CPU};
 
     #[test]
     fn should_set_accumulator() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.accumulator = 0x00;
 
         let value = 0xF5;
@@ -313,7 +330,8 @@ mod set_register {
 
     #[test]
     fn should_set_index_register_x() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.index_register_x = 0x00;
 
         let value = 0xF5;
@@ -324,7 +342,8 @@ mod set_register {
 
     #[test]
     fn should_set_index_register_y() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.index_register_y = 0x00;
 
         let value = 0xF5;
@@ -335,7 +354,8 @@ mod set_register {
 
     #[test]
     fn should_set_stack_pointer() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.stack_pointer = 0x00;
 
         let value = 0xF5;
@@ -346,7 +366,8 @@ mod set_register {
 
     #[test]
     fn should_set_processor_status() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status = (0x00 as u8).into();
 
         let value = 0xF5;
@@ -357,7 +378,8 @@ mod set_register {
 
     #[test]
     fn should_set_processor_status_when_provided_accumulator_value() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status = (0x00 as u8).into();
 
         let value = 0xF5;
@@ -368,7 +390,8 @@ mod set_register {
 
     #[test]
     fn should_set_processor_status_when_provided_index_register_x_value() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status = (0x00 as u8).into();
 
         let value = 0xF5;
@@ -379,7 +402,8 @@ mod set_register {
 
     #[test]
     fn should_set_processor_status_when_provided_index_register_y_value() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status = (0x00 as u8).into();
 
         let value = 0xF5;
@@ -390,7 +414,8 @@ mod set_register {
 
     #[test]
     fn should_not_set_processor_status_when_provided_stack_pointer_value() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status = (0x00 as u8).into();
 
         let value = 0xF5;
@@ -402,14 +427,15 @@ mod set_register {
 
 #[cfg(test)]
 mod push_byte_to_stack {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_push_a_byte_to_a_place_to_the_first_page_in_memory_pointed_by_a_stack_pointer() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.stack_pointer = 0xFF;
 
         let value: u8 = 0xDF;
@@ -420,7 +446,8 @@ mod push_byte_to_stack {
 
     #[test]
     fn should_increase_cycle_counter_and_decrease_stack_pointer_by_one() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.stack_pointer = 0xFF;
 
         assert_eq!(uut.cycle, 0);
@@ -435,14 +462,15 @@ mod push_byte_to_stack {
 
 #[cfg(test)]
 mod push_word_to_stack {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_push_a_byte_to_a_place_to_the_first_page_in_memory_pointed_by_a_stack_pointer() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.stack_pointer = 0xFF;
 
         let value: u16 = 0x56DF;
@@ -454,7 +482,8 @@ mod push_word_to_stack {
 
     #[test]
     fn should_increase_cycle_counter_and_decrease_stack_pointer_by_two() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.stack_pointer = 0xFF;
         assert_eq!(uut.cycle, 0);
 
@@ -468,14 +497,15 @@ mod push_word_to_stack {
 
 #[cfg(test)]
 mod pop_byte_from_stack {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_pop_byte_from_stack() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.memory.borrow_mut()[0x01FF] = 0xDF;
         uut.memory.borrow_mut()[0x01FE] = 0x48;
         uut.stack_pointer = 0xFD;
@@ -487,7 +517,8 @@ mod pop_byte_from_stack {
 
     #[test]
     fn should_increment_cycle_count_and_stack_pointer_once() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.memory.borrow_mut()[0x01FF] = 0xDF;
         uut.memory.borrow_mut()[0x01FE] = 0x48;
         uut.stack_pointer = 0xFD;
@@ -503,14 +534,15 @@ mod pop_byte_from_stack {
 
 #[cfg(test)]
 mod pop_word_from_stack {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_pop_word_from_stack() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.memory.borrow_mut()[0x01FF] = 0xDF;
         uut.memory.borrow_mut()[0x01FE] = 0x48;
         uut.stack_pointer = 0xFD;
@@ -522,7 +554,8 @@ mod pop_word_from_stack {
 
     #[test]
     fn should_increment_cycle_count_and_stack_pointer_twice() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.memory.borrow_mut()[0x01FF] = 0xDF;
         uut.memory.borrow_mut()[0x01FE] = 0x48;
         uut.stack_pointer = 0xFD;
@@ -537,14 +570,15 @@ mod pop_word_from_stack {
 
 #[cfg(test)]
 mod sum_with_x {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_sum_provided_value_with_x_register_contents() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.index_register_x = 0x02;
 
         let value: u8 = 0x03;
@@ -555,7 +589,8 @@ mod sum_with_x {
 
     #[test]
     fn sum_should_wrap_around_byte() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.index_register_x = 0xFF;
 
         let value: u8 = 0x03;
@@ -566,7 +601,8 @@ mod sum_with_x {
 
     #[test]
     fn should_increase_cycle_counter_by_one() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.index_register_x = 0xFF;
         assert_eq!(uut.cycle, 0);
 
@@ -579,14 +615,15 @@ mod sum_with_x {
 
 #[cfg(test)]
 mod set_status_of_register {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::{Registers, CPU};
 
     #[test]
     fn should_set_zero_flag_on_processor_status_when_register_is_zero() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0x00;
 
@@ -598,7 +635,8 @@ mod set_status_of_register {
 
     #[test]
     fn should_unset_zero_flag_on_processor_status_when_register_is_not_zero() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b11111111);
         uut.accumulator = 0xFF;
 
@@ -610,7 +648,8 @@ mod set_status_of_register {
 
     #[test]
     fn should_set_negative_flag_on_processor_status_when_register_has_bit_7_set() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0x80;
 
@@ -622,7 +661,8 @@ mod set_status_of_register {
 
     #[test]
     fn should_unset_negative_flag_on_processor_status_when_register_has_bit_7_unset() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b11111111);
         uut.accumulator = 0x00;
 
@@ -635,14 +675,15 @@ mod set_status_of_register {
 
 #[cfg(test)]
 mod set_cmp_status {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use super::MemoryMock;
     use crate::cpu::{Registers, CPU};
 
     #[test]
     fn should_set_zero_flag_on_processor_status_when_register_is_the_same_as_provided_value() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd3;
 
@@ -655,7 +696,8 @@ mod set_cmp_status {
 
     #[test]
     fn should_clear_zero_flag_on_processor_status_when_register_is_different_as_provided_value() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b00000010);
         uut.accumulator = 0xd5;
 
@@ -668,7 +710,8 @@ mod set_cmp_status {
 
     #[test]
     fn should_change_carry_flag_on_processor_status_when_register_is_the_same_as_provided_value() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd3;
 
@@ -681,7 +724,8 @@ mod set_cmp_status {
 
     #[test]
     fn should_change_carry_flag_on_processor_status_when_register_is_bigger_than_provided_value() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd5;
 
@@ -694,7 +738,8 @@ mod set_cmp_status {
 
     #[test]
     fn should_clear_zero_flag_on_processor_status_when_register_is_smaller_than_provided_value() {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b00000001);
         uut.accumulator = 0x01;
 
@@ -708,7 +753,8 @@ mod set_cmp_status {
     #[test]
     fn should_set_negative_flag_on_processor_status_when_difference_with_provided_value_has_most_significant_byte_set(
     ) {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd3;
 
@@ -722,7 +768,8 @@ mod set_cmp_status {
     #[test]
     fn should_clear_negative_flag_on_processor_status_when_difference_with_provided_value_has_most_significant_byte_clear(
     ) {
-        let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
         uut.processor_status.set(0b00000010);
         uut.accumulator = 0xd5;
 
@@ -739,16 +786,15 @@ mod get_address {
 
     #[cfg(test)]
     mod immediate_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_program_counter_address() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0xCB;
 
             let result = uut.get_address(AddressingMode::Immediate);
@@ -758,9 +804,8 @@ mod get_address {
 
         #[test]
         fn should_advance_program_counter() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0xCB;
 
             uut.get_address(AddressingMode::Immediate);
@@ -770,9 +815,8 @@ mod get_address {
 
         #[test]
         fn should_not_take_any_cycles() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0xCB;
             uut.cycle = 0;
 
@@ -784,16 +828,15 @@ mod get_address {
 
     #[cfg(test)]
     mod absolute_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_address_from_next_word_in_memory_relative_to_program_counter() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x01;
 
             let result = uut.get_address(AddressingMode::Absolute);
@@ -803,9 +846,8 @@ mod get_address {
 
         #[test]
         fn should_advance_program_counter_twice() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x01;
 
             uut.get_address(AddressingMode::Absolute);
@@ -815,9 +857,8 @@ mod get_address {
 
         #[test]
         fn should_take_two_cycles() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x01;
             uut.cycle = 0;
 
@@ -829,17 +870,16 @@ mod get_address {
 
     #[cfg(test)]
     mod absolute_x_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_address_offset_by_index_register_x_from_next_word_in_memory_relative_to_program_counter(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_x = 0x01;
 
@@ -850,9 +890,8 @@ mod get_address {
 
         #[test]
         fn should_advance_program_counter_twice() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_x = 0x01;
 
@@ -864,9 +903,8 @@ mod get_address {
         #[test]
         fn should_take_three_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_x = 0x01;
             uut.cycle = 0;
@@ -879,9 +917,8 @@ mod get_address {
         #[test]
         fn should_take_four_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_x = 0xFF;
             uut.cycle = 0;
@@ -894,17 +931,16 @@ mod get_address {
 
     #[cfg(test)]
     mod absolute_y_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_address_offset_by_index_register_y_from_next_word_in_memory_relative_to_program_counter(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.index_register_y = 0x01;
             uut.program_counter = 0x02;
 
@@ -915,9 +951,8 @@ mod get_address {
 
         #[test]
         fn should_advance_program_counter_twice() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.index_register_y = 0x01;
             uut.program_counter = 0x02;
 
@@ -929,9 +964,8 @@ mod get_address {
         #[test]
         fn should_take_three_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_y = 0x01;
             uut.cycle = 0;
@@ -944,9 +978,8 @@ mod get_address {
         #[test]
         fn should_take_four_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_y = 0xFF;
             uut.cycle = 0;
@@ -959,17 +992,16 @@ mod get_address {
 
     #[cfg(test)]
     mod zero_page_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter()
         {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
 
             let result = uut.get_address(AddressingMode::ZeroPage);
@@ -979,9 +1011,8 @@ mod get_address {
 
         #[test]
         fn should_advance_program_counter_once() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
 
             uut.get_address(AddressingMode::ZeroPage);
@@ -991,9 +1022,8 @@ mod get_address {
 
         #[test]
         fn should_take_one_cycle() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.cycle = 0;
 
@@ -1005,17 +1035,16 @@ mod get_address {
 
     #[cfg(test)]
     mod zero_page_x_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter_summed_with_index_register_x(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_x = 0x03;
 
@@ -1026,9 +1055,8 @@ mod get_address {
 
         #[test]
         fn should_advance_program_counter_once() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_x = 0x03;
 
@@ -1039,9 +1067,8 @@ mod get_address {
 
         #[test]
         fn should_take_two_cycles() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_x = 0x03;
             uut.cycle = 0;
@@ -1054,17 +1081,16 @@ mod get_address {
 
     #[cfg(test)]
     mod zero_page_y_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter_summed_with_index_register_y(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x03;
             uut.index_register_y = 0x03;
 
@@ -1075,9 +1101,8 @@ mod get_address {
 
         #[test]
         fn should_advance_program_counter_once() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_y = 0x03;
 
@@ -1088,9 +1113,8 @@ mod get_address {
 
         #[test]
         fn should_take_two_cycles() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x03, 0xFF, 0xCB, 0x52,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x02;
             uut.index_register_y = 0x03;
             uut.cycle = 0;
@@ -1103,17 +1127,16 @@ mod get_address {
 
     #[cfg(test)]
     mod index_indirect_x_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_address_stored_in_place_pointed_by_zero_page_address_in_next_byte_relative_to_program_counter_summed_with_index_register_x(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0xFF, 0x03, 0xDD, 0x25,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0xFF, 0x03, 0xDD, 0x25]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x00;
             uut.index_register_x = 0x01;
 
@@ -1124,9 +1147,8 @@ mod get_address {
 
         #[test]
         fn should_advance_program_counter_once() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0xFF, 0x03, 0xDD, 0x25,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0xFF, 0x03, 0xDD, 0x25]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x00;
             uut.index_register_x = 0x01;
 
@@ -1137,9 +1159,8 @@ mod get_address {
 
         #[test]
         fn should_take_four_cycles() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x01, 0xFF, 0x03, 0xDD, 0x25,
-            ]))));
+            let memory = &RefCell::new(MemoryMock::new(&[0x01, 0xFF, 0x03, 0xDD, 0x25]));
+            let mut uut = CPU::new(memory);
             uut.program_counter = 0x00;
             uut.index_register_x = 0x01;
             uut.cycle = 0;
@@ -1152,16 +1173,15 @@ mod get_address {
 
     #[cfg(test)]
     mod indirect_index_y_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_address_offset_by_index_register_y_which_is_stored_at_zero_page_address() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0xFF, 0x03, 0xDD, 0x25,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]));
+            let mut uut = CPU::new(&memory);
             uut.index_register_y = 0x02;
             uut.program_counter = 0x00;
 
@@ -1172,9 +1192,8 @@ mod get_address {
 
         #[test]
         fn should_advance_program_counter_once() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0xFF, 0x03, 0xDD, 0x25,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]));
+            let mut uut = CPU::new(&memory);
             uut.index_register_y = 0x02;
             uut.program_counter = 0x00;
 
@@ -1186,9 +1205,8 @@ mod get_address {
         #[test]
         fn should_take_four_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0xFF, 0x03, 0xDD, 0x25,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]));
+            let mut uut = CPU::new(&memory);
             uut.index_register_y = 0x02;
             uut.program_counter = 0x00;
             uut.cycle = 0;
@@ -1201,9 +1219,8 @@ mod get_address {
         #[test]
         fn should_take_five_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0xFF, 0x03, 0xDD, 0x25,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]));
+            let mut uut = CPU::new(&memory);
             uut.index_register_y = 0xFF;
             uut.program_counter = 0x00;
             uut.cycle = 0;
@@ -1216,20 +1233,19 @@ mod get_address {
 
     #[cfg(test)]
     mod indirect_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
         use crate::{
             consts::Byte,
-            cpu::{AddressingMode, MemoryOperation, CPU},
+            cpu::{AddressingMode, CPU},
         };
 
         #[test]
         fn should_return_address_from_place_in_memory_stored_in_next_word_relative_to_program_counter(
         ) {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0x00, 0x01, 0x00,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+            let mut uut = CPU::new(&memory);
             uut.program_counter = 0x00;
 
             let result = uut.get_address(AddressingMode::Indirect);
@@ -1239,9 +1255,8 @@ mod get_address {
 
         #[test]
         fn should_advance_program_counter_twice() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0x00, 0x01, 0x00,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+            let mut uut = CPU::new(&memory);
             uut.program_counter = 0x00;
 
             uut.get_address(AddressingMode::Indirect);
@@ -1251,9 +1266,8 @@ mod get_address {
 
         #[test]
         fn should_take_four_cycles() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0x00, 0x01, 0x00,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+            let mut uut = CPU::new(&memory);
             uut.program_counter = 0x02;
             uut.cycle = 0;
 
@@ -1271,14 +1285,15 @@ mod get_address {
             const TARGET_ADDR_HI: Byte = 0xCC;
             const INCORRECT_TARGET_ADDR_HI: Byte = 0x09;
 
-            let mut memory: [Byte; 512] = [0x00; 512];
-            memory[0x0000] = INCORRECT_TARGET_ADDR_HI;
-            memory[0x0001] = INDIRECT_ADDR_LO;
-            memory[0x0002] = INDIRECT_ADDR_HI;
-            memory[0x00FF] = TARGET_ADDR_LO;
-            memory[0x0100] = TARGET_ADDR_HI;
+            let mut program: [Byte; 512] = [0x00; 512];
+            program[0x0000] = INCORRECT_TARGET_ADDR_HI;
+            program[0x0001] = INDIRECT_ADDR_LO;
+            program[0x0002] = INDIRECT_ADDR_HI;
+            program[0x00FF] = TARGET_ADDR_LO;
+            program[0x0100] = TARGET_ADDR_HI;
 
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&memory))));
+            let memory = RefCell::new(MemoryMock::new(&program));
+            let mut uut = CPU::new(&memory);
             uut.program_counter = 0x0001;
             uut.cycle = 0;
 
@@ -1290,16 +1305,15 @@ mod get_address {
 
     #[cfg(test)]
     mod implicit_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_none() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0x00, 0x01, 0x00,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+            let mut uut = CPU::new(&memory);
             uut.program_counter = 0x00;
 
             let result = uut.get_address(AddressingMode::Implicit);
@@ -1309,9 +1323,8 @@ mod get_address {
 
         #[test]
         fn should_not_advance_program_counter() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0x00, 0x01, 0x00,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+            let mut uut = CPU::new(&memory);
             uut.program_counter = 0x00;
 
             uut.get_address(AddressingMode::Implicit);
@@ -1321,9 +1334,8 @@ mod get_address {
 
         #[test]
         fn should_take_zero_cycles() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0x00, 0x01, 0x00,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+            let mut uut = CPU::new(&memory);
             uut.program_counter = 0x02;
             uut.cycle = 0;
 
@@ -1335,16 +1347,15 @@ mod get_address {
 
     #[cfg(test)]
     mod relative_addressing {
-        use std::{cell::RefCell, rc::Rc};
+        use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, MemoryOperation, CPU};
+        use crate::cpu::{AddressingMode, CPU};
 
         #[test]
         fn should_return_none() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0x00, 0x01, 0x00,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+            let mut uut = CPU::new(&memory);
             uut.program_counter = 0x00;
 
             let result = uut.get_address(AddressingMode::Relative);
@@ -1354,9 +1365,8 @@ mod get_address {
 
         #[test]
         fn should_not_advance_program_counter() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0x00, 0x01, 0x00,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+            let mut uut = CPU::new(&memory);
             uut.program_counter = 0x00;
 
             uut.get_address(AddressingMode::Relative);
@@ -1366,9 +1376,8 @@ mod get_address {
 
         #[test]
         fn should_take_zero_cycles() {
-            let mut uut = CPU::new(Rc::new(RefCell::new(MemoryMock::new(&[
-                0x02, 0x00, 0x01, 0x00,
-            ]))));
+            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+            let mut uut = CPU::new(&memory);
             uut.program_counter = 0x02;
             uut.cycle = 0;
 

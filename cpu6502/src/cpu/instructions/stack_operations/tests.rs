@@ -1,12 +1,13 @@
 #[cfg(test)]
 mod pha {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::pha, tests::MemoryMock, CPU};
 
     #[test]
     fn should_push_accumulator_into_stack() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFF;
         cpu.accumulator = 0xDE;
 
@@ -17,7 +18,8 @@ mod pha {
 
     #[test]
     fn should_take_two_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.accumulator = 0xDE;
         cpu.stack_pointer = 0xFF;
         cpu.cycle = 0;
@@ -30,13 +32,14 @@ mod pha {
 
 #[cfg(test)]
 mod pla {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::pla, tests::MemoryMock, CPU};
 
     #[test]
     fn should_pull_stack_into_accumulator() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFE;
         cpu.memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.accumulator = 0x00;
@@ -48,7 +51,8 @@ mod pla {
 
     #[test]
     fn should_take_three_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFE;
         cpu.memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.cycle = 0;
@@ -60,7 +64,8 @@ mod pla {
 
     #[test]
     fn should_set_processor_status_based_on_accumulator_value() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFE;
         cpu.memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
@@ -73,13 +78,14 @@ mod pla {
 
 #[cfg(test)]
 mod php {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::php, tests::MemoryMock, CPU};
 
     #[test]
     fn should_push_processor_status_into_stack() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.processor_status = (0b10101010 as u8).into();
         cpu.stack_pointer = 0xFF;
 
@@ -90,7 +96,8 @@ mod php {
 
     #[test]
     fn should_take_two_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.processor_status = (0b10101010 as u8).into();
         cpu.stack_pointer = 0xFF;
         cpu.cycle = 0;
@@ -103,13 +110,14 @@ mod php {
 
 #[cfg(test)]
 mod plp {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::plp, tests::MemoryMock, CPU};
 
     #[test]
     fn should_pull_stack_into_accumulator() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFE;
         cpu.memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
@@ -121,7 +129,8 @@ mod plp {
 
     #[test]
     fn should_take_three_cycles() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFE;
         cpu.memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
@@ -135,13 +144,14 @@ mod plp {
 
 #[cfg(test)]
 mod txs {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::txs, tests::MemoryMock, CPU};
 
     #[test]
     fn should_push_index_x_register_into_stack_pointer_register() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_x = 0xDE;
 
         txs(&mut cpu);
@@ -151,7 +161,8 @@ mod txs {
 
     #[test]
     fn should_take_one_cycle() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.index_register_x = 0xDE;
         cpu.cycle = 0;
 
@@ -163,13 +174,14 @@ mod txs {
 
 #[cfg(test)]
 mod tsx {
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
 
     use crate::cpu::{instructions::tsx, tests::MemoryMock, CPU};
 
     #[test]
     fn should_push_stack_pointer_into_index_x_register_register() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xDE;
 
         tsx(&mut cpu);
@@ -179,7 +191,8 @@ mod tsx {
 
     #[test]
     fn should_take_one_cycle() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xDE;
         cpu.cycle = 0;
 
@@ -190,7 +203,8 @@ mod tsx {
 
     #[test]
     fn should_set_processor_status_based_on_index_x_register_value() {
-        let mut cpu = CPU::new(Rc::new(RefCell::new(MemoryMock::default())));
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 

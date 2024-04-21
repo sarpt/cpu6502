@@ -1,4 +1,6 @@
-use cpu6502::machine;
+use std::cell::RefCell;
+
+use cpu6502::{machine, memory::VecMemory};
 
 fn main() {
     let program: &[(u16, u8)] = &[
@@ -13,6 +15,7 @@ fn main() {
         (0x0300, 0xA9), // LDA #FF
         (0x0301, 0xFF),
     ];
-    let mut machine = machine::Machine::new(program);
-    machine.execute_until_break();
+    let memory = RefCell::new(VecMemory::new());
+    let mut machine = machine::Machine::new(&memory);
+    machine.execute_until_break(program);
 }
