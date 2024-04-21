@@ -1,7 +1,7 @@
 use cpu6502::cpu::CPU;
 use cpu6502::memory::VecMemory;
-use std::str;
 use std::cell::RefCell;
+use std::str;
 
 const TO_LOWER_PROCEDURE: &[(u16, u8)] = &[
     (0x0080, 0x00), // SRC ADDR

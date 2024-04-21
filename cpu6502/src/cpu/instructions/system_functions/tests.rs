@@ -17,9 +17,9 @@ mod brk {
 
         brk(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[0x01FF], 0xCE);
-        assert_eq!(cpu.memory.borrow()[0x01FE], 0xAB);
-        assert_eq!(cpu.memory.borrow()[0x01FD], 0b11111111);
+        assert_eq!(memory.borrow()[0x01FF], 0xCE);
+        assert_eq!(memory.borrow()[0x01FE], 0xAB);
+        assert_eq!(memory.borrow()[0x01FD], 0b11111111);
     }
 
     #[test]
@@ -27,11 +27,10 @@ mod brk {
         const ADDR_LO: Byte = 0xAD;
         const ADDR_HI: Byte = 0x9B;
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
-        memory[0xFFFE] = ADDR_LO;
-        memory[0xFFFF] = ADDR_HI;
+        memory.borrow_mut()[0xFFFE] = ADDR_LO;
+        memory.borrow_mut()[0xFFFF] = ADDR_HI;
 
-        let mut cpu = CPU::new(&RefCell::new(memory));
+        let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
 
         brk(&mut cpu);

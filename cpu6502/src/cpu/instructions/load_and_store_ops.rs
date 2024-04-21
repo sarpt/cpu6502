@@ -140,3 +140,6 @@ pub fn sty_zpx(cpu: &mut CPU) {
 pub fn sty_a(cpu: &mut CPU) {
     store(cpu, AddressingMode::Absolute, Registers::IndexY);
 }
+
+#[cfg(test)]
+mod tests;

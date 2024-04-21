@@ -13,7 +13,7 @@ mod pha {
 
         pha(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[0x01FF], 0xDE);
+        assert_eq!(memory.borrow()[0x01FF], 0xDE);
     }
 
     #[test]
@@ -41,7 +41,7 @@ mod pla {
         let memory = &RefCell::new(MemoryMock::default());
         let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFE;
-        cpu.memory.borrow_mut()[0x01FF] = 0xDE;
+        memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.accumulator = 0x00;
 
         pla(&mut cpu);
@@ -54,7 +54,7 @@ mod pla {
         let memory = &RefCell::new(MemoryMock::default());
         let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFE;
-        cpu.memory.borrow_mut()[0x01FF] = 0xDE;
+        memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.cycle = 0;
 
         pla(&mut cpu);
@@ -67,7 +67,7 @@ mod pla {
         let memory = &RefCell::new(MemoryMock::default());
         let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFE;
-        cpu.memory.borrow_mut()[0x01FF] = 0xDE;
+        memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
         pla(&mut cpu);
@@ -91,7 +91,7 @@ mod php {
 
         php(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[0x01FF], 0b10101010);
+        assert_eq!(memory.borrow()[0x01FF], 0b10101010);
     }
 
     #[test]
@@ -119,7 +119,7 @@ mod plp {
         let memory = &RefCell::new(MemoryMock::default());
         let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFE;
-        cpu.memory.borrow_mut()[0x01FF] = 0xDE;
+        memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
         plp(&mut cpu);
@@ -132,7 +132,7 @@ mod plp {
         let memory = &RefCell::new(MemoryMock::default());
         let mut cpu = CPU::new(memory);
         cpu.stack_pointer = 0xFE;
-        cpu.memory.borrow_mut()[0x01FF] = 0xDE;
+        memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
         cpu.cycle = 0;
 
