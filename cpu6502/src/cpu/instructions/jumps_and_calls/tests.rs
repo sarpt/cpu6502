@@ -25,8 +25,8 @@ mod jsr_a {
 
         jsr_a(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[0x01FF], 0x01);
-        assert_eq!(cpu.memory.borrow()[0x01FE], 0x00);
+        assert_eq!(memory.borrow()[0x01FF], 0x01);
+        assert_eq!(memory.borrow()[0x01FE], 0x00);
     }
 
     #[test]
@@ -65,8 +65,8 @@ mod rts {
         let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x02, 0x03]));
         let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
-        cpu.memory.borrow_mut()[0x01FF] = 0x44;
-        cpu.memory.borrow_mut()[0x01FE] = 0x51;
+        memory.borrow_mut()[0x01FF] = 0x44;
+        memory.borrow_mut()[0x01FE] = 0x51;
         cpu.stack_pointer = 0xFD;
 
         rts(&mut cpu);
@@ -79,8 +79,8 @@ mod rts {
         let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x02, 0x03]));
         let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
-        cpu.memory.borrow_mut()[0x01FF] = 0x44;
-        cpu.memory.borrow_mut()[0x01FE] = 0x51;
+        memory.borrow_mut()[0x01FF] = 0x44;
+        memory.borrow_mut()[0x01FE] = 0x51;
         cpu.stack_pointer = 0xFD;
 
         rts(&mut cpu);
@@ -93,8 +93,8 @@ mod rts {
         let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x02, 0x03]));
         let mut cpu = CPU::new(memory);
         cpu.program_counter = 0x00;
-        cpu.memory.borrow_mut()[0x01FF] = 0x44;
-        cpu.memory.borrow_mut()[0x01FE] = 0x51;
+        memory.borrow_mut()[0x01FF] = 0x44;
+        memory.borrow_mut()[0x01FE] = 0x51;
         cpu.stack_pointer = 0xFD;
         cpu.cycle = 0;
 

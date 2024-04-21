@@ -14,3 +14,6 @@ pub fn brk(cpu: &mut CPU) {
 
     cpu.processor_status.change_break_flag(true);
 }
+
+#[cfg(test)]
+mod tests;

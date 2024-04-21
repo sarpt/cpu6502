@@ -97,7 +97,7 @@ mod inc_zp {
 
         inc_zp(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[ZERO_PAGE_ADDR as Word], 0x03);
+        assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x03);
     }
 
     #[test]
@@ -144,7 +144,7 @@ mod inc_zpx {
 
         inc_zpx(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[ZERO_PAGE_ADDR_SUM_X as Word], 0x0A);
+        assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_X as Word], 0x0A);
     }
 
     #[test]
@@ -193,7 +193,7 @@ mod inc_a {
 
         inc_a(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[ADDR as Word], 0x0A);
+        assert_eq!(memory.borrow()[ADDR as Word], 0x0A);
     }
 
     #[test]
@@ -242,7 +242,7 @@ mod inc_ax {
 
         inc_ax(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[ADDR_OFFSET_BY_X], 0x0A);
+        assert_eq!(memory.borrow()[ADDR_OFFSET_BY_X], 0x0A);
     }
 
     #[test]
@@ -371,7 +371,7 @@ mod dec_zp {
 
         dec_zp(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[ZERO_PAGE_ADDR as Word], 0x01);
+        assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x01);
     }
 
     #[test]
@@ -418,7 +418,7 @@ mod dec_zpx {
 
         dec_zpx(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[ZERO_PAGE_ADDR_SUM_X as Word], 0x08);
+        assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_X as Word], 0x08);
     }
 
     #[test]
@@ -467,7 +467,7 @@ mod dec_a {
 
         dec_a(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[ADDR as Word], 0x08);
+        assert_eq!(memory.borrow()[ADDR as Word], 0x08);
     }
 
     #[test]
@@ -516,7 +516,7 @@ mod dec_ax {
 
         dec_ax(&mut cpu);
 
-        assert_eq!(cpu.memory.borrow()[ADDR_OFFSET_BY_X], 0x08);
+        assert_eq!(memory.borrow()[ADDR_OFFSET_BY_X], 0x08);
     }
 
     #[test]
