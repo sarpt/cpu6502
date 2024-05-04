@@ -154,6 +154,7 @@ mod jumps_and_calls;
 mod load_and_store_ops;
 mod logical;
 mod register_transfers;
+mod shifts;
 mod stack_operations;
 mod status_flag_changes;
 mod system_functions;
