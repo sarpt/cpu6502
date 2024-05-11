@@ -2,7 +2,7 @@ use crate::cpu::{AddressingMode, MemoryModifications, Registers, CPU};
 
 fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
     match cpu.modify_memory(addr_mode, MemoryModifications::Decrement) {
-        Some(modified_value) => {
+        Some((_, modified_value)) => {
             cpu.set_status_of_value(modified_value);
         }
         None => panic!("decrement_memory used with incorrect addressing mode"),
@@ -44,7 +44,7 @@ pub fn dey_im(cpu: &mut CPU) {
 
 fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
     match cpu.modify_memory(addr_mode, MemoryModifications::Increment) {
-        Some(modified_value) => {
+        Some((_, modified_value)) => {
             cpu.set_status_of_value(modified_value);
         }
         None => panic!("increment_memory used with incorrect addressing mode"),
