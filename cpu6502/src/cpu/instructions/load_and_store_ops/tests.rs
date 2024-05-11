@@ -984,7 +984,7 @@ mod ldy {
 mod sta_zp {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::sta_zp, tests::MemoryMock, Byte, Word, CPU};
+    use crate::cpu::{instructions::sta_zp, tests::MemoryMock, Byte, CPU};
 
     const ZERO_PAGE_ADDR: Byte = 0x03;
 

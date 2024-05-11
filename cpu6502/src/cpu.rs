@@ -287,7 +287,7 @@ impl<'a> CPU<'a> {
         return Word::from_le_bytes([lo, hi]);
     }
 
-    pub fn offset_program_counter(&mut self, offset: u8) {
+    pub fn offset_program_counter(&mut self, offset: Byte) {
         let [program_counter_lo, program_counter_hi] = self.program_counter.to_le_bytes();
         let negative_offset_direction = 0b10000000 & offset > 0;
         let directionless_offset = if negative_offset_direction {
@@ -341,7 +341,7 @@ impl<'a> CPU<'a> {
         &mut self,
         addr_mode: AddressingMode,
         modification: MemoryModifications,
-    ) -> Option<u8> {
+    ) -> Option<(Byte, Byte)> {
         let address = match self.get_address(addr_mode) {
             Some(address) => address,
             None => return None,
@@ -364,7 +364,7 @@ impl<'a> CPU<'a> {
         self.put_into_memory(address, modified_value);
         self.cycle += 1;
 
-        return Some(modified_value);
+        return Some((value, modified_value));
     }
 
     fn write_memory(&mut self, addr_mode: AddressingMode, value: Byte) -> Option<()> {
