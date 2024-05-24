@@ -269,3 +269,262 @@ mod asl {
         }
     }
 }
+
+#[cfg(test)]
+mod lsr {
+    #[cfg(test)]
+    mod common {
+        use std::cell::RefCell;
+
+        use crate::cpu::{instructions::shifts::lsr_acc, tests::MemoryMock, Registers, CPU};
+
+        #[test]
+        fn should_set_carry_when_bit_0_is_set() {
+            let memory = &RefCell::new(MemoryMock::default());
+            let mut cpu = CPU::new(memory);
+            cpu.accumulator = 0b00000001;
+
+            assert_eq!(cpu.processor_status.get_carry_flag(), false);
+
+            lsr_acc(&mut cpu);
+
+            assert_eq!(cpu.processor_status.get_carry_flag(), true);
+        }
+
+        #[test]
+        fn should_not_change_carry_when_bit_0_is_not_set() {
+            let memory = &RefCell::new(MemoryMock::default());
+            let mut cpu = CPU::new(memory);
+            cpu.accumulator = 0b11111110;
+
+            assert_eq!(cpu.processor_status.get_carry_flag(), false);
+
+            lsr_acc(&mut cpu);
+
+            assert_eq!(cpu.processor_status.get_carry_flag(), false);
+        }
+
+        #[test]
+        fn should_set_zero_when_value_after_shift_is_zero() {
+            let memory = &RefCell::new(MemoryMock::default());
+            let mut cpu = CPU::new(memory);
+            cpu.accumulator = 0b00000001;
+
+            assert_eq!(cpu.processor_status.get_zero_flag(), false);
+
+            lsr_acc(&mut cpu);
+
+            assert_eq!(cpu.processor_status.get_zero_flag(), true);
+        }
+    }
+
+    #[cfg(test)]
+    mod lsr_acc {
+        use std::cell::RefCell;
+
+        use crate::{
+            consts::Byte,
+            cpu::{instructions::shifts::lsr_acc, tests::MemoryMock, CPU},
+        };
+        const VALUE: Byte = 0x02;
+
+        #[test]
+        fn should_shift_right_value_in_accumulator() {
+            let memory = &RefCell::new(MemoryMock::default());
+            let mut cpu = CPU::new(memory);
+            cpu.accumulator = VALUE;
+            cpu.program_counter = 0x00;
+
+            lsr_acc(&mut cpu);
+
+            assert_eq!(cpu.accumulator, 0x01);
+        }
+
+        #[test]
+        fn should_take_one_cycle() {
+            let memory = &RefCell::new(MemoryMock::default());
+            let mut cpu = CPU::new(memory);
+            cpu.accumulator = 0x02;
+            cpu.program_counter = 0x00;
+            cpu.cycle = 0;
+
+            lsr_acc(&mut cpu);
+
+            assert_eq!(cpu.cycle, 1);
+        }
+    }
+
+    #[cfg(test)]
+    mod lsr_zp {
+        use std::cell::RefCell;
+
+        use crate::{
+            consts::{Byte, Word},
+            cpu::{instructions::shifts::lsr_zp, tests::MemoryMock, CPU},
+        };
+
+        const ZERO_PAGE_ADDR: Byte = 0x01;
+        const VALUE: Byte = 0x02;
+
+        #[test]
+        fn should_shift_right_value_in_memory_at_zero_page() {
+            let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
+            let mut cpu = CPU::new(memory);
+            cpu.program_counter = 0x00;
+
+            lsr_zp(&mut cpu);
+
+            assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x01);
+        }
+
+        #[test]
+        fn should_take_four_cycles() {
+            let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
+            let mut cpu = CPU::new(memory);
+            cpu.program_counter = 0x00;
+            cpu.cycle = 0;
+
+            lsr_zp(&mut cpu);
+
+            assert_eq!(cpu.cycle, 4);
+        }
+    }
+
+    #[cfg(test)]
+    mod asl_zpx {
+        use std::cell::RefCell;
+
+        use crate::{
+            consts::{Byte, Word},
+            cpu::{instructions::shifts::lsr_zpx, tests::MemoryMock, CPU},
+        };
+
+        const ZERO_PAGE_ADDR: Byte = 0x01;
+        const OFFSET: Byte = 0x01;
+        const VALUE: Byte = 0x02;
+
+        #[test]
+        fn should_shift_right_value_in_memory_at_zero_page_summed_with_index_register_x() {
+            let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
+            cpu.index_register_x = OFFSET;
+            cpu.program_counter = 0x00;
+
+            lsr_zpx(&mut cpu);
+
+            assert_eq!(memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word], 0x01);
+        }
+
+        #[test]
+        fn should_take_five_cycles() {
+            let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
+            let mut cpu = CPU::new(memory);
+            cpu.index_register_x = OFFSET;
+            cpu.program_counter = 0x00;
+            cpu.cycle = 0;
+
+            lsr_zpx(&mut cpu);
+
+            assert_eq!(cpu.cycle, 5);
+        }
+    }
+
+    #[cfg(test)]
+    mod lsr_a {
+        use std::cell::RefCell;
+
+        use crate::{
+            consts::{Byte, Word},
+            cpu::{instructions::shifts::lsr_a, tests::MemoryMock, CPU},
+        };
+
+        const ABSOLUTE_ADDR_HI: Byte = 0x00;
+        const ABSOLUTE_ADDR_LO: Byte = 0x03;
+        const VALUE: Byte = 0x02;
+
+        #[test]
+        fn should_shift_right_value_in_memory_at_absolute_address() {
+            let memory = &RefCell::new(MemoryMock::new(&[
+                ABSOLUTE_ADDR_LO,
+                ABSOLUTE_ADDR_HI,
+                0x00,
+                VALUE,
+            ]));
+            let mut cpu = CPU::new(memory);
+            cpu.program_counter = 0x00;
+
+            lsr_a(&mut cpu);
+
+            assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0x01);
+        }
+
+        #[test]
+        fn should_take_five_cycles() {
+            let memory = &RefCell::new(MemoryMock::new(&[
+                ABSOLUTE_ADDR_LO,
+                ABSOLUTE_ADDR_HI,
+                0x00,
+                VALUE,
+            ]));
+            let mut cpu = CPU::new(memory);
+            cpu.program_counter = 0x00;
+            cpu.cycle = 0;
+
+            lsr_a(&mut cpu);
+
+            assert_eq!(cpu.cycle, 5);
+        }
+    }
+
+    #[cfg(test)]
+    mod lsr_ax {
+        use std::cell::RefCell;
+
+        use crate::{
+            consts::{Byte, Word},
+            cpu::{instructions::shifts::lsr_ax, tests::MemoryMock, CPU},
+        };
+
+        const ABSOLUTE_ADDR_HI: Byte = 0x00;
+        const ABSOLUTE_ADDR_LO: Byte = 0x03;
+        const OFFSET: Byte = 0x01;
+        const VALUE: Byte = 0x02;
+
+        #[test]
+        fn should_shift_right_value_in_memory_at_absolute_address() {
+            let memory = &RefCell::new(MemoryMock::new(&[
+                ABSOLUTE_ADDR_LO,
+                ABSOLUTE_ADDR_HI,
+                0x00,
+                0x00,
+                VALUE,
+            ]));
+            let mut cpu = CPU::new(memory);
+            cpu.index_register_x = OFFSET;
+            cpu.program_counter = 0x00;
+
+            lsr_ax(&mut cpu);
+
+            assert_eq!(memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word], 0x01);
+        }
+
+        #[test]
+        fn should_take_six_cycles() {
+            let memory = &RefCell::new(MemoryMock::new(&[
+                ABSOLUTE_ADDR_LO,
+                ABSOLUTE_ADDR_HI,
+                0x00,
+                0x00,
+                VALUE,
+            ]));
+            let mut cpu = CPU::new(memory);
+            cpu.index_register_x = OFFSET;
+            cpu.program_counter = 0x00;
+            cpu.cycle = 0;
+
+            lsr_ax(&mut cpu);
+
+            assert_eq!(cpu.cycle, 6);
+        }
+    }
+}

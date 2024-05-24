@@ -9,6 +9,7 @@ use self::jumps_and_calls::*;
 use self::load_and_store_ops::*;
 use self::logical::*;
 use self::register_transfers::*;
+use self::shifts::*;
 use self::stack_operations::*;
 use self::status_flag_changes::*;
 use self::system_functions::*;
@@ -34,6 +35,11 @@ pub fn get_instructions() -> HashMap<Byte, OpcodeHandler> {
         (AND_AY, and_ay),
         (AND_INX, and_inx),
         (AND_INY, and_iny),
+        (ASL_ACC, asl_acc),
+        (ASL_A, asl_a),
+        (ASL_AX, asl_ax),
+        (ASL_ZP, asl_zp),
+        (ASL_ZPX, asl_zpx),
         (EOR_IM, eor_im),
         (EOR_ZP, eor_zp),
         (EOR_ZPX, eor_zpx),
@@ -60,6 +66,11 @@ pub fn get_instructions() -> HashMap<Byte, OpcodeHandler> {
         (LDX_ZPY, ldx_zpy),
         (LDX_A, ldx_a),
         (LDX_AY, ldx_ay),
+        (LSR_ACC, lsr_acc),
+        (LSR_A, lsr_a),
+        (LSR_AX, lsr_ax),
+        (LSR_ZP, lsr_zp),
+        (LSR_ZPX, lsr_zpx),
         (JMP_A, jmp_a),
         (JMP_IN, jmp_in),
         (JSR_A, jsr_a),
