@@ -4,19 +4,19 @@ use crate::{
 };
 
 #[derive(PartialEq, Eq)]
-enum ShiftDirection {
+enum Directions {
     Left,
     Right,
 }
 
-fn shift(cpu: &mut CPU, addr_mode: AddressingMode, dir: ShiftDirection) {
+fn shift(cpu: &mut CPU, addr_mode: AddressingMode, dir: Directions) {
     let previous_value: Byte;
     let modified_value: Byte;
 
     if addr_mode != AddressingMode::Accumulator {
         let modification = match dir {
-            ShiftDirection::Left => MemoryModifications::ShiftLeft,
-            ShiftDirection::Right => MemoryModifications::ShiftRight,
+            Directions::Left => MemoryModifications::ShiftLeft,
+            Directions::Right => MemoryModifications::ShiftRight,
         };
         let modification_result = cpu.modify_memory(addr_mode, modification);
 
@@ -25,28 +25,28 @@ fn shift(cpu: &mut CPU, addr_mode: AddressingMode, dir: ShiftDirection) {
                 previous_value = previous;
                 modified_value = modified;
             }
-            None => panic!("could not modify memory"),
+            None => panic!("could not shift value in memory"),
         };
     } else {
         previous_value = cpu.get_register(Registers::Accumulator);
         modified_value = match dir {
-            ShiftDirection::Left => previous_value << 1,
-            ShiftDirection::Right => previous_value >> 1,
+            Directions::Left => previous_value << 1,
+            Directions::Right => previous_value >> 1,
         };
         cpu.accumulator = modified_value;
         cpu.cycle += 1;
     }
 
     let carry = match dir {
-        ShiftDirection::Left => previous_value & 0b10000000 > 0,
-        ShiftDirection::Right => previous_value & 0b00000001 > 0,
+        Directions::Left => previous_value & 0b10000000 > 0,
+        Directions::Right => previous_value & 0b00000001 > 0,
     };
     cpu.processor_status.change_carry_flag(carry);
     cpu.set_status_of_value(modified_value);
 }
 
 fn asl(cpu: &mut CPU, addr_mode: AddressingMode) {
-    shift(cpu, addr_mode, ShiftDirection::Left);
+    shift(cpu, addr_mode, Directions::Left);
 }
 
 pub fn asl_acc(cpu: &mut CPU) {
@@ -70,7 +70,7 @@ pub fn asl_ax(cpu: &mut CPU) {
 }
 
 fn lsr(cpu: &mut CPU, addr_mode: AddressingMode) {
-    shift(cpu, addr_mode, ShiftDirection::Right);
+    shift(cpu, addr_mode, Directions::Right);
 }
 
 pub fn lsr_acc(cpu: &mut CPU) {
@@ -91,6 +91,42 @@ pub fn lsr_a(cpu: &mut CPU) {
 
 pub fn lsr_ax(cpu: &mut CPU) {
     lsr(cpu, AddressingMode::AbsoluteX);
+}
+
+fn rotate(cpu: &mut CPU, addr_mode: AddressingMode, dir: Directions) {
+    let previous_value: Byte;
+    let modified_value: Byte;
+
+    if addr_mode != AddressingMode::Accumulator {
+        let modification = match dir {
+            Directions::Left => MemoryModifications::RotateLeft,
+            Directions::Right => MemoryModifications::RotateRight,
+        };
+        let modification_result = cpu.modify_memory(addr_mode, modification);
+
+        match modification_result {
+            Some((previous, modified)) => {
+                previous_value = previous;
+                modified_value = modified;
+            }
+            None => panic!("could not rotate value in memory"),
+        };
+    } else {
+        previous_value = cpu.get_register(Registers::Accumulator);
+        modified_value = match dir {
+            Directions::Left => previous_value << 1,
+            Directions::Right => previous_value >> 1,
+        };
+        cpu.accumulator = modified_value;
+        cpu.cycle += 1;
+    }
+
+    let carry = match dir {
+        Directions::Left => previous_value & 0b10000000 > 0,
+        Directions::Right => previous_value & 0b00000001 > 0,
+    };
+    cpu.processor_status.change_carry_flag(carry);
+    cpu.set_status_of_value(modified_value);
 }
 
 #[cfg(test)]
