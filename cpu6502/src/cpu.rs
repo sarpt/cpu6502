@@ -47,13 +47,6 @@ enum MemoryModifications {
     RotateRight,
 }
 
-#[derive(Copy, Clone, PartialEq)]
-enum MemoryOperation {
-    Read,
-    Modify,
-    Write,
-}
-
 type OpcodeHandler = fn(&mut CPU) -> ();
 
 pub struct CPU<'a> {
