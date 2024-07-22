@@ -194,14 +194,9 @@ impl<'a> CPU<'a> {
         return address;
     }
 
-    fn fetch_zero_page_address_with_y_offset(&mut self) -> Word {
+    fn fetch_zero_page_address_with_idx_register_offset(&mut self, register: Registers) -> Word {
         let zero_page_addr = self.fetch_zero_page_address_lsb();
-        return self.sum_with_y(zero_page_addr).into();
-    }
-
-    fn fetch_zero_page_address_with_x_offset(&mut self) -> Word {
-        let zero_page_addr = self.fetch_zero_page_address_lsb();
-        return self.sum_with_x(zero_page_addr).into();
+        return self.sum_with_idx_register(zero_page_addr, register).into();
     }
 
     fn set_status_of_register(&mut self, register: Registers) {
@@ -237,17 +232,13 @@ impl<'a> CPU<'a> {
             .change_negative_flag((value & 0b10000000) > 0);
     }
 
-    fn sum_with_x(&mut self, val: Byte) -> Byte {
-        let reg_x = self.index_register_x;
-        let res = val.wrapping_add(reg_x);
-        self.cycle += 1;
+    fn sum_with_idx_register(&mut self, val: Byte, register: Registers) -> Byte {
+        let register_value = match register {
+            Registers::IndexX | Registers::IndexY => self.get_register(register),
+            _ => panic!("cannot sum with non-idx register"),
+        };
 
-        return res;
-    }
-
-    fn sum_with_y(&mut self, val: Byte) -> Byte {
-        let reg_y = self.index_register_y;
-        let res = val.wrapping_add(reg_y);
+        let res = val.wrapping_add(register_value);
         self.cycle += 1;
 
         return res;
@@ -394,7 +385,8 @@ impl<'a> CPU<'a> {
                 return Some(self.fetch_zero_page_address());
             }
             AddressingMode::IndexIndirectX => {
-                let address = self.fetch_zero_page_address_with_x_offset();
+                let address =
+                    self.fetch_zero_page_address_with_idx_register_offset(Registers::IndexX);
                 let effective_address = self.fetch_address_from(address);
 
                 return Some(effective_address);
@@ -407,10 +399,14 @@ impl<'a> CPU<'a> {
                 return Some(effective_address);
             }
             AddressingMode::ZeroPageY => {
-                return Some(self.fetch_zero_page_address_with_y_offset());
+                return Some(
+                    self.fetch_zero_page_address_with_idx_register_offset(Registers::IndexY),
+                );
             }
             AddressingMode::ZeroPageX => {
-                return Some(self.fetch_zero_page_address_with_x_offset());
+                return Some(
+                    self.fetch_zero_page_address_with_idx_register_offset(Registers::IndexX),
+                );
             }
             AddressingMode::Absolute => {
                 return Some(self.fetch_address());
