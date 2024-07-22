@@ -189,11 +189,11 @@ mod fetch_zero_page_address {
 }
 
 #[cfg(test)]
-mod fetch_zero_page_address_with_x_offset {
+mod fetch_zero_page_address_with_idx_register_offset {
     use std::cell::RefCell;
 
     use super::MemoryMock;
-    use crate::cpu::CPU;
+    use crate::cpu::{Registers, CPU};
 
     #[test]
     fn should_return_a_zero_page_address_pointed_by_a_program_counter_summed_with_index_register_x()
@@ -203,9 +203,36 @@ mod fetch_zero_page_address_with_x_offset {
         uut.index_register_x = 0x20;
         uut.program_counter = 0x00;
 
-        let result = uut.fetch_zero_page_address_with_x_offset();
+        let register = Registers::IndexX;
+        let result = uut.fetch_zero_page_address_with_idx_register_offset(register);
 
         assert_eq!(result, 0x0023);
+    }
+
+    #[test]
+    fn should_return_a_zero_page_address_pointed_by_a_program_counter_summed_with_index_register_y()
+    {
+        let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+        let mut uut = CPU::new(memory);
+        uut.index_register_y = 0x20;
+        uut.program_counter = 0x00;
+
+        let register = Registers::IndexY;
+        let result = uut.fetch_zero_page_address_with_idx_register_offset(register);
+
+        assert_eq!(result, 0x0023);
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot sum with non-idx register")]
+    fn should_panic_when_provided_with_non_zero_register() {
+        let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF]));
+        let mut uut = CPU::new(memory);
+        uut.index_register_y = 0x20;
+        uut.program_counter = 0x00;
+
+        let register = Registers::Accumulator;
+        uut.fetch_zero_page_address_with_idx_register_offset(register);
     }
 
     #[test]
@@ -216,7 +243,8 @@ mod fetch_zero_page_address_with_x_offset {
 
         assert_eq!(uut.cycle, 0);
 
-        uut.fetch_zero_page_address_with_x_offset();
+        let register = Registers::IndexX;
+        uut.fetch_zero_page_address_with_idx_register_offset(register);
 
         assert_eq!(uut.cycle, 2);
     }
@@ -229,7 +257,8 @@ mod fetch_zero_page_address_with_x_offset {
 
         assert_eq!(uut.cycle, 0);
 
-        uut.fetch_zero_page_address_with_x_offset();
+        let register = Registers::IndexX;
+        uut.fetch_zero_page_address_with_idx_register_offset(register);
 
         assert_eq!(uut.program_counter, 0x0001);
     }
@@ -569,11 +598,11 @@ mod pop_word_from_stack {
 }
 
 #[cfg(test)]
-mod sum_with_x {
+mod sum_with_idx_register {
     use std::cell::RefCell;
 
     use super::MemoryMock;
-    use crate::cpu::CPU;
+    use crate::cpu::{Registers, CPU};
 
     #[test]
     fn should_sum_provided_value_with_x_register_contents() {
@@ -582,9 +611,35 @@ mod sum_with_x {
         uut.index_register_x = 0x02;
 
         let value: u8 = 0x03;
-        let result = uut.sum_with_x(value);
+        let register = Registers::IndexX;
+        let result = uut.sum_with_idx_register(value, register);
 
         assert_eq!(result, 0x05);
+    }
+
+    #[test]
+    fn should_sum_provided_value_with_y_register_contents() {
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
+        uut.index_register_y = 0x02;
+
+        let value: u8 = 0x03;
+        let register = Registers::IndexY;
+        let result = uut.sum_with_idx_register(value, register);
+
+        assert_eq!(result, 0x05);
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot sum with non-idx register")]
+    fn should_panic_with_non_idx_register_provided() {
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut uut = CPU::new(memory);
+        uut.index_register_x = 0x02;
+
+        let value: u8 = 0x03;
+        let register = Registers::Accumulator;
+        uut.sum_with_idx_register(value, register);
     }
 
     #[test]
@@ -594,7 +649,8 @@ mod sum_with_x {
         uut.index_register_x = 0xFF;
 
         let value: u8 = 0x03;
-        let result = uut.sum_with_x(value);
+        let register = Registers::IndexX;
+        let result = uut.sum_with_idx_register(value, register);
 
         assert_eq!(result, 0x02);
     }
@@ -607,7 +663,8 @@ mod sum_with_x {
         assert_eq!(uut.cycle, 0);
 
         let value: u8 = 0x03;
-        uut.sum_with_x(value);
+        let register = Registers::IndexX;
+        uut.sum_with_idx_register(value, register);
 
         assert_eq!(uut.cycle, 1);
     }
