@@ -129,5 +129,53 @@ fn rotate(cpu: &mut CPU, addr_mode: AddressingMode, dir: Directions) {
     cpu.set_status_of_value(modified_value);
 }
 
+fn rol(cpu: &mut CPU, addr_mode: AddressingMode) {
+    rotate(cpu, addr_mode, Directions::Left);
+}
+
+pub fn rol_acc(cpu: &mut CPU) {
+    rol(cpu, AddressingMode::Accumulator);
+}
+
+pub fn rol_zp(cpu: &mut CPU) {
+    rol(cpu, AddressingMode::ZeroPage);
+}
+
+pub fn rol_zpx(cpu: &mut CPU) {
+    rol(cpu, AddressingMode::ZeroPageX);
+}
+
+pub fn rol_a(cpu: &mut CPU) {
+    rol(cpu, AddressingMode::Absolute);
+}
+
+pub fn rol_ax(cpu: &mut CPU) {
+    rol(cpu, AddressingMode::AbsoluteX);
+}
+
+fn ror(cpu: &mut CPU, addr_mode: AddressingMode) {
+    rotate(cpu, addr_mode, Directions::Right);
+}
+
+pub fn ror_acc(cpu: &mut CPU) {
+    ror(cpu, AddressingMode::Accumulator);
+}
+
+pub fn ror_zp(cpu: &mut CPU) {
+    ror(cpu, AddressingMode::ZeroPage);
+}
+
+pub fn ror_zpx(cpu: &mut CPU) {
+    ror(cpu, AddressingMode::ZeroPageX);
+}
+
+pub fn ror_a(cpu: &mut CPU) {
+    ror(cpu, AddressingMode::Absolute);
+}
+
+pub fn ror_ax(cpu: &mut CPU) {
+    ror(cpu, AddressingMode::AbsoluteX);
+}
+
 #[cfg(test)]
 mod tests;
