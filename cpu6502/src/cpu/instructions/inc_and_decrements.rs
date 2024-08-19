@@ -1,7 +1,15 @@
-use crate::cpu::{AddressingMode, MemoryModifications, Registers, CPU};
+use crate::cpu::{AddressingMode, Registers, CPU};
+
+fn decrement_cb(value: &u8) -> u8 {
+    return value.wrapping_sub(1);
+}
+
+fn increment_cb(value: &u8) -> u8 {
+    return value.wrapping_add(1);
+}
 
 fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
-    match cpu.modify_memory(addr_mode, MemoryModifications::Decrement) {
+    match cpu.modify_memory(addr_mode, &decrement_cb) {
         Some((_, modified_value)) => {
             cpu.set_status_of_value(modified_value);
         }
@@ -43,7 +51,7 @@ pub fn dey_im(cpu: &mut CPU) {
 }
 
 fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
-    match cpu.modify_memory(addr_mode, MemoryModifications::Increment) {
+    match cpu.modify_memory(addr_mode, &increment_cb) {
         Some((_, modified_value)) => {
             cpu.set_status_of_value(modified_value);
         }

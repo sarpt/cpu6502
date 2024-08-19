@@ -37,16 +37,6 @@ enum Registers {
     IndexY,
 }
 
-#[derive(Copy, Clone)]
-enum MemoryModifications {
-    Increment,
-    Decrement,
-    ShiftLeft,
-    ShiftRight,
-    RotateLeft,
-    RotateRight,
-}
-
 type OpcodeHandler = fn(&mut CPU) -> ();
 
 pub struct CPU<'a> {
@@ -291,7 +281,7 @@ impl<'a> CPU<'a> {
         }
 
         self.program_counter = Word::from_le_bytes([offset_program_counter_lo, program_counter_hi]);
-        self.cycle += 1;
+        self.tick();
         if !carry {
             return;
         }
@@ -304,7 +294,7 @@ impl<'a> CPU<'a> {
         }
         self.program_counter =
             Word::from_le_bytes([offset_program_counter_lo, offset_program_counter_hi]);
-        self.cycle += 1;
+        self.tick();
     }
 
     fn read_memory(&mut self, addr_mode: AddressingMode) -> Option<Byte> {
@@ -315,7 +305,7 @@ impl<'a> CPU<'a> {
 
         let value = self.access_memory(address);
         if !access_cycle_has_been_done_during_address_fixing(addr_mode) {
-            self.cycle += 1;
+            self.tick();
         }
 
         return Some(value);
@@ -324,7 +314,7 @@ impl<'a> CPU<'a> {
     fn modify_memory(
         &mut self,
         addr_mode: AddressingMode,
-        modification: MemoryModifications,
+        cb: &dyn Fn(&u8) -> u8,
     ) -> Option<(Byte, Byte)> {
         let address = match self.get_address(addr_mode) {
             Some(address) => address,
@@ -333,20 +323,13 @@ impl<'a> CPU<'a> {
 
         let value = self.access_memory(address);
         // extra cycle to fix address
-        self.cycle += 1;
+        self.tick();
 
-        let modified_value = match modification {
-            MemoryModifications::Increment => value.wrapping_add(1),
-            MemoryModifications::Decrement => value.wrapping_sub(1),
-            MemoryModifications::RotateLeft => panic!("rotate left not implemented yet"),
-            MemoryModifications::RotateRight => panic!("rotate right not implemented yet"),
-            MemoryModifications::ShiftLeft => value << 1,
-            MemoryModifications::ShiftRight => value >> 1,
-        };
-        self.cycle += 1;
+        let modified_value = cb(&value);
+        self.tick();
 
         self.put_into_memory(address, modified_value);
-        self.cycle += 1;
+        self.tick();
 
         return Some((value, modified_value));
     }
@@ -357,7 +340,7 @@ impl<'a> CPU<'a> {
             None => return None,
         };
         // extra cycle to fix address
-        self.cycle += 1;
+        self.tick();
 
         self.put_into_memory(address, value);
 
