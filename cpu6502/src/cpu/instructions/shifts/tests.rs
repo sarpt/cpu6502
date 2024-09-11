@@ -9,7 +9,7 @@ mod asl {
         #[test]
         fn should_set_carry_when_bit_7_is_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b10000000;
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
@@ -22,7 +22,7 @@ mod asl {
         #[test]
         fn should_not_change_carry_when_bit_7_is_not_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b01111111;
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
@@ -35,7 +35,7 @@ mod asl {
         #[test]
         fn should_set_zero_when_value_after_shift_is_zero() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b10000000;
 
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
@@ -48,7 +48,7 @@ mod asl {
         #[test]
         fn should_set_negative_when_value_after_shift_is_negative() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b01000000;
 
             assert_eq!(cpu.processor_status.get_negative_flag(), false);
@@ -72,7 +72,7 @@ mod asl {
         #[test]
         fn should_shift_left_value_in_accumulator() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = VALUE;
             cpu.program_counter = 0x00;
 
@@ -84,7 +84,7 @@ mod asl {
         #[test]
         fn should_take_one_cycle() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -110,7 +110,7 @@ mod asl {
         #[test]
         fn should_shift_left_value_in_memory_at_zero_page() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
             asl_zp(&mut cpu);
@@ -121,7 +121,7 @@ mod asl {
         #[test]
         fn should_take_four_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
@@ -147,7 +147,7 @@ mod asl {
         #[test]
         fn should_shift_left_value_in_memory_at_zero_page_summed_with_index_register_x() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
@@ -159,7 +159,7 @@ mod asl {
         #[test]
         fn should_take_five_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -191,7 +191,7 @@ mod asl {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
             asl_a(&mut cpu);
@@ -207,7 +207,7 @@ mod asl {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
@@ -240,7 +240,7 @@ mod asl {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
@@ -258,7 +258,7 @@ mod asl {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -281,7 +281,7 @@ mod lsr {
         #[test]
         fn should_set_carry_when_bit_0_is_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b00000001;
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
@@ -294,7 +294,7 @@ mod lsr {
         #[test]
         fn should_not_change_carry_when_bit_0_is_not_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b11111110;
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
@@ -307,7 +307,7 @@ mod lsr {
         #[test]
         fn should_set_zero_when_value_after_shift_is_zero() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b00000001;
 
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
@@ -331,7 +331,7 @@ mod lsr {
         #[test]
         fn should_shift_right_value_in_accumulator() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = VALUE;
             cpu.program_counter = 0x00;
 
@@ -343,7 +343,7 @@ mod lsr {
         #[test]
         fn should_take_one_cycle() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -369,7 +369,7 @@ mod lsr {
         #[test]
         fn should_shift_right_value_in_memory_at_zero_page() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
             lsr_zp(&mut cpu);
@@ -380,7 +380,7 @@ mod lsr {
         #[test]
         fn should_take_four_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
@@ -406,7 +406,7 @@ mod lsr {
         #[test]
         fn should_shift_right_value_in_memory_at_zero_page_summed_with_index_register_x() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
@@ -418,7 +418,7 @@ mod lsr {
         #[test]
         fn should_take_five_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -450,7 +450,7 @@ mod lsr {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
             lsr_a(&mut cpu);
@@ -466,7 +466,7 @@ mod lsr {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
@@ -499,7 +499,7 @@ mod lsr {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
@@ -517,7 +517,7 @@ mod lsr {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -540,7 +540,7 @@ mod rol {
         #[test]
         fn should_set_carry_when_bit_7_is_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b10000000;
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
@@ -553,7 +553,7 @@ mod rol {
         #[test]
         fn should_not_change_carry_when_bit_7_is_not_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b01111111;
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
@@ -566,7 +566,7 @@ mod rol {
         #[test]
         fn should_set_zero_when_value_after_shift_is_zero() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b10000000;
 
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
@@ -591,7 +591,7 @@ mod rol {
         #[test]
         fn should_rotate_value_left_in_accumulator() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = VALUE;
 
             rol_acc(&mut cpu);
@@ -602,7 +602,7 @@ mod rol {
         #[test]
         fn should_set_bit_0_when_carry_is_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.accumulator = VALUE;
 
@@ -614,7 +614,7 @@ mod rol {
         #[test]
         fn should_not_set_bit_0_when_carry_is_not_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.processor_status.change_carry_flag(false);
             cpu.accumulator = VALUE;
 
@@ -626,7 +626,7 @@ mod rol {
         #[test]
         fn should_take_one_cycle() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = VALUE;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -652,7 +652,7 @@ mod rol {
         #[test]
         fn should_rotate_value_left_in_memory_at_zero_page() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
             rol_zp(&mut cpu);
@@ -663,7 +663,7 @@ mod rol {
         #[test]
         fn should_set_bit_0_when_carry_is_set() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
@@ -675,7 +675,7 @@ mod rol {
         #[test]
         fn should_not_set_bit_0_when_carry_is_not_set() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
@@ -687,7 +687,7 @@ mod rol {
         #[test]
         fn should_take_four_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
@@ -713,7 +713,7 @@ mod rol {
         #[test]
         fn should_rotate_value_left_in_memory_at_zero_page_summed_with_index_register_x() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
@@ -728,7 +728,7 @@ mod rol {
         #[test]
         fn should_set_bit_0_when_carry_is_set() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
@@ -744,7 +744,7 @@ mod rol {
         #[test]
         fn should_not_set_bit_0_when_carry_is_not_set() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
@@ -760,7 +760,7 @@ mod rol {
         #[test]
         fn should_take_five_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -792,7 +792,7 @@ mod rol {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
             rol_a(&mut cpu);
@@ -808,7 +808,7 @@ mod rol {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
@@ -825,7 +825,7 @@ mod rol {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
@@ -842,7 +842,7 @@ mod rol {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
@@ -875,7 +875,7 @@ mod rol {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
@@ -896,7 +896,7 @@ mod rol {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
@@ -918,7 +918,7 @@ mod rol {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
@@ -940,7 +940,7 @@ mod rol {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -963,7 +963,7 @@ mod ror {
         #[test]
         fn should_set_carry_when_bit_0_is_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b00000001;
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
@@ -976,7 +976,7 @@ mod ror {
         #[test]
         fn should_not_change_carry_when_bit_0_is_not_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b11111110;
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
@@ -989,7 +989,7 @@ mod ror {
         #[test]
         fn should_set_zero_when_value_after_shift_is_zero() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0b00000001;
 
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
@@ -1014,7 +1014,7 @@ mod ror {
         #[test]
         fn should_rotate_value_right_in_accumulator() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = VALUE;
 
             ror_acc(&mut cpu);
@@ -1025,7 +1025,7 @@ mod ror {
         #[test]
         fn should_set_bit_7_when_carry_is_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.processor_status.change_carry_flag(true);
             cpu.accumulator = VALUE;
 
@@ -1037,7 +1037,7 @@ mod ror {
         #[test]
         fn should_not_set_bit_7_when_carry_is_not_set() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.processor_status.change_carry_flag(false);
             cpu.accumulator = VALUE;
 
@@ -1049,7 +1049,7 @@ mod ror {
         #[test]
         fn should_take_one_cycle() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = VALUE;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -1075,7 +1075,7 @@ mod ror {
         #[test]
         fn should_rotate_value_right_in_memory_at_zero_page() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
             ror_zp(&mut cpu);
@@ -1086,7 +1086,7 @@ mod ror {
         #[test]
         fn should_set_bit_7_when_carry_is_set() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
@@ -1098,7 +1098,7 @@ mod ror {
         #[test]
         fn should_not_set_bit_0_when_carry_is_not_set() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
@@ -1110,7 +1110,7 @@ mod ror {
         #[test]
         fn should_take_four_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
@@ -1136,7 +1136,7 @@ mod ror {
         #[test]
         fn should_rotate_value_right_in_memory_at_zero_page_summed_with_index_register_x() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
@@ -1151,7 +1151,7 @@ mod ror {
         #[test]
         fn should_set_bit_7_when_carry_is_set() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
@@ -1167,7 +1167,7 @@ mod ror {
         #[test]
         fn should_not_set_bit_7_when_carry_is_not_set() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
@@ -1183,7 +1183,7 @@ mod ror {
         #[test]
         fn should_take_five_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -1215,7 +1215,7 @@ mod ror {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
             ror_a(&mut cpu);
@@ -1231,7 +1231,7 @@ mod ror {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
@@ -1248,7 +1248,7 @@ mod ror {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
@@ -1265,7 +1265,7 @@ mod ror {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
@@ -1298,7 +1298,7 @@ mod ror {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
@@ -1319,7 +1319,7 @@ mod ror {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
@@ -1341,7 +1341,7 @@ mod ror {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
@@ -1363,7 +1363,7 @@ mod ror {
                 0x00,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;

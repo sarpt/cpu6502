@@ -10,7 +10,7 @@ mod brk {
     #[test]
     fn should_put_program_counter_incremented_by_one_and_processor_status_on_stack() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.set(0b11111111);
         cpu.stack_pointer = 0xFF;
         cpu.program_counter = 0xABCD;
@@ -30,7 +30,7 @@ mod brk {
         memory.borrow_mut()[0xFFFE] = ADDR_LO;
         memory.borrow_mut()[0xFFFF] = ADDR_HI;
 
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
         brk(&mut cpu);
@@ -41,7 +41,7 @@ mod brk {
     #[test]
     fn should_set_break_processor_status_flag() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
         cpu.processor_status.change_break_flag(false);
 
@@ -53,7 +53,7 @@ mod brk {
     #[test]
     fn should_take_six_cycles() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
@@ -72,7 +72,7 @@ mod nop {
     #[test]
     fn should_increment_program_counter() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x05;
 
         nop(&mut cpu);
@@ -83,7 +83,7 @@ mod nop {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x05;
         cpu.cycle = 0;
 

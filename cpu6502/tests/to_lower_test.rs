@@ -61,7 +61,7 @@ fn should_change_word_to_lower_case() {
     let program: &[(u16, u8)] = &[src_string, TO_LOWER_PROCEDURE, BOOTSTRAP].concat();
     let memory = RefCell::new(VecMemory::from(program));
 
-    let mut cpu = CPU::new(&memory);
+    let mut cpu = CPU::new_nmos(&memory);
     cpu.reset();
     cpu.execute_until_break();
 
@@ -78,7 +78,7 @@ fn should_report_string_too_long() {
     let memory = RefCell::new(VecMemory::from(program));
     memory.borrow_mut().insert(0x0400, &[0x53; 256]);
 
-    let mut cpu = CPU::new(&memory);
+    let mut cpu = CPU::new_nmos(&memory);
     cpu.reset();
     cpu.execute_until_break();
 
@@ -94,7 +94,7 @@ fn should_handle_empty_string() {
     let program: &[(u16, u8)] = &[TO_LOWER_PROCEDURE, BOOTSTRAP].concat();
     let memory = RefCell::new(VecMemory::from(program));
 
-    let mut cpu = CPU::new(&memory);
+    let mut cpu = CPU::new_nmos(&memory);
     cpu.reset();
     cpu.execute_until_break();
 
