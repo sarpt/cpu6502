@@ -9,7 +9,7 @@ mod ora {
         #[test]
         fn should_or_accumulator_with_a_value_from_immediate_address() {
             let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x16;
 
@@ -21,7 +21,7 @@ mod ora {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x86;
 
@@ -33,7 +33,7 @@ mod ora {
         #[test]
         fn should_take_one_cycle() {
             let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x14;
             cpu.cycle = 0;
@@ -56,7 +56,7 @@ mod ora {
         #[test]
         fn should_or_accumulator_with_a_value_from_zero_page_address() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
 
@@ -68,7 +68,7 @@ mod ora {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
@@ -80,7 +80,7 @@ mod ora {
         #[test]
         fn should_take_two_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -104,7 +104,7 @@ mod ora {
         fn should_or_accumulator_with_a_value_at_a_zero_page_address_summed_with_index_register_x()
         {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -117,7 +117,7 @@ mod ora {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -130,7 +130,7 @@ mod ora {
         #[test]
         fn should_take_three_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -155,7 +155,7 @@ mod ora {
         #[test]
         fn should_or_accumulator_with_a_value_in_memory_at_an_absolute_address() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
 
@@ -167,7 +167,7 @@ mod ora {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
@@ -179,7 +179,7 @@ mod ora {
         #[test]
         fn should_take_three_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -206,7 +206,7 @@ mod ora {
         fn should_or_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_x(
         ) {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -219,7 +219,7 @@ mod ora {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -232,7 +232,7 @@ mod ora {
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -253,7 +253,7 @@ mod ora {
                 0xDD,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -281,7 +281,7 @@ mod ora {
         fn should_or_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_y(
         ) {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -294,7 +294,7 @@ mod ora {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -307,7 +307,7 @@ mod ora {
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -328,7 +328,7 @@ mod ora {
                 0xDD,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -363,7 +363,7 @@ mod ora {
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x16;
             cpu.index_register_x = OFFSET;
@@ -383,7 +383,7 @@ mod ora {
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x86;
             cpu.index_register_x = OFFSET;
@@ -403,7 +403,7 @@ mod ora {
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x16;
             cpu.index_register_x = OFFSET;
@@ -441,7 +441,7 @@ mod ora {
                 0xAF,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -461,7 +461,7 @@ mod ora {
                 0xAF,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -482,7 +482,7 @@ mod ora {
                 0xAF,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -502,7 +502,7 @@ mod ora {
             payload[0x0101] = VALUE;
 
             let memory = &RefCell::new(MemoryMock::new(&payload));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x16;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -531,7 +531,7 @@ mod bit {
         #[test]
         fn should_set_zero_flag_when_logic_and_on_accumulator_and_value_from_zero_page_is_zero() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR_LO, 0x0F]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
@@ -544,7 +544,7 @@ mod bit {
         fn should_set_carry_flag_when_logic_and_on_accumulator_and_value_from_zero_page_is_has_seventh_bit_set(
         ) {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR_LO, 0b01000000]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
@@ -557,7 +557,7 @@ mod bit {
         fn should_set_negative_flag_when_logic_and_on_accumulator_and_value_from_zero_page_is_has_eight_bit_set(
         ) {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR_LO, 0b10000000]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
@@ -569,7 +569,7 @@ mod bit {
         #[test]
         fn should_take_two_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR_LO, 0x0F]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
@@ -600,7 +600,7 @@ mod bit {
                 0x00,
                 0x0F,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
@@ -618,7 +618,7 @@ mod bit {
                 0x00,
                 0b01000000,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
@@ -636,7 +636,7 @@ mod bit {
                 0x00,
                 0b10000000,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
@@ -653,7 +653,7 @@ mod bit {
                 0x00,
                 0x0F,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
@@ -680,7 +680,7 @@ mod and {
         #[test]
         fn should_and_accumulator_with_a_value_from_immediate_address() {
             let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0x00]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
 
@@ -692,7 +692,7 @@ mod and {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0x00]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x86;
 
@@ -704,7 +704,7 @@ mod and {
         #[test]
         fn should_take_one_cycle() {
             let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0x00]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
             cpu.cycle = 0;
@@ -727,7 +727,7 @@ mod and {
         #[test]
         fn should_and_accumulator_with_a_value_from_zero_page_address() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
@@ -739,7 +739,7 @@ mod and {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
@@ -751,7 +751,7 @@ mod and {
         #[test]
         fn should_take_two_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -775,7 +775,7 @@ mod and {
         fn should_and_accumulator_with_a_value_at_a_zero_page_address_summed_with_index_register_x()
         {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -788,7 +788,7 @@ mod and {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -801,7 +801,7 @@ mod and {
         #[test]
         fn should_take_three_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -826,7 +826,7 @@ mod and {
         #[test]
         fn should_and_accumulator_with_a_value_in_memory_at_an_absolute_address() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
@@ -838,7 +838,7 @@ mod and {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
@@ -850,7 +850,7 @@ mod and {
         #[test]
         fn should_take_three_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -877,7 +877,7 @@ mod and {
         fn should_and_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_x(
         ) {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -890,7 +890,7 @@ mod and {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -903,7 +903,7 @@ mod and {
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -924,7 +924,7 @@ mod and {
                 0xDD,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -952,7 +952,7 @@ mod and {
         fn should_and_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_y(
         ) {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -965,7 +965,7 @@ mod and {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -978,7 +978,7 @@ mod and {
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -999,7 +999,7 @@ mod and {
                 0xDD,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -1034,7 +1034,7 @@ mod and {
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
@@ -1054,7 +1054,7 @@ mod and {
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x86;
             cpu.index_register_x = OFFSET;
@@ -1074,7 +1074,7 @@ mod and {
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
@@ -1112,7 +1112,7 @@ mod and {
                 0xAF,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -1132,7 +1132,7 @@ mod and {
                 0xAF,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x86;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -1153,7 +1153,7 @@ mod and {
                 0xAF,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -1173,7 +1173,7 @@ mod and {
             payload[0x0101] = VALUE;
 
             let memory = &RefCell::new(MemoryMock::new(&payload));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -1202,7 +1202,7 @@ mod eor {
         #[test]
         fn should_eor_accumulator_with_a_value_from_immediate_address() {
             let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0x00]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
 
@@ -1214,7 +1214,7 @@ mod eor {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0x00]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
 
@@ -1226,7 +1226,7 @@ mod eor {
         #[test]
         fn should_take_one_cycle() {
             let memory = &RefCell::new(MemoryMock::new(&[VALUE, 0x00]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
             cpu.cycle = 0;
@@ -1249,7 +1249,7 @@ mod eor {
         #[test]
         fn should_eor_accumulator_with_a_value_from_zero_page_address() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
@@ -1261,7 +1261,7 @@ mod eor {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
@@ -1273,7 +1273,7 @@ mod eor {
         #[test]
         fn should_take_two_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -1297,7 +1297,7 @@ mod eor {
         fn should_eor_accumulator_with_a_value_at_a_zero_page_address_summed_with_index_register_x()
         {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -1310,7 +1310,7 @@ mod eor {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -1323,7 +1323,7 @@ mod eor {
         #[test]
         fn should_take_three_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, 0xFF, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
@@ -1348,7 +1348,7 @@ mod eor {
         #[test]
         fn should_eor_accumulator_with_a_value_in_memory_at_an_absolute_address() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
@@ -1360,7 +1360,7 @@ mod eor {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
@@ -1372,7 +1372,7 @@ mod eor {
         #[test]
         fn should_take_three_cycles() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
@@ -1399,7 +1399,7 @@ mod eor {
         fn should_eor_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_x(
         ) {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -1412,7 +1412,7 @@ mod eor {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -1425,7 +1425,7 @@ mod eor {
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -1446,7 +1446,7 @@ mod eor {
                 0xDD,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
@@ -1474,7 +1474,7 @@ mod eor {
         fn should_eor_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_y(
         ) {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -1487,7 +1487,7 @@ mod eor {
         #[test]
         fn should_set_processor_status() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -1500,7 +1500,7 @@ mod eor {
         #[test]
         fn should_take_three_cycles_when_adding_offset_crosses_over_page_flip() {
             let memory = &RefCell::new(MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -1521,7 +1521,7 @@ mod eor {
                 0xDD,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
@@ -1556,7 +1556,7 @@ mod eor {
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
@@ -1576,7 +1576,7 @@ mod eor {
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
@@ -1596,7 +1596,7 @@ mod eor {
                 EFFECTIVE_ADDRESS_HI,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
@@ -1634,7 +1634,7 @@ mod eor {
                 0xAF,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -1654,7 +1654,7 @@ mod eor {
                 0xAF,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -1675,7 +1675,7 @@ mod eor {
                 0xAF,
                 VALUE,
             ]));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
@@ -1695,7 +1695,7 @@ mod eor {
             payload[0x0101] = VALUE;
 
             let memory = &RefCell::new(MemoryMock::new(&payload));
-            let mut cpu = CPU::new(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = 0x07;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;

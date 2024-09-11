@@ -7,7 +7,7 @@ mod tax {
     #[test]
     fn should_push_accumulator_into_index_x_register_register() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.accumulator = 0xDE;
 
         tax(&mut cpu);
@@ -18,7 +18,7 @@ mod tax {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.accumulator = 0xDE;
         cpu.cycle = 0;
 
@@ -30,7 +30,7 @@ mod tax {
     #[test]
     fn should_set_accumulator_based_on_index_x_register_value() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.accumulator = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
@@ -49,7 +49,7 @@ mod txa {
     #[test]
     fn should_push_index_x_register_into_stack_pointer_register() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0xDE;
 
         txa(&mut cpu);
@@ -60,7 +60,7 @@ mod txa {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0xDE;
         cpu.cycle = 0;
 
@@ -72,7 +72,7 @@ mod txa {
     #[test]
     fn should_set_processor_status_based_on_index_x_register_value() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
@@ -91,7 +91,7 @@ mod tay {
     #[test]
     fn should_push_accumulator_into_index_y_register_register() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.accumulator = 0xDE;
 
         tay(&mut cpu);
@@ -102,7 +102,7 @@ mod tay {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.accumulator = 0xDE;
         cpu.cycle = 0;
 
@@ -114,7 +114,7 @@ mod tay {
     #[test]
     fn should_set_accumulator_based_on_index_y_register_value() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.accumulator = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
@@ -133,7 +133,7 @@ mod tya {
     #[test]
     fn should_push_index_y_register_into_stack_pointer_register() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0xDE;
 
         tya(&mut cpu);
@@ -144,7 +144,7 @@ mod tya {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0xDE;
         cpu.cycle = 0;
 
@@ -156,7 +156,7 @@ mod tya {
     #[test]
     fn should_set_processor_status_based_on_index_y_register_value() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 

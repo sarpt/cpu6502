@@ -7,7 +7,7 @@ mod clc {
     #[test]
     fn should_clear_carry_flag() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_carry_flag(true);
 
         clc(&mut cpu);
@@ -18,7 +18,7 @@ mod clc {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_carry_flag(true);
         cpu.cycle = 0;
 
@@ -37,7 +37,7 @@ mod cld {
     #[test]
     fn should_clear_decimal_flag() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_decimal_mode_flag(true);
 
         cld(&mut cpu);
@@ -48,7 +48,7 @@ mod cld {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_decimal_mode_flag(true);
         cpu.cycle = 0;
 
@@ -67,7 +67,7 @@ mod cli {
     #[test]
     fn should_clear_interrupt_disable_flag() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_interrupt_disable_flag(true);
 
         cli(&mut cpu);
@@ -78,7 +78,7 @@ mod cli {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_interrupt_disable_flag(true);
         cpu.cycle = 0;
 
@@ -97,7 +97,7 @@ mod clv {
     #[test]
     fn should_clear_overflow_flag() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_overflow_flag(true);
 
         clv(&mut cpu);
@@ -108,7 +108,7 @@ mod clv {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_overflow_flag(true);
         cpu.cycle = 0;
 
@@ -127,7 +127,7 @@ mod sec {
     #[test]
     fn should_set_carry_flag() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_carry_flag(false);
 
         sec(&mut cpu);
@@ -138,7 +138,7 @@ mod sec {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_carry_flag(false);
         cpu.cycle = 0;
 
@@ -157,7 +157,7 @@ mod sed {
     #[test]
     fn should_set_decimal_mode_flag() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_decimal_mode_flag(false);
 
         sed(&mut cpu);
@@ -168,7 +168,7 @@ mod sed {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_decimal_mode_flag(false);
         cpu.cycle = 0;
 
@@ -187,7 +187,7 @@ mod sei {
     #[test]
     fn should_set_interrupt_disable_flag() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_interrupt_disable_flag(false);
 
         sei(&mut cpu);
@@ -198,7 +198,7 @@ mod sei {
     #[test]
     fn should_take_one_cycle() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new(memory);
+        let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_interrupt_disable_flag(false);
         cpu.cycle = 0;
 

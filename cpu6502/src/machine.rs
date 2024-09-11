@@ -13,7 +13,7 @@ impl<'a> Machine<'a> {
     pub fn new(memory: &'a RefCell<VecMemory>) -> Self {
         return Machine {
             memory: memory,
-            cpu: CPU::new(memory),
+            cpu: CPU::new_nmos(memory),
         };
     }
 

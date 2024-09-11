@@ -29,6 +29,13 @@ enum AddressingMode {
 }
 
 #[derive(Copy, Clone, PartialEq)]
+enum ChipVariant {
+    NMOS,
+    RockwellCMOS,
+    WDCCMOS,
+}
+
+#[derive(Copy, Clone, PartialEq)]
 enum Registers {
     StackPointer,
     ProcessorStatus,
@@ -41,6 +48,7 @@ type OpcodeHandler = fn(&mut CPU) -> ();
 
 pub struct CPU<'a> {
     cycle: u64,
+    chip_variant: ChipVariant,
     program_counter: Word,
     stack_pointer: Byte,
     accumulator: Byte,
@@ -52,9 +60,10 @@ pub struct CPU<'a> {
 }
 
 impl<'a> CPU<'a> {
-    pub fn new(memory: &'a RefCell<dyn Memory>) -> Self {
+    fn new(memory: &'a RefCell<dyn Memory>, chip_variant: ChipVariant) -> Self {
         return CPU {
             cycle: 0,
+            chip_variant: chip_variant,
             program_counter: RESET_VECTOR,
             stack_pointer: 0x00,
             accumulator: 0,
@@ -64,6 +73,18 @@ impl<'a> CPU<'a> {
             memory: memory,
             opcode_handlers: instructions::get_instructions(),
         };
+    }
+
+    pub fn new_nmos(memory: &'a RefCell<dyn Memory>) -> Self {
+        return CPU::new(memory, ChipVariant::NMOS);
+    }
+
+    pub fn new_rockwell_cmos(memory: &'a RefCell<dyn Memory>) -> Self {
+        return CPU::new(memory, ChipVariant::RockwellCMOS);
+    }
+
+    pub fn new_wdc_cmos(memory: &'a RefCell<dyn Memory>) -> Self {
+        return CPU::new(memory, ChipVariant::WDCCMOS);
     }
 
     pub fn reset(&mut self) -> () {
@@ -406,6 +427,11 @@ impl<'a> CPU<'a> {
             }
             AddressingMode::Indirect => {
                 let address = self.fetch_address();
+                if self.chip_variant != ChipVariant::NMOS {
+                    self.tick();
+                    return Some(self.fetch_address_from(address));
+                }
+
                 let should_incorrectly_jump = address & 0x00FF == 0x00FF;
                 if !should_incorrectly_jump {
                     return Some(self.fetch_address_from(address));
