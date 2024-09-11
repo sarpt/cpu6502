@@ -1,4 +1,7 @@
-use crate::{consts::BRK_INTERRUPT_VECTOR, cpu::CPU};
+use crate::{
+    consts::BRK_INTERRUPT_VECTOR,
+    cpu::{ChipVariant, CPU},
+};
 
 pub fn nop(cpu: &mut CPU) {
     cpu.increment_program_counter();
@@ -13,6 +16,11 @@ pub fn brk(cpu: &mut CPU) {
     cpu.program_counter = cpu.fetch_address_from(BRK_INTERRUPT_VECTOR);
 
     cpu.processor_status.change_break_flag(true);
+    if cpu.chip_variant == ChipVariant::NMOS {
+        return;
+    }
+
+    cpu.processor_status.change_decimal_mode_flag(false);
 }
 
 #[cfg(test)]
