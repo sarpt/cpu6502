@@ -23,5 +23,12 @@ pub fn brk(cpu: &mut CPU) {
     cpu.processor_status.change_decimal_mode_flag(false);
 }
 
+pub fn rti(cpu: &mut CPU) {
+    cpu.dummy_fetch();
+    cpu.processor_status = cpu.pop_byte_from_stack().into();
+    cpu.program_counter = cpu.pop_word_from_stack();
+    cpu.tick();
+}
+
 #[cfg(test)]
 mod tests;

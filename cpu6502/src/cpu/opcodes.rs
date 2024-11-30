@@ -115,6 +115,7 @@ pub const ROR_ZP: Byte = 0x66;
 pub const ROR_ZPX: Byte = 0x76;
 pub const ROR_A: Byte = 0x6E;
 pub const ROR_AX: Byte = 0x7E;
+pub const RTI: Byte = 0x40;
 pub const RTS: Byte = 0x60;
 pub const STA_ZP: Byte = 0x85;
 pub const STA_ZPX: Byte = 0x95;

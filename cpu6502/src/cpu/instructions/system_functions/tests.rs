@@ -133,6 +133,43 @@ mod brk {
 }
 
 #[cfg(test)]
+mod rti {
+    use std::cell::RefCell;
+
+    use crate::cpu::{instructions::rti, tests::MemoryMock, CPU};
+
+    #[test]
+    fn should_pop_processor_status_and_program_counter_from_stack() {
+        let memory = &RefCell::new(MemoryMock::default());
+        memory.borrow_mut()[0x01FF] = 0xAB;
+        memory.borrow_mut()[0x01FE] = 0xCD;
+        memory.borrow_mut()[0x01FD] = 0b11111111;
+
+        let mut cpu = CPU::new_nmos(memory);
+        cpu.processor_status.set(0b00000000);
+        cpu.stack_pointer = 0xFC;
+        cpu.program_counter = 0x00;
+
+        rti(&mut cpu);
+
+        assert_eq!(cpu.processor_status, 0b11111111);
+        assert_eq!(cpu.program_counter, 0xABCD);
+    }
+
+    #[test]
+    fn should_take_five_cycles() {
+        let memory = &RefCell::new(MemoryMock::default());
+        let mut cpu = CPU::new_nmos(memory);
+        cpu.program_counter = 0x00;
+        cpu.cycle = 0;
+
+        rti(&mut cpu);
+
+        assert_eq!(cpu.cycle, 5);
+    }
+}
+
+#[cfg(test)]
 mod nop {
     use std::cell::RefCell;
 
