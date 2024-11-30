@@ -263,8 +263,8 @@ impl<'a> CPU<'a> {
 
     fn push_word_to_stack(&mut self, val: Word) {
         let [lo, hi] = val.to_le_bytes();
-        self.push_byte_to_stack(lo);
         self.push_byte_to_stack(hi);
+        self.push_byte_to_stack(lo);
     }
 
     fn pop_byte_from_stack(&mut self) -> Byte {
