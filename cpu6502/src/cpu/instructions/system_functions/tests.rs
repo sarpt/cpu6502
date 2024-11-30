@@ -19,8 +19,8 @@ mod brk {
 
             brk(&mut cpu);
 
-            assert_eq!(memory.borrow()[0x01FF], 0xCE);
-            assert_eq!(memory.borrow()[0x01FE], 0xAB);
+            assert_eq!(memory.borrow()[0x01FF], 0xAB);
+            assert_eq!(memory.borrow()[0x01FE], 0xCE);
             assert_eq!(memory.borrow()[0x01FD], 0b11111111);
         }
 

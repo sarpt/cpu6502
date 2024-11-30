@@ -25,8 +25,8 @@ mod jsr_a {
 
         jsr_a(&mut cpu);
 
-        assert_eq!(memory.borrow()[0x01FF], 0x01);
-        assert_eq!(memory.borrow()[0x01FE], 0x00);
+        assert_eq!(memory.borrow()[0x01FF], 0x00);
+        assert_eq!(memory.borrow()[0x01FE], 0x01);
     }
 
     #[test]

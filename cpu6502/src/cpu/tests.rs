@@ -497,7 +497,7 @@ mod push_word_to_stack {
     use crate::cpu::CPU;
 
     #[test]
-    fn should_push_a_byte_to_a_place_to_the_first_page_in_memory_pointed_by_a_stack_pointer() {
+    fn should_push_a_byte_to_a_place_to_the_first_page_in_memory_pointed_by_a_stack_pointer_in_order_of_hi_lo_bytes() {
         let memory = &RefCell::new(MemoryMock::default());
         let mut uut = CPU::new_nmos(memory);
         uut.stack_pointer = 0xFF;
@@ -505,8 +505,8 @@ mod push_word_to_stack {
         let value: u16 = 0x56DF;
         uut.push_word_to_stack(value);
 
-        assert_eq!(uut.memory.borrow()[0x01FF], 0xDF);
-        assert_eq!(uut.memory.borrow()[0x01FE], 0x56);
+        assert_eq!(uut.memory.borrow()[0x01FF], 0x56);
+        assert_eq!(uut.memory.borrow()[0x01FE], 0xDF);
     }
 
     #[test]
