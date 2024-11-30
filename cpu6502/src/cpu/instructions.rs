@@ -74,6 +74,7 @@ pub fn get_instructions() -> HashMap<Byte, OpcodeHandler> {
         (JMP_A, jmp_a),
         (JMP_IN, jmp_in),
         (JSR_A, jsr_a),
+        (RTI, rti),
         (RTS, rts),
         (BCC, bcc),
         (BCS, bcs),
