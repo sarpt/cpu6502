@@ -74,16 +74,60 @@ mod brk {
             cpu::{instructions::brk, tests::MemoryMock, CPU},
         };
 
+        #[cfg(test)]
+        mod rockwell {
+            use super::*;
+
+            #[test]
+            fn should_clear_decimal_processor_status_flag() {
+                let memory = &RefCell::new(MemoryMock::default());
+                let mut cpu = CPU::new_rockwell_cmos(memory);
+                cpu.program_counter = 0x00;
+                cpu.processor_status.change_decimal_mode_flag(true);
+
+                brk(&mut cpu);
+
+                assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
+            }
+        }
+
+        #[cfg(test)]
+        mod wdc {
+            use super::*;
+
+            #[test]
+            fn should_clear_decimal_processor_status_flag() {
+                let memory = &RefCell::new(MemoryMock::default());
+                let mut cpu = CPU::new_wdc_cmos(memory);
+                cpu.program_counter = 0x00;
+                cpu.processor_status.change_decimal_mode_flag(true);
+
+                brk(&mut cpu);
+
+                assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
+            }
+        }
+    }
+
+    #[cfg(test)]
+    mod nmos {
+        use std::cell::RefCell;
+
+        use crate::{
+            consts::Byte,
+            cpu::{instructions::brk, tests::MemoryMock, CPU},
+        };
+
         #[test]
-        fn should_clear_decimal_processor_status_flag() {
+        fn should_not_clear_decimal_processor_status_flag() {
             let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_rockwell_cmos(memory);
+            let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
             cpu.processor_status.change_decimal_mode_flag(true);
 
             brk(&mut cpu);
 
-            assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
+            assert_eq!(cpu.processor_status.get_decimal_mode_flag(), true);
         }
     }
 }
