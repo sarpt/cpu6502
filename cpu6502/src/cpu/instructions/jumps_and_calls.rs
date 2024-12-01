@@ -13,6 +13,7 @@ pub fn jsr_a(cpu: &mut CPU) {
 
 pub fn rts(cpu: &mut CPU) {
     cpu.dummy_fetch();
+    cpu.tick();
     cpu.program_counter = cpu.pop_word_from_stack();
     cpu.tick();
     cpu.increment_program_counter();
