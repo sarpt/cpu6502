@@ -7,7 +7,7 @@ fn push_register(cpu: &mut CPU, register: Registers) {
 
     cpu.schedule_cycle(Box::new(move |cpu| {
         let val = cpu.get_register(register);
-        cpu.queued_push_byte_to_stack(val);
+        cpu.push_byte_to_stack(val);
     }));
 
     cpu.run_next_cycles(2);

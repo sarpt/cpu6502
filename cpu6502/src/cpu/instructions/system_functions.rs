@@ -18,15 +18,15 @@ pub fn brk(cpu: &mut CPU) {
     }));
 
     cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
-        cpu.queued_push_byte_to_stack(cpu.get_program_counter_hi());
+        cpu.push_byte_to_stack(cpu.get_program_counter_hi());
     }));
 
     cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
-        cpu.queued_push_byte_to_stack(cpu.get_program_counter_lo());
+        cpu.push_byte_to_stack(cpu.get_program_counter_lo());
     }));
 
     cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
-        cpu.queued_push_byte_to_stack(cpu.processor_status.into());
+        cpu.push_byte_to_stack(cpu.processor_status.into());
     }));
 
     cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {

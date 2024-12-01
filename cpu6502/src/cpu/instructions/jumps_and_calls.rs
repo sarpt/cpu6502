@@ -1,14 +1,26 @@
 use crate::cpu::{AddressingMode, CPU};
 
 pub fn jsr_a(cpu: &mut CPU) {
-    let jump_addr = match cpu.get_address(AddressingMode::Absolute) {
-        Some(address) => address,
-        None => panic!("couldn't fetch address during a jsr"),
-    };
+    let addr_fetch_cycles = cpu.queued_get_address(AddressingMode::Absolute);
+    addr_fetch_cycles.into_iter().for_each(|cycle_cb| {
+        cpu.schedule_cycle(cycle_cb);
+    });
 
-    cpu.push_word_to_stack(cpu.program_counter - 1);
-    cpu.program_counter = jump_addr;
-    cpu.tick();
+    cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
+        let [_, ret_program_counter_hi] = cpu.program_counter.clone().wrapping_sub(1).to_le_bytes();
+        cpu.push_byte_to_stack(ret_program_counter_hi);
+    }));
+
+    cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
+        let [ret_program_counter_lo, _] = cpu.program_counter.clone().wrapping_sub(1).to_le_bytes();
+        cpu.push_byte_to_stack(ret_program_counter_lo);
+    }));
+
+    cpu.schedule_cycle(Box::new(|cpu| {
+        cpu.program_counter = cpu.tmp;
+    }));
+
+    cpu.run_next_cycles(5);
 }
 
 pub fn rts(cpu: &mut CPU) {
