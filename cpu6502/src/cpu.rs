@@ -48,7 +48,7 @@ type OpcodeHandler = fn(&mut CPU) -> ();
 
 pub struct CPU<'a> {
     cycle: u64,
-    cycle_queue: VecDeque<fn(&mut CPU) -> ()>,
+    cycle_queue: VecDeque<Box<dyn Fn(&mut CPU) -> ()>>,
     chip_variant: ChipVariant,
     program_counter: Word,
     stack_pointer: Byte,
@@ -439,7 +439,7 @@ impl<'a> CPU<'a> {
         }
     }
 
-    fn schedule_cycle(&mut self, cb: fn(&mut CPU) -> ()) {
+    fn schedule_cycle(&mut self, cb: Box<dyn Fn(&mut CPU) -> ()>) {
         self.cycle_queue.push_back(cb);
     }
 
