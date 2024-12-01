@@ -12,11 +12,30 @@ pub fn jsr_a(cpu: &mut CPU) {
 }
 
 pub fn rts(cpu: &mut CPU) {
-    cpu.dummy_fetch();
-    cpu.tick();
-    cpu.program_counter = cpu.pop_word_from_stack();
-    cpu.tick();
-    cpu.increment_program_counter();
+    cpu.schedule_cycle(Box::new(|cpu| {
+        cpu.dummy_fetch();
+    }));
+
+    // dummy tick, simulate separate stack pointer decrement
+    // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
+    // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
+    cpu.schedule_cycle(Box::new(|_| {}));
+
+    cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
+        let lo = cpu.queued_pop_byte_from_stack();
+        cpu.set_program_counter_lo(lo);
+    }));
+
+    cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
+        let hi = cpu.queued_pop_byte_from_stack();
+        cpu.set_program_counter_hi(hi);
+    }));
+
+    cpu.schedule_cycle(Box::new(|cpu| {
+        cpu.queued_increment_program_counter();
+    }));
+
+    cpu.run_next_cycles(5);
 }
 
 fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) {

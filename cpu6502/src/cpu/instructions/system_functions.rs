@@ -51,7 +51,7 @@ pub fn brk(cpu: &mut CPU) {
 
 pub fn rti(cpu: &mut CPU) {
     cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
-        cpu.access_memory(cpu.program_counter); // fetch and discard
+        cpu.dummy_fetch();
     }));
 
     // dummy tick, simulate separate stack pointer decrement
