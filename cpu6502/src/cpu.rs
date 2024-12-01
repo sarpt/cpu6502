@@ -415,7 +415,6 @@ impl<'a> CPU<'a> {
     fn transfer_registers(&mut self, src: Registers, tgt: Registers) {
         let value = self.get_register(src);
         self.set_register(tgt, value);
-        self.tick();
     }
 
     fn dummy_fetch(&mut self) {
