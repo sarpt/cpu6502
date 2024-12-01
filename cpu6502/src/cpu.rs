@@ -288,26 +288,11 @@ impl<'a> CPU<'a> {
     }
 
     fn pop_byte_from_stack(&mut self) -> Byte {
-        self.increment_register(Registers::StackPointer);
-        let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
-        let val = self.access_memory(stack_addr);
-
-        return val;
-    }
-
-    fn queued_pop_byte_from_stack(&mut self) -> Byte {
         self.queued_increment_register(Registers::StackPointer);
         let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
         let val = self.access_memory(stack_addr);
 
         return val;
-    }
-
-    fn pop_word_from_stack(&mut self) -> Word {
-        let lo = self.pop_byte_from_stack();
-        let hi = self.pop_byte_from_stack();
-
-        return Word::from_le_bytes([lo, hi]);
     }
 
     pub fn offset_program_counter(&mut self, offset: Byte) {

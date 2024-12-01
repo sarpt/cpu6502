@@ -22,12 +22,12 @@ pub fn rts(cpu: &mut CPU) {
     cpu.schedule_cycle(Box::new(|_| {}));
 
     cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
-        let lo = cpu.queued_pop_byte_from_stack();
+        let lo = cpu.pop_byte_from_stack();
         cpu.set_program_counter_lo(lo);
     }));
 
     cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
-        let hi = cpu.queued_pop_byte_from_stack();
+        let hi = cpu.pop_byte_from_stack();
         cpu.set_program_counter_hi(hi);
     }));
 
