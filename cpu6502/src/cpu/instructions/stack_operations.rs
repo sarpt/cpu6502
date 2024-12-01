@@ -29,17 +29,17 @@ pub fn plp(cpu: &mut CPU) {
 }
 
 pub fn tsx(cpu: &mut CPU) {
-    cpu.schedule_cycle(|cpu| {
+    cpu.schedule_cycle(Box::new(|cpu| {
         cpu.transfer_registers(Registers::StackPointer, Registers::IndexX);
-    });
+    }));
 
     cpu.run_next_cycles(1);
 }
 
 pub fn txs(cpu: &mut CPU) {
-    cpu.schedule_cycle(|cpu| {
+    cpu.schedule_cycle(Box::new(|cpu| {
         cpu.transfer_registers(Registers::IndexX, Registers::StackPointer);
-    });
+    }));
 
     cpu.run_next_cycles(1);
 }
