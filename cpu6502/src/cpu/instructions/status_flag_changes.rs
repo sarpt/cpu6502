@@ -1,8 +1,11 @@
 use crate::cpu::{processor_status::Flags, CPU};
 
 fn change_flag_value(cpu: &mut CPU, flag: Flags, value: bool) {
-    cpu.processor_status.change_flag(flag, value);
-    cpu.cycle += 1;
+    cpu.schedule_cycle(Box::new(move |cpu| {
+        cpu.processor_status.change_flag(flag, value);
+    }));
+
+    cpu.run_next_cycles(1);
 }
 
 pub fn clc(cpu: &mut CPU) {

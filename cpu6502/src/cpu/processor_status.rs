@@ -1,5 +1,6 @@
 use crate::consts::Byte;
 
+#[derive(Clone, Copy)]
 pub enum Flags {
     Carry = 0,
     Zero = 1,
