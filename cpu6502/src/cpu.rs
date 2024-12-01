@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
@@ -48,6 +48,7 @@ type OpcodeHandler = fn(&mut CPU) -> ();
 
 pub struct CPU<'a> {
     cycle: u64,
+    cycle_queue: VecDeque<fn(&mut CPU) -> ()>,
     chip_variant: ChipVariant,
     program_counter: Word,
     stack_pointer: Byte,
@@ -63,6 +64,7 @@ impl<'a> CPU<'a> {
     fn new(memory: &'a RefCell<dyn Memory>, chip_variant: ChipVariant) -> Self {
         return CPU {
             cycle: 0,
+            cycle_queue: VecDeque::new(),
             chip_variant: chip_variant,
             program_counter: RESET_VECTOR,
             stack_pointer: 0x00,
@@ -114,13 +116,25 @@ impl<'a> CPU<'a> {
         self.cycle += 1;
     }
 
-    fn increment_register(&mut self, register: Registers) {
+    fn queued_increment_program_counter(&mut self) {
+        self.program_counter = self.program_counter.wrapping_add(1);
+    }
+
+    fn queued_increment_register(&mut self, register: Registers) {
         self.set_register(register, self.get_register(register).wrapping_add(1));
+    }
+
+    fn increment_register(&mut self, register: Registers) {
+        self.queued_increment_register(register);
         self.cycle += 1;
     }
 
-    fn decrement_register(&mut self, register: Registers) {
+    fn queued_decrement_register(&mut self, register: Registers) {
         self.set_register(register, self.get_register(register).wrapping_sub(1));
+    }
+
+    fn decrement_register(&mut self, register: Registers) {
+        self.queued_decrement_register(register);
         self.cycle += 1;
     }
 
@@ -261,6 +275,12 @@ impl<'a> CPU<'a> {
         self.decrement_register(Registers::StackPointer);
     }
 
+    fn queued_push_byte_to_stack(&mut self, val: Byte) {
+        let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
+        self.put_into_memory(stack_addr, val);
+        self.queued_decrement_register(Registers::StackPointer);
+    }
+
     fn push_word_to_stack(&mut self, val: Word) {
         let [lo, hi] = val.to_le_bytes();
         self.push_byte_to_stack(hi);
@@ -269,6 +289,14 @@ impl<'a> CPU<'a> {
 
     fn pop_byte_from_stack(&mut self) -> Byte {
         self.increment_register(Registers::StackPointer);
+        let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
+        let val = self.access_memory(stack_addr);
+
+        return val;
+    }
+
+    fn queued_pop_byte_from_stack(&mut self) -> Byte {
+        self.queued_increment_register(Registers::StackPointer);
         let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
         let val = self.access_memory(stack_addr);
 
@@ -368,6 +396,22 @@ impl<'a> CPU<'a> {
         return Some(());
     }
 
+    fn get_program_counter_lo(&self) -> Byte {
+        return self.program_counter.to_le_bytes()[0];
+    }
+
+    fn get_program_counter_hi(&self) -> Byte {
+        return self.program_counter.to_le_bytes()[1];
+    }
+
+    fn set_program_counter_lo(&mut self, lo: Byte) {
+        self.program_counter = Word::from_le_bytes([lo, self.get_program_counter_hi()]);
+    }
+
+    fn set_program_counter_hi(&mut self, hi: Byte) {
+        self.program_counter = Word::from_le_bytes([self.get_program_counter_lo(), hi]);
+    }
+
     fn transfer_registers(&mut self, src: Registers, tgt: Registers) {
         let value = self.get_register(src);
         self.set_register(tgt, value);
@@ -381,6 +425,23 @@ impl<'a> CPU<'a> {
 
     fn tick(&mut self) {
         self.cycle += 1;
+    }
+
+    fn run_next_cycle(&mut self) {
+        if let Some(next_cycle_runner) = self.cycle_queue.pop_front() {
+            next_cycle_runner(self);
+        };
+        self.tick();
+    }
+
+    fn run_next_cycles(&mut self, count: usize) {
+        for _ in 1..=count {
+            self.run_next_cycle();
+        }
+    }
+
+    fn schedule_cycle(&mut self, cb: fn(&mut CPU) -> ()) {
+        self.cycle_queue.push_back(cb);
     }
 
     fn get_address(&mut self, addr_mode: AddressingMode) -> Option<Word> {
