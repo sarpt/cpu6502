@@ -419,7 +419,6 @@ impl<'a> CPU<'a> {
 
     fn dummy_fetch(&mut self) {
         self.access_memory(self.program_counter); // fetch and discard
-        self.tick();
     }
 
     fn tick(&mut self) {
