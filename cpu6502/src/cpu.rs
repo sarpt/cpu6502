@@ -45,10 +45,11 @@ enum Registers {
 }
 
 type OpcodeHandler = fn(&mut CPU) -> ();
+type ScheduledCycle = Box<dyn Fn(&mut CPU) -> ()>;
 
 pub struct CPU<'a> {
     cycle: u64,
-    cycle_queue: VecDeque<Box<dyn Fn(&mut CPU) -> ()>>,
+    cycle_queue: VecDeque<ScheduledCycle>,
     chip_variant: ChipVariant,
     program_counter: Word,
     stack_pointer: Byte,
@@ -58,6 +59,7 @@ pub struct CPU<'a> {
     processor_status: processor_status::ProcessorStatus,
     memory: &'a RefCell<dyn Memory>,
     opcode_handlers: HashMap<Byte, OpcodeHandler>,
+    tmp: Word,
 }
 
 impl<'a> CPU<'a> {
@@ -74,6 +76,7 @@ impl<'a> CPU<'a> {
             processor_status: processor_status::ProcessorStatus::default(),
             memory: memory,
             opcode_handlers: instructions::get_instructions(),
+            tmp: 0,
         };
     }
 
@@ -272,19 +275,7 @@ impl<'a> CPU<'a> {
     fn push_byte_to_stack(&mut self, val: Byte) {
         let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
         self.put_into_memory(stack_addr, val);
-        self.decrement_register(Registers::StackPointer);
-    }
-
-    fn queued_push_byte_to_stack(&mut self, val: Byte) {
-        let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
-        self.put_into_memory(stack_addr, val);
         self.queued_decrement_register(Registers::StackPointer);
-    }
-
-    fn push_word_to_stack(&mut self, val: Word) {
-        let [lo, hi] = val.to_le_bytes();
-        self.push_byte_to_stack(hi);
-        self.push_byte_to_stack(lo);
     }
 
     fn pop_byte_from_stack(&mut self) -> Byte {
@@ -293,6 +284,18 @@ impl<'a> CPU<'a> {
         let val = self.access_memory(stack_addr);
 
         return val;
+    }
+
+    fn save_temp<T: Into<Word>>(&mut self, val: T) {
+        self.tmp = val.into();
+    }
+
+    fn save_temp_lo(&mut self, lo: Byte) {
+        self.tmp = Word::from_le_bytes([lo, self.tmp.to_le_bytes()[1]]);
+    }
+
+    fn save_temp_hi(&mut self, hi: Byte) {
+        self.tmp = Word::from_le_bytes([self.tmp.to_le_bytes()[0], hi]);
     }
 
     pub fn offset_program_counter(&mut self, offset: Byte) {
@@ -501,6 +504,37 @@ impl<'a> CPU<'a> {
             }
             _ => None,
         }
+    }
+
+    fn queued_get_address(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledCycle> {
+        let mut cycles: Vec<ScheduledCycle> = Vec::new();
+        match addr_mode {
+            AddressingMode::ZeroPage => {
+                cycles.push(Box::new(|cpu| {
+                    let addr: Byte = cpu.access_memory(cpu.program_counter);
+                    cpu.save_temp(addr);
+                    cpu.queued_increment_program_counter();
+                }));
+            }
+            AddressingMode::Absolute => {
+                cycles.push(Box::new(|cpu| {
+                    let addr_lo = cpu.access_memory(cpu.program_counter);
+                    cpu.save_temp_lo(addr_lo);
+                    cpu.queued_increment_program_counter();
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let addr_hi = cpu.access_memory(cpu.program_counter);
+                    cpu.save_temp_hi(addr_hi);
+                    cpu.queued_increment_program_counter();
+                }));
+            }
+            _ => {
+                panic!("incorrect or unimplemented addressing used for queued fetch address");
+            }
+        }
+
+        return cycles;
     }
 
     pub fn execute_next_instruction(&mut self) {

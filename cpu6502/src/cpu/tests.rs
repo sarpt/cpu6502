@@ -474,54 +474,15 @@ mod push_byte_to_stack {
     }
 
     #[test]
-    fn should_increase_cycle_counter_and_decrease_stack_pointer_by_one() {
+    fn should_decrease_stack_pointer_by_one() {
         let memory = &RefCell::new(MemoryMock::default());
         let mut uut = CPU::new_nmos(memory);
         uut.stack_pointer = 0xFF;
-
-        assert_eq!(uut.cycle, 0);
 
         let value: u8 = 0xDF;
         uut.push_byte_to_stack(value);
 
-        assert_eq!(uut.cycle, 1);
         assert_eq!(uut.stack_pointer, 0xFE);
-    }
-}
-
-#[cfg(test)]
-mod push_word_to_stack {
-    use std::cell::RefCell;
-
-    use super::MemoryMock;
-    use crate::cpu::CPU;
-
-    #[test]
-    fn should_push_a_byte_to_a_place_to_the_first_page_in_memory_pointed_by_a_stack_pointer_in_order_of_hi_lo_bytes(
-    ) {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.stack_pointer = 0xFF;
-
-        let value: u16 = 0x56DF;
-        uut.push_word_to_stack(value);
-
-        assert_eq!(uut.memory.borrow()[0x01FF], 0x56);
-        assert_eq!(uut.memory.borrow()[0x01FE], 0xDF);
-    }
-
-    #[test]
-    fn should_increase_cycle_counter_and_decrease_stack_pointer_by_two() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.stack_pointer = 0xFF;
-        assert_eq!(uut.cycle, 0);
-
-        let value: u16 = 0x56DF;
-        uut.push_word_to_stack(value);
-
-        assert_eq!(uut.cycle, 2);
-        assert_eq!(uut.stack_pointer, 0xFD);
     }
 }
 
