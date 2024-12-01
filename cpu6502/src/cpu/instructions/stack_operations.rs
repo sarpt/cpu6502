@@ -32,7 +32,7 @@ fn pull_register(cpu: &mut CPU, register: Registers) {
     cpu.schedule_cycle(Box::new(|_| {}));
 
     cpu.schedule_cycle(Box::new(move |cpu| {
-        let value = cpu.queued_pop_byte_from_stack();
+        let value = cpu.pop_byte_from_stack();
         cpu.set_register(register, value);
     }));
 

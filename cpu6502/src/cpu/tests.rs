@@ -546,55 +546,16 @@ mod pop_byte_from_stack {
     }
 
     #[test]
-    fn should_increment_cycle_count_and_stack_pointer_once() {
+    fn should_increment_stack_pointer_once() {
         let memory = &RefCell::new(MemoryMock::default());
         let mut uut = CPU::new_nmos(memory);
         uut.memory.borrow_mut()[0x01FF] = 0xDF;
         uut.memory.borrow_mut()[0x01FE] = 0x48;
         uut.stack_pointer = 0xFD;
-
-        assert_eq!(uut.cycle, 0);
 
         uut.pop_byte_from_stack();
 
-        assert_eq!(uut.cycle, 1);
         assert_eq!(uut.stack_pointer, 0xFE);
-    }
-}
-
-#[cfg(test)]
-mod pop_word_from_stack {
-    use std::cell::RefCell;
-
-    use super::MemoryMock;
-    use crate::cpu::CPU;
-
-    #[test]
-    fn should_pop_word_from_stack() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.memory.borrow_mut()[0x01FF] = 0xDF;
-        uut.memory.borrow_mut()[0x01FE] = 0x48;
-        uut.stack_pointer = 0xFD;
-
-        let val = uut.pop_word_from_stack();
-
-        assert_eq!(val, 0xDF48);
-    }
-
-    #[test]
-    fn should_increment_cycle_count_and_stack_pointer_twice() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.memory.borrow_mut()[0x01FF] = 0xDF;
-        uut.memory.borrow_mut()[0x01FE] = 0x48;
-        uut.stack_pointer = 0xFD;
-        assert_eq!(uut.cycle, 0);
-
-        uut.pop_word_from_stack();
-
-        assert_eq!(uut.cycle, 2);
-        assert_eq!(uut.stack_pointer, 0xFF);
     }
 }
 
