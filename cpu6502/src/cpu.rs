@@ -411,10 +411,17 @@ impl<'a> CPU<'a> {
     }
 
     fn run_next_cycle(&mut self) {
-        if let Some(next_cycle_runner) = self.cycle_queue.pop_front() {
-            next_cycle_runner(self);
-        };
-        self.tick();
+        match self.cycle_queue.pop_front() {
+            Some(next_cycle_runner) => {
+                next_cycle_runner(self);
+                self.tick();
+            }
+            None => {
+                panic!(
+                    "could not run a queued cycle since there are no cycles queued for execution"
+                )
+            }
+        }
     }
 
     fn run_next_cycles(&mut self, count: usize) {
