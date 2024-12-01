@@ -497,7 +497,8 @@ mod push_word_to_stack {
     use crate::cpu::CPU;
 
     #[test]
-    fn should_push_a_byte_to_a_place_to_the_first_page_in_memory_pointed_by_a_stack_pointer_in_order_of_hi_lo_bytes() {
+    fn should_push_a_byte_to_a_place_to_the_first_page_in_memory_pointed_by_a_stack_pointer_in_order_of_hi_lo_bytes(
+    ) {
         let memory = &RefCell::new(MemoryMock::default());
         let mut uut = CPU::new_nmos(memory);
         uut.stack_pointer = 0xFF;

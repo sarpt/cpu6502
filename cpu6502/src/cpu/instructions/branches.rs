@@ -22,15 +22,39 @@ pub fn bcs(cpu: &mut CPU) {
     });
 }
 
+pub fn beq(cpu: &mut CPU) {
+    branch(cpu, |cpu: &CPU| -> bool {
+        return cpu.processor_status.get_zero_flag();
+    });
+}
+
+pub fn bmi(cpu: &mut CPU) {
+    branch(cpu, |cpu: &CPU| -> bool {
+        return cpu.processor_status.get_negative_flag();
+    });
+}
+
 pub fn bne(cpu: &mut CPU) {
     branch(cpu, |cpu: &CPU| -> bool {
         return !cpu.processor_status.get_zero_flag();
     });
 }
 
-pub fn beq(cpu: &mut CPU) {
+pub fn bpl(cpu: &mut CPU) {
     branch(cpu, |cpu: &CPU| -> bool {
-        return cpu.processor_status.get_zero_flag();
+        return !cpu.processor_status.get_negative_flag();
+    });
+}
+
+pub fn bvs(cpu: &mut CPU) {
+    branch(cpu, |cpu: &CPU| -> bool {
+        return cpu.processor_status.get_overflow_flag();
+    });
+}
+
+pub fn bvc(cpu: &mut CPU) {
+    branch(cpu, |cpu: &CPU| -> bool {
+        return !cpu.processor_status.get_overflow_flag();
     });
 }
 
