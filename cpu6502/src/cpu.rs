@@ -59,7 +59,7 @@ pub struct CPU<'a> {
     processor_status: processor_status::ProcessorStatus,
     memory: &'a RefCell<dyn Memory>,
     opcode_handlers: HashMap<Byte, OpcodeHandler>,
-    tmp: Word,
+    address_output: Word,
 }
 
 impl<'a> CPU<'a> {
@@ -76,7 +76,7 @@ impl<'a> CPU<'a> {
             processor_status: processor_status::ProcessorStatus::default(),
             memory: memory,
             opcode_handlers: instructions::get_instructions(),
-            tmp: 0,
+            address_output: 0,
         };
     }
 
@@ -286,16 +286,16 @@ impl<'a> CPU<'a> {
         return val;
     }
 
-    fn save_temp<T: Into<Word>>(&mut self, val: T) {
-        self.tmp = val.into();
+    fn set_address_output<T: Into<Word>>(&mut self, val: T) {
+        self.address_output = val.into();
     }
 
-    fn save_temp_lo(&mut self, lo: Byte) {
-        self.tmp = Word::from_le_bytes([lo, self.tmp.to_le_bytes()[1]]);
+    fn set_address_output_lo(&mut self, lo: Byte) {
+        self.address_output = Word::from_le_bytes([lo, self.address_output.to_le_bytes()[1]]);
     }
 
-    fn save_temp_hi(&mut self, hi: Byte) {
-        self.tmp = Word::from_le_bytes([self.tmp.to_le_bytes()[0], hi]);
+    fn set_address_output_hi(&mut self, hi: Byte) {
+        self.address_output = Word::from_le_bytes([self.address_output.to_le_bytes()[0], hi]);
     }
 
     pub fn offset_program_counter(&mut self, offset: Byte) {
@@ -512,20 +512,20 @@ impl<'a> CPU<'a> {
             AddressingMode::ZeroPage => {
                 cycles.push(Box::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
-                    cpu.save_temp(addr);
+                    cpu.set_address_output(addr);
                     cpu.queued_increment_program_counter();
                 }));
             }
             AddressingMode::Absolute => {
                 cycles.push(Box::new(|cpu| {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
-                    cpu.save_temp_lo(addr_lo);
+                    cpu.set_address_output_lo(addr_lo);
                     cpu.queued_increment_program_counter();
                 }));
 
                 cycles.push(Box::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
-                    cpu.save_temp_hi(addr_hi);
+                    cpu.set_address_output_hi(addr_hi);
                     cpu.queued_increment_program_counter();
                 }));
             }

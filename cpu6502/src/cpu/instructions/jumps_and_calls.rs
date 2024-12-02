@@ -17,7 +17,7 @@ pub fn jsr_a(cpu: &mut CPU) {
     }));
 
     cpu.schedule_cycle(Box::new(|cpu| {
-        cpu.program_counter = cpu.tmp;
+        cpu.program_counter = cpu.address_output;
     }));
 
     cpu.run_next_cycles(5);
