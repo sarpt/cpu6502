@@ -1,11 +1,12 @@
-use crate::cpu::{processor_status::Flags, CPU};
+use crate::cpu::{processor_status::Flags, ScheduledCycle, CPU};
 
 fn change_flag_value(cpu: &mut CPU, flag: Flags, value: bool) {
-    cpu.schedule_cycle(Box::new(move |cpu| {
+    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    cycles.push(Box::new(move |cpu: &mut CPU| {
         cpu.processor_status.change_flag(flag, value);
     }));
 
-    cpu.run_next_cycles(1);
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn clc(cpu: &mut CPU) {
