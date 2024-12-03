@@ -47,10 +47,20 @@ enum Registers {
 type OpcodeHandler = fn(&mut CPU) -> ();
 type ScheduledCycle = Box<dyn Fn(&mut CPU) -> ()>;
 
+type InstructionCtx = Option<Word>;
+struct InstructionExecution {
+    opcode: Byte,
+    ctx: InstructionCtx,
+    starting_cycle: u64,
+    length: u64,
+}
+
 pub struct CPU<'a> {
+    chip_variant: ChipVariant,
+    current_opcode: Option<Byte>,
+    current_instruction: Option<InstructionExecution>,
     cycle: u64,
     cycle_queue: VecDeque<ScheduledCycle>,
-    chip_variant: ChipVariant,
     program_counter: Word,
     stack_pointer: Byte,
     accumulator: Byte,
@@ -65,9 +75,11 @@ pub struct CPU<'a> {
 impl<'a> CPU<'a> {
     fn new(memory: &'a RefCell<dyn Memory>, chip_variant: ChipVariant) -> Self {
         return CPU {
+            chip_variant: chip_variant,
+            current_opcode: None,
+            current_instruction: None,
             cycle: 0,
             cycle_queue: VecDeque::new(),
-            chip_variant: chip_variant,
             program_counter: RESET_VECTOR,
             stack_pointer: 0x00,
             accumulator: 0,
@@ -433,8 +445,22 @@ impl<'a> CPU<'a> {
         }
     }
 
-    fn schedule_cycle(&mut self, cb: Box<dyn Fn(&mut CPU) -> ()>) {
+    fn schedule_cycle(&mut self, cb: ScheduledCycle) {
         self.cycle_queue.push_back(cb);
+    }
+
+    fn schedule_instruction(&mut self, cycles: Vec<ScheduledCycle>) {
+        self.current_instruction = Some(InstructionExecution {
+            opcode: self.current_opcode.unwrap_or(0),
+            ctx: None,
+            starting_cycle: self.cycle,
+            length: 0,
+        });
+        let cycles_count = cycles.len();
+        cycles.into_iter().for_each(|cb| {
+            self.schedule_cycle(cb);
+        });
+        self.run_next_cycles(cycles_count); // TODO: this is temporary until all instructions are implemented in queued cycles form
     }
 
     fn get_address(&mut self, addr_mode: AddressingMode) -> Option<Word> {

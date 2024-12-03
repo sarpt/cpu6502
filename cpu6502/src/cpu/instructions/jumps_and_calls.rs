@@ -1,53 +1,51 @@
-use crate::cpu::{AddressingMode, CPU};
+use crate::cpu::{AddressingMode, ScheduledCycle, CPU};
 
 pub fn jsr_a(cpu: &mut CPU) {
-    let addr_fetch_cycles = cpu.queued_get_address(AddressingMode::Absolute);
-    addr_fetch_cycles.into_iter().for_each(|cycle_cb| {
-        cpu.schedule_cycle(cycle_cb);
-    });
+    let mut cycles = cpu.queued_get_address(AddressingMode::Absolute);
 
-    cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
+    cycles.push(Box::new(|cpu: &mut CPU| {
         let [_, ret_program_counter_hi] = cpu.program_counter.clone().wrapping_sub(1).to_le_bytes();
         cpu.push_byte_to_stack(ret_program_counter_hi);
     }));
 
-    cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
+    cycles.push(Box::new(|cpu: &mut CPU| {
         let [ret_program_counter_lo, _] = cpu.program_counter.clone().wrapping_sub(1).to_le_bytes();
         cpu.push_byte_to_stack(ret_program_counter_lo);
     }));
 
-    cpu.schedule_cycle(Box::new(|cpu| {
+    cycles.push(Box::new(|cpu| {
         cpu.program_counter = cpu.address_output;
     }));
 
-    cpu.run_next_cycles(5);
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn rts(cpu: &mut CPU) {
-    cpu.schedule_cycle(Box::new(|cpu| {
+    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    cycles.push(Box::new(|cpu| {
         cpu.dummy_fetch();
     }));
 
     // dummy tick, simulate separate stack pointer decrement
     // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
     // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
-    cpu.schedule_cycle(Box::new(|_| {}));
+    cycles.push(Box::new(|_| {}));
 
-    cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
+    cycles.push(Box::new(|cpu: &mut CPU| {
         let lo = cpu.pop_byte_from_stack();
         cpu.set_program_counter_lo(lo);
     }));
 
-    cpu.schedule_cycle(Box::new(|cpu: &mut CPU| {
+    cycles.push(Box::new(|cpu: &mut CPU| {
         let hi = cpu.pop_byte_from_stack();
         cpu.set_program_counter_hi(hi);
     }));
 
-    cpu.schedule_cycle(Box::new(|cpu| {
+    cycles.push(Box::new(|cpu| {
         cpu.queued_increment_program_counter();
     }));
 
-    cpu.run_next_cycles(5);
+    cpu.schedule_instruction(cycles);
 }
 
 fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) {

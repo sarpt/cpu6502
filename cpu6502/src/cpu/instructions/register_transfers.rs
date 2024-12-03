@@ -1,35 +1,39 @@
-use crate::cpu::{Registers, CPU};
+use crate::cpu::{Registers, ScheduledCycle, CPU};
 
 pub fn tax(cpu: &mut CPU) {
-    cpu.schedule_cycle(Box::new(|cpu| {
+    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    cycles.push(Box::new(|cpu| {
         cpu.transfer_registers(Registers::Accumulator, Registers::IndexX);
     }));
 
-    cpu.run_next_cycles(1);
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn txa(cpu: &mut CPU) {
-    cpu.schedule_cycle(Box::new(|cpu| {
+    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    cycles.push(Box::new(|cpu| {
         cpu.transfer_registers(Registers::IndexX, Registers::Accumulator);
     }));
 
-    cpu.run_next_cycles(1);
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn tay(cpu: &mut CPU) {
-    cpu.schedule_cycle(Box::new(|cpu| {
+    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    cycles.push(Box::new(|cpu| {
         cpu.transfer_registers(Registers::Accumulator, Registers::IndexY);
     }));
 
-    cpu.run_next_cycles(1);
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn tya(cpu: &mut CPU) {
-    cpu.schedule_cycle(Box::new(|cpu| {
+    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    cycles.push(Box::new(|cpu| {
         cpu.transfer_registers(Registers::IndexY, Registers::Accumulator);
     }));
 
-    cpu.run_next_cycles(1);
+    cpu.schedule_instruction(cycles);
 }
 
 #[cfg(test)]
