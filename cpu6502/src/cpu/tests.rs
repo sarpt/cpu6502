@@ -1217,10 +1217,7 @@ mod get_address {
         mod common {
             use std::cell::RefCell;
 
-            use crate::{
-                consts::Byte,
-                cpu::{tests::MemoryMock, AddressingMode, CPU},
-            };
+            use crate::cpu::{tests::MemoryMock, AddressingMode, CPU};
 
             #[test]
             fn should_return_address_from_place_in_memory_stored_in_next_word_relative_to_program_counter(
@@ -1422,6 +1419,238 @@ mod get_address {
             uut.get_address(AddressingMode::Relative);
 
             assert_eq!(uut.cycle, 0);
+        }
+    }
+}
+
+#[cfg(test)]
+mod queued_get_address {
+    #[cfg(test)]
+    mod absolute_addressing {
+        use std::cell::RefCell;
+
+        use super::super::MemoryMock;
+        use crate::cpu::{AddressingMode, CPU};
+
+        #[test]
+        fn should_return_address_from_next_word_in_memory_relative_to_program_counter() {
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new_nmos(memory);
+            uut.program_counter = 0x01;
+            uut.address_output = 0x0;
+
+            let cycles = uut.queued_get_address(AddressingMode::Absolute);
+            uut.schedule_instruction(cycles);
+
+            assert_eq!(uut.address_output, 0xCBFF);
+        }
+
+        #[test]
+        fn should_advance_program_counter_twice() {
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new_nmos(memory);
+            uut.program_counter = 0x01;
+
+            let cycles = uut.queued_get_address(AddressingMode::Absolute);
+            uut.schedule_instruction(cycles);
+
+            assert_eq!(uut.program_counter, 0x03);
+        }
+
+        #[test]
+        fn should_take_two_cycles() {
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new_nmos(memory);
+            uut.program_counter = 0x01;
+            uut.cycle = 0;
+
+            let cycles = uut.queued_get_address(AddressingMode::Absolute);
+            uut.schedule_instruction(cycles);
+
+            assert_eq!(uut.cycle, 2);
+        }
+    }
+
+    #[cfg(test)]
+    mod zero_page_addressing {
+        use std::cell::RefCell;
+
+        use super::super::MemoryMock;
+        use crate::cpu::{AddressingMode, CPU};
+
+        #[test]
+        fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter()
+        {
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new_nmos(memory);
+            uut.program_counter = 0x02;
+            uut.address_output = 0x0;
+
+            let cycles = uut.queued_get_address(AddressingMode::ZeroPage);
+            uut.schedule_instruction(cycles);
+
+            assert_eq!(uut.address_output, 0x00CB);
+        }
+
+        #[test]
+        fn should_advance_program_counter_once() {
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new_nmos(memory);
+            uut.program_counter = 0x02;
+
+            let cycles = uut.queued_get_address(AddressingMode::ZeroPage);
+            uut.schedule_instruction(cycles);
+
+            assert_eq!(uut.program_counter, 0x03);
+        }
+
+        #[test]
+        fn should_take_one_cycle() {
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut uut = CPU::new_nmos(memory);
+            uut.program_counter = 0x02;
+            uut.cycle = 0;
+
+            let cycles = uut.queued_get_address(AddressingMode::ZeroPage);
+            uut.schedule_instruction(cycles);
+
+            assert_eq!(uut.cycle, 1);
+        }
+    }
+
+    #[cfg(test)]
+    mod indirect_addressing {
+        #[cfg(test)]
+        mod common {
+            use std::cell::RefCell;
+
+            use crate::cpu::{tests::MemoryMock, AddressingMode, CPU};
+
+            #[test]
+            fn should_return_address_from_place_in_memory_stored_in_next_word_relative_to_program_counter(
+            ) {
+                let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+                let mut uut = CPU::new_nmos(&memory);
+                uut.program_counter = 0x00;
+                uut.address_output = 0x0;
+
+                let cycles = uut.queued_get_address(AddressingMode::Indirect);
+                uut.schedule_instruction(cycles);
+
+                assert_eq!(uut.address_output, 0x0001);
+            }
+
+            #[test]
+            fn should_advance_program_counter_twice() {
+                let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+                let mut uut = CPU::new_nmos(&memory);
+                uut.program_counter = 0x00;
+
+                let cycles = uut.queued_get_address(AddressingMode::Indirect);
+                uut.schedule_instruction(cycles);
+
+                assert_eq!(uut.program_counter, 0x02);
+            }
+        }
+
+        #[cfg(test)]
+        mod nmos {
+            use std::cell::RefCell;
+
+            use crate::{
+                consts::Byte,
+                cpu::{tests::MemoryMock, AddressingMode, CPU},
+            };
+
+            #[test]
+            fn should_take_four_cycles() {
+                let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+                let mut uut = CPU::new_nmos(&memory);
+                uut.program_counter = 0x02;
+                uut.cycle = 0;
+
+                let cycles = uut.queued_get_address(AddressingMode::Indirect);
+                uut.schedule_instruction(cycles);
+
+                assert_eq!(uut.cycle, 4);
+            }
+
+            #[test]
+            fn should_incorrectly_fetch_target_address_when_indirect_address_is_falling_on_a_page_boundary_and_take_lo_from_correct_address_but_use_indirect_address_for_hi(
+            ) {
+                const INDIRECT_ADDR_LO: Byte = 0xFF;
+                const INDIRECT_ADDR_HI: Byte = 0x00;
+                const TARGET_ADDR_LO: Byte = 0xA5;
+                const TARGET_ADDR_HI: Byte = 0xCC;
+                const INCORRECT_TARGET_ADDR_HI: Byte = 0x09;
+
+                let mut program: [Byte; 512] = [0x00; 512];
+                program[0x0000] = INCORRECT_TARGET_ADDR_HI;
+                program[0x0001] = INDIRECT_ADDR_LO;
+                program[0x0002] = INDIRECT_ADDR_HI;
+                program[0x00FF] = TARGET_ADDR_LO;
+                program[0x0100] = TARGET_ADDR_HI;
+
+                let memory = RefCell::new(MemoryMock::new(&program));
+                let mut uut = CPU::new_nmos(&memory);
+                uut.program_counter = 0x0001;
+                uut.address_output = 0x0;
+                uut.cycle = 0;
+
+                let cycles = uut.queued_get_address(AddressingMode::Indirect);
+                uut.schedule_instruction(cycles);
+
+                assert_eq!(uut.address_output, 0x09A5);
+            }
+        }
+
+        #[cfg(test)]
+        mod cmos {
+            use std::cell::RefCell;
+
+            use crate::{
+                consts::Byte,
+                cpu::{tests::MemoryMock, AddressingMode, CPU},
+            };
+
+            #[test]
+            fn should_take_five_cycles() {
+                let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
+                let mut uut = CPU::new_rockwell_cmos(&memory);
+                uut.program_counter = 0x02;
+                uut.cycle = 0;
+
+                let cycles = uut.queued_get_address(AddressingMode::Indirect);
+                uut.schedule_instruction(cycles);
+
+                assert_eq!(uut.cycle, 5);
+            }
+
+            #[test]
+            fn should_correctly_fetch_target_address_when_indirect_address_is_falling_on_a_page_boundary(
+            ) {
+                const INDIRECT_ADDR_LO: Byte = 0xFF;
+                const INDIRECT_ADDR_HI: Byte = 0x00;
+                const TARGET_ADDR_LO: Byte = 0xA5;
+                const TARGET_ADDR_HI: Byte = 0xCC;
+
+                let mut program: [Byte; 512] = [0x00; 512];
+                program[0x0001] = INDIRECT_ADDR_LO;
+                program[0x0002] = INDIRECT_ADDR_HI;
+                program[0x00FF] = TARGET_ADDR_LO;
+                program[0x0100] = TARGET_ADDR_HI;
+
+                let memory = RefCell::new(MemoryMock::new(&program));
+                let mut uut = CPU::new_rockwell_cmos(&memory);
+                uut.program_counter = 0x0001;
+                uut.address_output = 0x0;
+                uut.cycle = 0;
+
+                let cycles = uut.queued_get_address(AddressingMode::Indirect);
+                uut.schedule_instruction(cycles);
+
+                assert_eq!(uut.address_output, 0xCCA5);
+            }
         }
     }
 }
