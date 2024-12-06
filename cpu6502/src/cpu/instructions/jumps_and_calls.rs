@@ -49,10 +49,18 @@ pub fn rts(cpu: &mut CPU) {
 }
 
 fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) {
-    match cpu.get_address(addr_mode) {
-        Some(address) => cpu.program_counter = address,
-        None => panic!("jmp used with incorrect addressing mode"),
+    let mut cycles = cpu.queued_get_address(addr_mode);
+    match cycles.pop() {
+        Some(last_cycle_cb) => {
+            cycles.push(Box::new(move |cpu| {
+                last_cycle_cb(cpu);
+                cpu.program_counter = cpu.address_output;
+            }));
+        }
+        None => panic!("unexpected empty cycles returned from queuing address calculation"),
     }
+
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn jmp_a(cpu: &mut CPU) {

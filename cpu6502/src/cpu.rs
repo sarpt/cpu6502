@@ -310,6 +310,33 @@ impl<'a> CPU<'a> {
         self.address_output = Word::from_le_bytes([self.address_output.to_le_bytes()[0], hi]);
     }
 
+    fn get_current_instruction_ctx(&mut self) -> &mut Option<Word> {
+        return match &mut self.current_instruction {
+            Some(current_instruciton) => &mut current_instruciton.ctx,
+            None => panic!("cannot save ctx for non-exisiting instruction"),
+        };
+    }
+
+    fn set_ctx_lo(&mut self, lo: Byte) {
+        let ctx = self.get_current_instruction_ctx();
+        let hi = match &ctx {
+            Some(ctx) => ctx.to_le_bytes()[1],
+            None => 0,
+        };
+
+        *ctx = Some(Word::from_le_bytes([lo, hi]));
+    }
+
+    fn set_ctx_hi(&mut self, hi: Byte) {
+        let ctx = self.get_current_instruction_ctx();
+        let lo = match &ctx {
+            Some(ctx) => ctx.to_le_bytes()[0],
+            None => 0,
+        };
+
+        *ctx = Some(Word::from_le_bytes([lo, hi]));
+    }
+
     pub fn offset_program_counter(&mut self, offset: Byte) {
         let [program_counter_lo, program_counter_hi] = self.program_counter.to_le_bytes();
         let negative_offset_direction = 0b10000000 & offset > 0;
@@ -553,6 +580,65 @@ impl<'a> CPU<'a> {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_hi(addr_hi);
                     cpu.queued_increment_program_counter();
+                }));
+            }
+            AddressingMode::Indirect => {
+                cycles.push(Box::new(|cpu| {
+                    let addr_lo = cpu.access_memory(cpu.program_counter);
+                    cpu.set_ctx_lo(addr_lo);
+                    cpu.queued_increment_program_counter();
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let addr_hi = cpu.access_memory(cpu.program_counter);
+                    cpu.set_ctx_hi(addr_hi);
+                    cpu.queued_increment_program_counter();
+                }));
+
+                if self.chip_variant != ChipVariant::NMOS {
+                    cycles.push(Box::new(|_| {})); // dummy tick used for fixing incorrect address
+
+                    cycles.push(Box::new(|cpu| {
+                        let addr = match cpu.get_current_instruction_ctx() {
+                            Some(addr) => *addr,
+                            None => panic!("could not retrieve address from ctx"),
+                        };
+                        let addr_lo = cpu.access_memory(addr);
+                        cpu.set_address_output_lo(addr_lo);
+                    }));
+
+                    cycles.push(Box::new(|cpu| {
+                        let addr = match cpu.get_current_instruction_ctx() {
+                            Some(addr) => *addr,
+                            None => panic!("could not retrieve address from ctx"),
+                        };
+                        let addr_hi = cpu.access_memory(addr + 1);
+                        cpu.set_address_output_hi(addr_hi);
+                    }));
+                    return cycles;
+                }
+
+                cycles.push(Box::new(|cpu| {
+                    let addr = match cpu.get_current_instruction_ctx() {
+                        Some(addr) => *addr,
+                        None => panic!("could not retrieve address from ctx"),
+                    };
+                    let addr_lo = cpu.access_memory(addr);
+                    cpu.set_address_output_lo(addr_lo);
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let addr = match cpu.get_current_instruction_ctx() {
+                        Some(addr) => *addr,
+                        None => panic!("could not retrieve address from ctx"),
+                    };
+                    let should_incorrectly_jump = addr & 0x00FF == 0x00FF;
+                    let mut target_addr = addr + 1;
+                    if should_incorrectly_jump {
+                        target_addr = addr & 0xFF00;
+                    };
+                    let addr_hi = cpu.access_memory(target_addr);
+                    cpu.set_address_output_hi(addr_hi);
                 }));
             }
             _ => {
