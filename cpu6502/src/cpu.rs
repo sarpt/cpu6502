@@ -201,6 +201,43 @@ impl<'a> CPU<'a> {
         return address;
     }
 
+    fn offset_address_output(&mut self, offset: Byte) -> Vec<ScheduledCycle> {
+        let mut cycles: Vec<ScheduledCycle> = Vec::new();
+
+        cycles.push(Box::new(move |cpu| {
+            let [lo, hi] = cpu.address_output.to_le_bytes();
+            let (new_lo, carry) = lo.overflowing_add(offset);
+            cpu.address_output = Word::from_le_bytes([new_lo, hi]);
+
+            if carry {
+                cpu.set_ctx_hi(0x1);
+            } else {
+                cpu.set_ctx_hi(0x0);
+            }
+
+            return TaskCycleVariant::Full;
+        }));
+
+        cycles.push(Box::new(|cpu| {
+            let carry = match cpu.get_current_instruction_ctx() {
+                Some(val) => val.to_le_bytes()[1],
+                None => panic!("unexpected lack of instruction ctx for offset address output"),
+            };
+
+            if carry == 0 {
+                return TaskCycleVariant::Aborted;
+            }
+
+            let [lo, hi] = cpu.address_output.to_le_bytes();
+            let new_hi = hi.wrapping_add(1);
+            cpu.address_output = Word::from_le_bytes([lo, new_hi]);
+
+            return TaskCycleVariant::Full;
+        }));
+
+        return cycles;
+    }
+
     fn fetch_instruction(&mut self) -> Instruction {
         let opcode = self.access_memory(self.program_counter);
         self.increment_program_counter();
@@ -319,7 +356,14 @@ impl<'a> CPU<'a> {
     fn get_current_instruction_ctx(&mut self) -> &mut Option<Word> {
         return match &mut self.current_instruction {
             Some(current_instruciton) => &mut current_instruciton.ctx,
-            None => panic!("cannot save ctx for non-exisiting instruction"),
+            None => panic!("cannot get ctx for non-exisiting instruction"),
+        };
+    }
+
+    fn set_ctx(&mut self, val: Word) {
+        return match &mut self.current_instruction {
+            Some(current_instruciton) => current_instruciton.ctx = Some(val),
+            None => panic!("cannot set ctx for non-exisiting instruction"),
         };
     }
 
@@ -541,6 +585,40 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
             }
+            AddressingMode::ZeroPageY => {
+                cycles.push(Box::new(|cpu| {
+                    let addr: Byte = cpu.access_memory(cpu.program_counter);
+                    cpu.set_address_output(addr);
+                    cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let addr_output = cpu.address_output;
+                    let final_address = addr_output.wrapping_add(cpu.index_register_y.into());
+                    cpu.set_address_output(final_address);
+
+                    return TaskCycleVariant::Full;
+                }));
+            }
+            AddressingMode::ZeroPageX => {
+                cycles.push(Box::new(|cpu| {
+                    let addr: Byte = cpu.access_memory(cpu.program_counter);
+                    cpu.set_address_output(addr);
+                    cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let addr_output = cpu.address_output;
+                    let final_address = addr_output.wrapping_add(cpu.index_register_x.into());
+                    cpu.set_address_output(final_address);
+
+                    return TaskCycleVariant::Full;
+                }));
+            }
             AddressingMode::Absolute => {
                 cycles.push(Box::new(|cpu| {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
@@ -557,6 +635,46 @@ impl<'a> CPU<'a> {
 
                     return TaskCycleVariant::Full;
                 }));
+            }
+            AddressingMode::AbsoluteX => {
+                cycles.push(Box::new(|cpu| {
+                    let addr_lo = cpu.access_memory(cpu.program_counter);
+                    cpu.set_address_output_lo(addr_lo);
+                    cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let addr_hi = cpu.access_memory(cpu.program_counter);
+                    cpu.set_address_output_hi(addr_hi);
+                    cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                let mut offset_cycles = self.offset_address_output(self.index_register_x);
+                cycles.append(&mut offset_cycles);
+            }
+            AddressingMode::AbsoluteY => {
+                cycles.push(Box::new(|cpu| {
+                    let addr_lo = cpu.access_memory(cpu.program_counter);
+                    cpu.set_address_output_lo(addr_lo);
+                    cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let addr_hi = cpu.access_memory(cpu.program_counter);
+                    cpu.set_address_output_hi(addr_hi);
+                    cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                let mut offset_cycles = self.offset_address_output(self.index_register_y);
+                cycles.append(&mut offset_cycles);
             }
             AddressingMode::Indirect => {
                 cycles.push(Box::new(|cpu| {
@@ -629,6 +747,91 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
             }
+            AddressingMode::IndexIndirectX => {
+                cycles.push(Box::new(|cpu| {
+                    let addr: Byte = cpu.access_memory(cpu.program_counter);
+                    cpu.set_address_output(addr);
+                    cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let addr_output = cpu.address_output;
+                    let target_address = addr_output.wrapping_add(cpu.index_register_x.into());
+                    cpu.set_ctx(target_address);
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let tgt_addr = match cpu.get_current_instruction_ctx() {
+                        Some(addr) => *addr,
+                        None => panic!("could not retrieve address from ctx"),
+                    };
+
+                    let addr_lo = cpu.access_memory(tgt_addr);
+                    cpu.set_address_output_lo(addr_lo);
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let tgt_addr = match cpu.get_current_instruction_ctx() {
+                        Some(addr) => *addr,
+                        None => panic!("could not retrieve address from ctx"),
+                    };
+                    let addr_hi = cpu.access_memory(tgt_addr.wrapping_add(1));
+                    cpu.set_address_output_hi(addr_hi);
+
+                    return TaskCycleVariant::Full;
+                }));
+            }
+            AddressingMode::IndirectIndexY => {
+                cycles.push(Box::new(|cpu| {
+                    let addr: Byte = cpu.access_memory(cpu.program_counter);
+                    cpu.set_ctx(addr.into());
+                    cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let tgt_addr = match cpu.get_current_instruction_ctx() {
+                        Some(addr) => *addr,
+                        None => panic!("could not retrieve address from ctx"),
+                    };
+
+                    let addr_lo = cpu.access_memory(tgt_addr);
+                    cpu.set_address_output_lo(addr_lo);
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                cycles.push(Box::new(|cpu| {
+                    let tgt_addr = match cpu.get_current_instruction_ctx() {
+                        Some(addr) => *addr,
+                        None => panic!("could not retrieve address from ctx"),
+                    };
+                    let addr_hi = cpu.access_memory(tgt_addr.wrapping_add(1));
+                    cpu.set_address_output_hi(addr_hi);
+
+                    return TaskCycleVariant::Full;
+                }));
+
+                let mut offset_cycles = self.offset_address_output(self.index_register_y);
+                cycles.append(&mut offset_cycles);
+            }
+            AddressingMode::Immediate => {
+                cycles.push(Box::new(|cpu| {
+                    let addr = cpu.program_counter;
+                    cpu.set_address_output(addr);
+                    cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Partial;
+                }));
+            }
+            AddressingMode::Implicit | AddressingMode::Relative => {}
             _ => {
                 panic!("incorrect or unimplemented addressing used for queued fetch address");
             }
