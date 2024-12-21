@@ -53,6 +53,7 @@ struct InstructionExecution {
     ctx: InstructionCtx,
     starting_cycle: u64,
     length: u64,
+    cycle_queue: VecDeque<ScheduledCycle>,
 }
 
 pub struct CPU<'a> {
@@ -60,7 +61,6 @@ pub struct CPU<'a> {
     current_opcode: Option<Byte>,
     current_instruction: Option<InstructionExecution>,
     cycle: u64,
-    cycle_queue: VecDeque<ScheduledCycle>,
     program_counter: Word,
     stack_pointer: Byte,
     accumulator: Byte,
@@ -79,7 +79,6 @@ impl<'a> CPU<'a> {
             current_opcode: None,
             current_instruction: None,
             cycle: 0,
-            cycle_queue: VecDeque::new(),
             program_counter: RESET_VECTOR,
             stack_pointer: 0x00,
             accumulator: 0,
@@ -453,7 +452,12 @@ impl<'a> CPU<'a> {
     }
 
     fn run_next_cycle(&mut self) {
-        match self.cycle_queue.pop_front() {
+        let current_instruction = match &mut self.current_instruction {
+            Some(current) => current,
+            None => panic!("could not execute next cycle - there is no instruction scheduled"),
+        };
+
+        match current_instruction.cycle_queue.pop_front() {
             Some(next_cycle_runner) => {
                 next_cycle_runner(self);
                 self.tick();
@@ -466,28 +470,21 @@ impl<'a> CPU<'a> {
         }
     }
 
-    fn run_next_cycles(&mut self, count: usize) {
-        for _ in 1..=count {
-            self.run_next_cycle();
-        }
-    }
-
-    fn schedule_cycle(&mut self, cb: ScheduledCycle) {
-        self.cycle_queue.push_back(cb);
-    }
-
     fn schedule_instruction(&mut self, cycles: Vec<ScheduledCycle>) {
+        let cycles_count = cycles.len();
         self.current_instruction = Some(InstructionExecution {
-            opcode: self.current_opcode.unwrap_or(0),
             ctx: None,
+            cycle_queue: cycles.into(),
+            opcode: self.current_opcode.unwrap_or(0),
             starting_cycle: self.cycle,
             length: 0,
         });
-        let cycles_count = cycles.len();
-        cycles.into_iter().for_each(|cb| {
-            self.schedule_cycle(cb);
-        });
-        self.run_next_cycles(cycles_count); // TODO: this is temporary until all instructions are implemented in queued cycles form
+
+        // TODO: this is temporary until all instructions are implemented in queued cycles form.
+        // after converting all instructions "run_next_cycle" will be called separately on demand
+        for _ in 1..=cycles_count {
+            self.run_next_cycle();
+        }
     }
 
     fn get_address(&mut self, addr_mode: AddressingMode) -> Option<Word> {
