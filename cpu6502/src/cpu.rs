@@ -343,42 +343,6 @@ impl<'a> CPU<'a> {
         *ctx = Some(Word::from_le_bytes([lo, hi]));
     }
 
-    pub fn offset_program_counter(&mut self, offset: Byte) {
-        let [program_counter_lo, program_counter_hi] = self.program_counter.to_le_bytes();
-        let negative_offset_direction = 0b10000000 & offset > 0;
-        let directionless_offset = if negative_offset_direction {
-            (offset ^ 0b11111111) + 1
-        } else {
-            offset
-        };
-        let offset_program_counter_lo: Byte;
-        let carry: bool;
-
-        if negative_offset_direction {
-            (offset_program_counter_lo, carry) =
-                program_counter_lo.overflowing_sub(directionless_offset);
-        } else {
-            (offset_program_counter_lo, carry) =
-                program_counter_lo.overflowing_add(directionless_offset);
-        }
-
-        self.program_counter = Word::from_le_bytes([offset_program_counter_lo, program_counter_hi]);
-        self.tick();
-        if !carry {
-            return;
-        }
-
-        let offset_program_counter_hi: Byte;
-        if negative_offset_direction {
-            offset_program_counter_hi = program_counter_hi.wrapping_sub(1);
-        } else {
-            offset_program_counter_hi = program_counter_hi.wrapping_add(1);
-        }
-        self.program_counter =
-            Word::from_le_bytes([offset_program_counter_lo, offset_program_counter_hi]);
-        self.tick();
-    }
-
     fn read_memory(&mut self, addr_mode: AddressingMode) -> Option<Byte> {
         let address = match self.get_address(addr_mode) {
             Some(address) => address,
