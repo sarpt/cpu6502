@@ -141,22 +141,12 @@ impl<'a> CPU<'a> {
         self.program_counter = self.program_counter.wrapping_add(1);
     }
 
-    fn queued_increment_register(&mut self, register: Registers) {
+    fn increment_register(&mut self, register: Registers) {
         self.set_register(register, self.get_register(register).wrapping_add(1));
     }
 
-    fn increment_register(&mut self, register: Registers) {
-        self.queued_increment_register(register);
-        self.cycle += 1;
-    }
-
-    fn queued_decrement_register(&mut self, register: Registers) {
-        self.set_register(register, self.get_register(register).wrapping_sub(1));
-    }
-
     fn decrement_register(&mut self, register: Registers) {
-        self.queued_decrement_register(register);
-        self.cycle += 1;
+        self.set_register(register, self.get_register(register).wrapping_sub(1));
     }
 
     fn set_register(&mut self, register: Registers, value: Byte) {
@@ -330,11 +320,11 @@ impl<'a> CPU<'a> {
     fn push_byte_to_stack(&mut self, val: Byte) {
         let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
         self.put_into_memory(stack_addr, val);
-        self.queued_decrement_register(Registers::StackPointer);
+        self.decrement_register(Registers::StackPointer);
     }
 
     fn pop_byte_from_stack(&mut self) -> Byte {
-        self.queued_increment_register(Registers::StackPointer);
+        self.increment_register(Registers::StackPointer);
         let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
         let val = self.access_memory(stack_addr);
 
