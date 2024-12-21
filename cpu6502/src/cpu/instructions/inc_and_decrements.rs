@@ -1,4 +1,4 @@
-use crate::cpu::{AddressingMode, Registers, CPU};
+use crate::cpu::{AddressingMode, Registers, ScheduledCycle, TaskCycleVariant, CPU};
 
 fn decrement_cb(value: &u8) -> u8 {
     return value.wrapping_sub(1);
@@ -20,7 +20,11 @@ fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
 fn decrement_register(cpu: &mut CPU, register: Registers) {
     match register {
         Registers::IndexX | Registers::IndexY => {
-            cpu.decrement_register(register);
+            cpu.schedule_instruction(Vec::from([Box::new(move |cpu: &mut CPU| {
+                cpu.decrement_register(register);
+
+                return TaskCycleVariant::Full;
+            }) as ScheduledCycle]));
         }
         _ => panic!("decrement_register used with incorrect register"),
     }
@@ -62,7 +66,11 @@ fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
 fn increment_register(cpu: &mut CPU, register: Registers) {
     match register {
         Registers::IndexX | Registers::IndexY => {
-            cpu.increment_register(register);
+            cpu.schedule_instruction(Vec::from([Box::new(move |cpu: &mut CPU| {
+                cpu.increment_register(register);
+
+                return TaskCycleVariant::Full;
+            }) as ScheduledCycle]));
         }
         _ => panic!("increment_register used with incorrect register"),
     }
