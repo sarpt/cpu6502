@@ -1,12 +1,14 @@
 use crate::{
     consts::BRK_INTERRUPT_VECTOR,
-    cpu::{ChipVariant, ScheduledCycle, CPU},
+    cpu::{ChipVariant, ScheduledCycle, TaskCycleVariant, CPU},
 };
 
 pub fn nop(cpu: &mut CPU) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
     cycles.push(Box::new(|cpu: &mut CPU| {
         cpu.queued_increment_program_counter();
+
+        return TaskCycleVariant::Full;
     }));
 
     cpu.schedule_instruction(cycles);
@@ -17,23 +19,33 @@ pub fn brk(cpu: &mut CPU) {
     cycles.push(Box::new(|cpu: &mut CPU| {
         cpu.access_memory(cpu.program_counter); // fetch and discard
         cpu.queued_increment_program_counter();
+
+        return TaskCycleVariant::Full;
     }));
 
     cycles.push(Box::new(|cpu: &mut CPU| {
         cpu.push_byte_to_stack(cpu.get_program_counter_hi());
+
+        return TaskCycleVariant::Full;
     }));
 
     cycles.push(Box::new(|cpu: &mut CPU| {
         cpu.push_byte_to_stack(cpu.get_program_counter_lo());
+
+        return TaskCycleVariant::Full;
     }));
 
     cycles.push(Box::new(|cpu: &mut CPU| {
         cpu.push_byte_to_stack(cpu.processor_status.into());
+
+        return TaskCycleVariant::Full;
     }));
 
     cycles.push(Box::new(|cpu: &mut CPU| {
         let lo = cpu.access_memory(BRK_INTERRUPT_VECTOR);
         cpu.set_program_counter_lo(lo);
+
+        return TaskCycleVariant::Full;
     }));
 
     cycles.push(Box::new(|cpu: &mut CPU| {
@@ -41,11 +53,11 @@ pub fn brk(cpu: &mut CPU) {
         cpu.set_program_counter_hi(hi);
 
         cpu.processor_status.change_break_flag(true);
-        if cpu.chip_variant == ChipVariant::NMOS {
-            return;
+        if cpu.chip_variant != ChipVariant::NMOS {
+            cpu.processor_status.change_decimal_mode_flag(false);
         }
 
-        cpu.processor_status.change_decimal_mode_flag(false);
+        return TaskCycleVariant::Full;
     }));
 
     cpu.schedule_instruction(cycles);
@@ -55,25 +67,33 @@ pub fn rti(cpu: &mut CPU) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
     cycles.push(Box::new(|cpu: &mut CPU| {
         cpu.dummy_fetch();
+
+        return TaskCycleVariant::Full;
     }));
 
     // dummy tick, simulate separate stack pointer decrement
     // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
     // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
-    cycles.push(Box::new(|_: &mut CPU| {}));
+    cycles.push(Box::new(|_: &mut CPU| TaskCycleVariant::Full));
 
     cycles.push(Box::new(|cpu: &mut CPU| {
         cpu.processor_status = cpu.pop_byte_from_stack().into();
+
+        return TaskCycleVariant::Full;
     }));
 
     cycles.push(Box::new(|cpu: &mut CPU| {
         let lo = cpu.pop_byte_from_stack();
         cpu.set_program_counter_lo(lo);
+
+        return TaskCycleVariant::Full;
     }));
 
     cycles.push(Box::new(|cpu: &mut CPU| {
         let hi = cpu.pop_byte_from_stack();
         cpu.set_program_counter_hi(hi);
+
+        return TaskCycleVariant::Full;
     }));
 
     cpu.schedule_instruction(cycles);

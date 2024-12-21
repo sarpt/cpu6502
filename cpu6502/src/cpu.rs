@@ -44,8 +44,15 @@ enum Registers {
     IndexY,
 }
 
+#[derive(Copy, Clone, PartialEq)]
+enum TaskCycleVariant {
+    Aborted,
+    Partial,
+    Full,
+}
+
 type OpcodeHandler = fn(&mut CPU) -> ();
-type ScheduledCycle = Box<dyn Fn(&mut CPU) -> ()>;
+type ScheduledCycle = Box<dyn Fn(&mut CPU) -> TaskCycleVariant>;
 
 type InstructionCtx = Option<Word>;
 struct InstructionExecution {
@@ -459,8 +466,10 @@ impl<'a> CPU<'a> {
 
         match current_instruction.cycle_queue.pop_front() {
             Some(next_cycle_runner) => {
-                next_cycle_runner(self);
-                self.tick();
+                let cycle_variant = next_cycle_runner(self);
+                if cycle_variant == TaskCycleVariant::Full {
+                    self.tick()
+                };
             }
             None => {
                 panic!(
@@ -564,6 +573,8 @@ impl<'a> CPU<'a> {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output(addr);
                     cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
                 }));
             }
             AddressingMode::Absolute => {
@@ -571,12 +582,16 @@ impl<'a> CPU<'a> {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_lo(addr_lo);
                     cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
                 }));
 
                 cycles.push(Box::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_hi(addr_hi);
                     cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
                 }));
             }
             AddressingMode::Indirect => {
@@ -584,16 +599,20 @@ impl<'a> CPU<'a> {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
                     cpu.set_ctx_lo(addr_lo);
                     cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
                 }));
 
                 cycles.push(Box::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_ctx_hi(addr_hi);
                     cpu.queued_increment_program_counter();
+
+                    return TaskCycleVariant::Full;
                 }));
 
                 if self.chip_variant != ChipVariant::NMOS {
-                    cycles.push(Box::new(|_| {})); // dummy tick used for fixing incorrect address
+                    cycles.push(Box::new(|_| TaskCycleVariant::Full)); // dummy tick used for fixing incorrect address
 
                     cycles.push(Box::new(|cpu| {
                         let addr = match cpu.get_current_instruction_ctx() {
@@ -602,6 +621,8 @@ impl<'a> CPU<'a> {
                         };
                         let addr_lo = cpu.access_memory(addr);
                         cpu.set_address_output_lo(addr_lo);
+
+                        return TaskCycleVariant::Full;
                     }));
 
                     cycles.push(Box::new(|cpu| {
@@ -611,6 +632,8 @@ impl<'a> CPU<'a> {
                         };
                         let addr_hi = cpu.access_memory(addr + 1);
                         cpu.set_address_output_hi(addr_hi);
+
+                        return TaskCycleVariant::Full;
                     }));
                     return cycles;
                 }
@@ -622,6 +645,8 @@ impl<'a> CPU<'a> {
                     };
                     let addr_lo = cpu.access_memory(addr);
                     cpu.set_address_output_lo(addr_lo);
+
+                    return TaskCycleVariant::Full;
                 }));
 
                 cycles.push(Box::new(|cpu| {
@@ -636,6 +661,8 @@ impl<'a> CPU<'a> {
                     };
                     let addr_hi = cpu.access_memory(target_addr);
                     cpu.set_address_output_hi(addr_hi);
+
+                    return TaskCycleVariant::Full;
                 }));
             }
             _ => {
