@@ -1,4 +1,4 @@
-use crate::cpu::{AddressingMode, Registers, CPU};
+use crate::cpu::{AddressingMode, Registers, ScheduledCycle, TaskCycleVariant, CPU};
 
 fn ld(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     let value = match cpu.read_memory(addr_mode) {
@@ -82,11 +82,19 @@ pub fn ldx_ay(cpu: &mut CPU) {
 }
 
 pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
-    let value = cpu.get_register(register);
-    match cpu.write_memory(addr_mode, value) {
-        Some(()) => (),
-        None => panic!("store_in_memory used with incorrect address mode"),
-    }
+    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+
+    let addr_cycles = &mut cpu.queued_get_address(addr_mode);
+    cycles.append(addr_cycles);
+
+    cycles.push(Box::new(move |cpu| {
+        let value = cpu.get_register(register);
+        cpu.put_into_memory(cpu.address_output, value);
+
+        return TaskCycleVariant::Full;
+    }));
+
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn sta_zp(cpu: &mut CPU) {

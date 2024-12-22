@@ -414,19 +414,6 @@ impl<'a> CPU<'a> {
         return Some((value, modified_value));
     }
 
-    fn write_memory(&mut self, addr_mode: AddressingMode, value: Byte) -> Option<()> {
-        let address = match self.get_address(addr_mode) {
-            Some(address) => address,
-            None => return None,
-        };
-        // extra cycle to fix address
-        self.tick();
-
-        self.put_into_memory(address, value);
-
-        return Some(());
-    }
-
     fn get_program_counter_lo(&self) -> Byte {
         return self.program_counter.to_le_bytes()[0];
     }
