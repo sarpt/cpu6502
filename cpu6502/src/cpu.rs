@@ -391,68 +391,6 @@ impl<'a> CPU<'a> {
         return Some(value);
     }
 
-    fn modify_memory(
-        &mut self,
-        addr_mode: AddressingMode,
-        cb: &dyn Fn(&u8) -> u8,
-    ) -> Option<(Byte, Byte)> {
-        let address = match self.get_address(addr_mode) {
-            Some(address) => address,
-            None => return None,
-        };
-
-        let value = self.access_memory(address);
-        // extra cycle to fix address
-        self.tick();
-
-        let modified_value = cb(&value);
-        self.tick();
-
-        self.put_into_memory(address, modified_value);
-        self.tick();
-
-        return Some((value, modified_value));
-    }
-
-    fn queued_modify_memory(
-        &mut self,
-        addr_mode: AddressingMode,
-        cb: Box<dyn Fn(&u8) -> u8>,
-    ) -> Vec<ScheduledCycle> {
-        let mut cycles = self.queued_get_address(addr_mode);
-
-        cycles.push(Box::new(|cpu| {
-            let value = cpu.access_memory(cpu.address_output);
-            cpu.set_ctx_lo(value);
-
-            return TaskCycleVariant::Full;
-        }));
-
-        cycles.push(Box::new(move |cpu| {
-            let value = match cpu.get_current_instruction_ctx() {
-                Some(ctx) => ctx.to_le_bytes()[0],
-                None => panic!("unexpected lack of value in instruction context to modify"),
-            };
-
-            let modified_value = cb(&value);
-            cpu.set_ctx_hi(modified_value);
-
-            return TaskCycleVariant::Full;
-        }));
-
-        cycles.push(Box::new(|cpu| {
-            let modified_value = match cpu.get_current_instruction_ctx() {
-                Some(ctx) => ctx.to_le_bytes()[1],
-                None => panic!("unexpected lack of value in instruction context to modify"),
-            };
-            cpu.put_into_memory(cpu.address_output, modified_value);
-
-            return TaskCycleVariant::Full;
-        }));
-
-        return cycles;
-    }
-
     fn get_program_counter_lo(&self) -> Byte {
         return self.program_counter.to_le_bytes()[0];
     }
