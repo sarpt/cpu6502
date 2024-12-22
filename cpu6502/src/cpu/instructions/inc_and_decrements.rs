@@ -9,7 +9,7 @@ fn increment_cb(value: &u8) -> u8 {
 }
 
 fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.queued_modify_memory(addr_mode, Box::new(decrement_cb));
+    let mut cycles = modify_memory(cpu, addr_mode, Box::new(decrement_cb));
 
     cycles.push(Box::new(|cpu| {
         let modified_value = match cpu.get_current_instruction_ctx() {
@@ -62,7 +62,7 @@ pub fn dey_im(cpu: &mut CPU) {
 }
 
 fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.queued_modify_memory(addr_mode, Box::new(increment_cb));
+    let mut cycles = modify_memory(cpu, addr_mode, Box::new(increment_cb));
 
     cycles.push(Box::new(|cpu| {
         let modified_value = match cpu.get_current_instruction_ctx() {
@@ -112,6 +112,45 @@ pub fn inx_im(cpu: &mut CPU) {
 
 pub fn iny_im(cpu: &mut CPU) {
     increment_register(cpu, Registers::IndexY);
+}
+
+fn modify_memory(
+    cpu: &mut CPU,
+    addr_mode: AddressingMode,
+    cb: Box<dyn Fn(&u8) -> u8>,
+) -> Vec<ScheduledCycle> {
+    let mut cycles = cpu.queued_get_address(addr_mode);
+
+    cycles.push(Box::new(|cpu| {
+        let value = cpu.access_memory(cpu.address_output);
+        cpu.set_ctx_lo(value);
+
+        return TaskCycleVariant::Full;
+    }));
+
+    cycles.push(Box::new(move |cpu| {
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(ctx) => ctx.to_le_bytes()[0],
+            None => panic!("unexpected lack of value in instruction context to modify"),
+        };
+
+        let modified_value = cb(&value);
+        cpu.set_ctx_hi(modified_value);
+
+        return TaskCycleVariant::Full;
+    }));
+
+    cycles.push(Box::new(|cpu| {
+        let modified_value = match cpu.get_current_instruction_ctx() {
+            Some(ctx) => ctx.to_le_bytes()[1],
+            None => panic!("unexpected lack of value in instruction context to modify"),
+        };
+        cpu.put_into_memory(cpu.address_output, modified_value);
+
+        return TaskCycleVariant::Full;
+    }));
+
+    return cycles;
 }
 
 #[cfg(test)]
