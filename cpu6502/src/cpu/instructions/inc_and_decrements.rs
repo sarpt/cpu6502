@@ -9,12 +9,19 @@ fn increment_cb(value: &u8) -> u8 {
 }
 
 fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
-    match cpu.modify_memory(addr_mode, &decrement_cb) {
-        Some((_, modified_value)) => {
-            cpu.set_status_of_value(modified_value);
-        }
-        None => panic!("decrement_memory used with incorrect addressing mode"),
-    };
+    let mut cycles = cpu.queued_modify_memory(addr_mode, Box::new(decrement_cb));
+
+    cycles.push(Box::new(|cpu| {
+        let modified_value = match cpu.get_current_instruction_ctx() {
+            Some(val) => val.to_le_bytes()[1],
+            None => panic!("unexpected lack of instruction ctx after memory modification"),
+        };
+        cpu.set_status_of_value(modified_value);
+
+        return TaskCycleVariant::Partial;
+    }));
+
+    cpu.schedule_instruction(cycles);
 }
 
 fn decrement_register(cpu: &mut CPU, register: Registers) {
@@ -55,12 +62,19 @@ pub fn dey_im(cpu: &mut CPU) {
 }
 
 fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
-    match cpu.modify_memory(addr_mode, &increment_cb) {
-        Some((_, modified_value)) => {
-            cpu.set_status_of_value(modified_value);
-        }
-        None => panic!("increment_memory used with incorrect addressing mode"),
-    };
+    let mut cycles = cpu.queued_modify_memory(addr_mode, Box::new(increment_cb));
+
+    cycles.push(Box::new(|cpu| {
+        let modified_value = match cpu.get_current_instruction_ctx() {
+            Some(val) => val.to_le_bytes()[1],
+            None => panic!("unexpected lack of instruction ctx after memory modification"),
+        };
+        cpu.set_status_of_value(modified_value);
+
+        return TaskCycleVariant::Partial;
+    }));
+
+    cpu.schedule_instruction(cycles);
 }
 
 fn increment_register(cpu: &mut CPU, register: Registers) {
