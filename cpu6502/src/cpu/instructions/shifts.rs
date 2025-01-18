@@ -74,7 +74,7 @@ fn op_mem(
 ) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
 
-    let mut addr_cycles = cpu.queued_get_address(addr_mode);
+    let mut addr_cycles = cpu.get_address(addr_mode);
     cycles.append(&mut addr_cycles);
 
     cycles.push(Box::new(|cpu| {

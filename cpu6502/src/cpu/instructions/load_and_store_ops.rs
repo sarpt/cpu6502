@@ -91,7 +91,7 @@ pub fn ldx_ay(cpu: &mut CPU) {
 pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
 
-    let addr_cycles = &mut cpu.queued_get_address(addr_mode);
+    let addr_cycles = &mut cpu.get_address(addr_mode);
     cycles.append(addr_cycles);
 
     cycles.push(Box::new(move |cpu| {

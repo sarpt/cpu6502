@@ -119,7 +119,7 @@ fn modify_memory(
     addr_mode: AddressingMode,
     cb: Box<dyn Fn(&u8) -> u8>,
 ) -> Vec<ScheduledCycle> {
-    let mut cycles = cpu.queued_get_address(addr_mode);
+    let mut cycles = cpu.get_address(addr_mode);
 
     cycles.push(Box::new(|cpu| {
         let value = cpu.access_memory(cpu.address_output);

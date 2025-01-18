@@ -378,7 +378,7 @@ impl<'a> CPU<'a> {
     }
 
     fn read_memory(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledCycle> {
-        let mut cycles = self.queued_get_address(addr_mode);
+        let mut cycles = self.get_address(addr_mode);
 
         cycles.push(Box::new(move |cpu: &mut CPU| {
             let value = cpu.access_memory(cpu.address_output);
@@ -461,76 +461,7 @@ impl<'a> CPU<'a> {
         }
     }
 
-    fn get_address(&mut self, addr_mode: AddressingMode) -> Option<Word> {
-        match addr_mode {
-            AddressingMode::ZeroPage => {
-                return Some(self.fetch_zero_page_address());
-            }
-            AddressingMode::IndexIndirectX => {
-                let address =
-                    self.fetch_zero_page_address_with_idx_register_offset(Registers::IndexX);
-                let effective_address = self.fetch_address_from(address);
-
-                return Some(effective_address);
-            }
-            AddressingMode::IndirectIndexY => {
-                let address = self.fetch_zero_page_address();
-                let partial = self.fetch_address_from(address);
-                let effective_address = self.offset_addr(partial, self.index_register_y);
-
-                return Some(effective_address);
-            }
-            AddressingMode::ZeroPageY => {
-                return Some(
-                    self.fetch_zero_page_address_with_idx_register_offset(Registers::IndexY),
-                );
-            }
-            AddressingMode::ZeroPageX => {
-                return Some(
-                    self.fetch_zero_page_address_with_idx_register_offset(Registers::IndexX),
-                );
-            }
-            AddressingMode::Absolute => {
-                return Some(self.fetch_address());
-            }
-            AddressingMode::AbsoluteX => {
-                let partial = self.fetch_address();
-                let effective_addr = self.offset_addr(partial, self.index_register_x);
-                return Some(effective_addr);
-            }
-            AddressingMode::AbsoluteY => {
-                let partial = self.fetch_address();
-                let effective_addr = self.offset_addr(partial, self.index_register_y);
-                return Some(effective_addr);
-            }
-            AddressingMode::Indirect => {
-                let address = self.fetch_address();
-                if self.chip_variant != ChipVariant::NMOS {
-                    self.tick();
-                    return Some(self.fetch_address_from(address));
-                }
-
-                let should_incorrectly_jump = address & 0x00FF == 0x00FF;
-                if !should_incorrectly_jump {
-                    return Some(self.fetch_address_from(address));
-                };
-
-                let hi = self.access_memory(address);
-                let lo = self.access_memory(address & 0xFF00);
-                let incorrect_jmp_address = Word::from_le_bytes([hi, lo]);
-
-                return Some(incorrect_jmp_address);
-            }
-            AddressingMode::Immediate => {
-                let addr = self.program_counter;
-                self.program_counter += 1;
-                return Some(addr);
-            }
-            _ => None,
-        }
-    }
-
-    fn queued_get_address(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledCycle> {
+    fn get_address(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledCycle> {
         let mut cycles: Vec<ScheduledCycle> = Vec::new();
         match addr_mode {
             AddressingMode::ZeroPage => {
