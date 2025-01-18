@@ -1,14 +1,21 @@
-use crate::cpu::{AddressingMode, Registers, CPU};
+use crate::cpu::{AddressingMode, Registers, TaskCycleVariant, CPU};
 
 pub fn and(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let value = match cpu.read_memory(addr_mode) {
-        Some(value) => value,
-        None => panic!("and used with incorrect addressing mode"),
-    };
+    let mut cycles = cpu.queued_read_memory(addr_mode);
 
-    let result_value = cpu.get_register(Registers::Accumulator) & value;
+    cycles.push(Box::new(move |cpu| {
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(val) => val.to_le_bytes()[0],
+            None => panic!("unexpected lack of instruction ctx after memory read"),
+        };
+        let result_value = cpu.get_register(Registers::Accumulator) & value;
 
-    cpu.set_register(Registers::Accumulator, result_value);
+        cpu.set_register(Registers::Accumulator, result_value);
+
+        return TaskCycleVariant::Partial;
+    }));
+
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn and_im(cpu: &mut CPU) {
@@ -44,14 +51,21 @@ pub fn and_iny(cpu: &mut CPU) {
 }
 
 pub fn eor(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let value = match cpu.read_memory(addr_mode) {
-        Some(value) => value,
-        None => panic!("eor used with incorrect addressing mode"),
-    };
+    let mut cycles = cpu.queued_read_memory(addr_mode);
 
-    let result_value = cpu.get_register(Registers::Accumulator) ^ value;
+    cycles.push(Box::new(move |cpu| {
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(val) => val.to_le_bytes()[0],
+            None => panic!("unexpected lack of instruction ctx after memory read"),
+        };
+        let result_value = cpu.get_register(Registers::Accumulator) ^ value;
 
-    cpu.set_register(Registers::Accumulator, result_value);
+        cpu.set_register(Registers::Accumulator, result_value);
+
+        return TaskCycleVariant::Partial;
+    }));
+
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn eor_im(cpu: &mut CPU) {
@@ -87,14 +101,22 @@ pub fn eor_iny(cpu: &mut CPU) {
 }
 
 pub fn ora(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let value = match cpu.read_memory(addr_mode) {
-        Some(value) => value,
-        None => panic!("ora used with incorrect addressing mode"),
-    };
+    let mut cycles = cpu.queued_read_memory(addr_mode);
 
-    let result_value = cpu.get_register(Registers::Accumulator) | value;
+    cycles.push(Box::new(move |cpu| {
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(val) => val.to_le_bytes()[0],
+            None => panic!("unexpected lack of instruction ctx after memory read"),
+        };
 
-    cpu.set_register(Registers::Accumulator, result_value);
+        let result_value = cpu.get_register(Registers::Accumulator) | value;
+
+        cpu.set_register(Registers::Accumulator, result_value);
+
+        return TaskCycleVariant::Partial;
+    }));
+
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn ora_im(cpu: &mut CPU) {
@@ -130,12 +152,20 @@ pub fn ora_iny(cpu: &mut CPU) {
 }
 
 pub fn bit(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let value = match cpu.read_memory(addr_mode) {
-        Some(value) => value,
-        None => panic!("bit used with incorrect addressing mode"),
-    };
+    let mut cycles = cpu.queued_read_memory(addr_mode);
 
-    cpu.set_bit_status(cpu.accumulator & value);
+    cycles.push(Box::new(move |cpu| {
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(val) => val.to_le_bytes()[0],
+            None => panic!("unexpected lack of instruction ctx after memory read"),
+        };
+
+        cpu.set_bit_status(cpu.accumulator & value);
+
+        return TaskCycleVariant::Partial;
+    }));
+
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn bit_zp(cpu: &mut CPU) {
