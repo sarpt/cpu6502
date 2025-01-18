@@ -124,23 +124,31 @@ pub fn operations_with_carry(
     addr_mode: AddressingMode,
     op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
 ) {
-    let value = match cpu.read_memory(addr_mode) {
-        Some(value) => value,
-        None => panic!("arithmetic operation with carry used with incorrect address mode"),
-    };
+    let mut cycles = cpu.queued_read_memory(addr_mode);
 
-    let accumulator = cpu.get_register(Registers::Accumulator);
-    let (value, carry, overflow) = op(value, accumulator, cpu.processor_status.get_carry_flag());
+    cycles.push(Box::new(move |cpu| {
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(val) => val.to_le_bytes()[0],
+            None => panic!("unexpected lack of instruction ctx after memory read"),
+        };
+        let accumulator = cpu.get_register(Registers::Accumulator);
+        let (value, carry, overflow) =
+            op(value, accumulator, cpu.processor_status.get_carry_flag());
 
-    cpu.set_register(Registers::Accumulator, value);
+        cpu.set_register(Registers::Accumulator, value);
 
-    if carry != FlagOp::Unchanged {
-        cpu.processor_status.change_carry_flag(carry == FlagOp::Set)
-    }
-    if overflow != FlagOp::Unchanged {
-        cpu.processor_status
-            .change_overflow_flag(overflow == FlagOp::Set)
-    }
+        if carry != FlagOp::Unchanged {
+            cpu.processor_status.change_carry_flag(carry == FlagOp::Set)
+        }
+        if overflow != FlagOp::Unchanged {
+            cpu.processor_status
+                .change_overflow_flag(overflow == FlagOp::Set)
+        }
+
+        return TaskCycleVariant::Partial;
+    }));
+
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn adc_im(cpu: &mut CPU) {
