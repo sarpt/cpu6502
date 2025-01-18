@@ -377,21 +377,7 @@ impl<'a> CPU<'a> {
         *ctx = Some(Word::from_le_bytes([lo, hi]));
     }
 
-    fn read_memory(&mut self, addr_mode: AddressingMode) -> Option<Byte> {
-        let address = match self.get_address(addr_mode) {
-            Some(address) => address,
-            None => return None,
-        };
-
-        let value = self.access_memory(address);
-        if !access_cycle_has_been_done_during_address_fixing(addr_mode) {
-            self.tick();
-        }
-
-        return Some(value);
-    }
-
-    fn queued_read_memory(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledCycle> {
+    fn read_memory(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledCycle> {
         let mut cycles = self.queued_get_address(addr_mode);
 
         cycles.push(Box::new(move |cpu: &mut CPU| {

@@ -1,7 +1,7 @@
 use crate::cpu::{AddressingMode, Registers, TaskCycleVariant, CPU};
 
 pub fn and(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.queued_read_memory(addr_mode);
+    let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
         let value = match cpu.get_current_instruction_ctx() {
@@ -51,7 +51,7 @@ pub fn and_iny(cpu: &mut CPU) {
 }
 
 pub fn eor(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.queued_read_memory(addr_mode);
+    let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
         let value = match cpu.get_current_instruction_ctx() {
@@ -101,7 +101,7 @@ pub fn eor_iny(cpu: &mut CPU) {
 }
 
 pub fn ora(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.queued_read_memory(addr_mode);
+    let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
         let value = match cpu.get_current_instruction_ctx() {
@@ -152,7 +152,7 @@ pub fn ora_iny(cpu: &mut CPU) {
 }
 
 pub fn bit(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.queued_read_memory(addr_mode);
+    let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
         let value = match cpu.get_current_instruction_ctx() {
