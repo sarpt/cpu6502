@@ -82,7 +82,7 @@ pub enum FlagOp {
     Clear,
 }
 
-fn adc(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp) {
+fn adc(val: Byte, acc: Byte, _carry: bool) -> (Byte, FlagOp, FlagOp) {
     let (result, carry) = acc.overflowing_add(val);
     // if a sign (0x80) of a result differs from signs of both inputs
     let overflow = (acc ^ result) & (val ^ result) & 0x80 > 0;
