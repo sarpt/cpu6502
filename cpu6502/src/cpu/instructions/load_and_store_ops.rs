@@ -1,12 +1,19 @@
 use crate::cpu::{AddressingMode, Registers, ScheduledCycle, TaskCycleVariant, CPU};
 
 fn ld(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
-    let value = match cpu.read_memory(addr_mode) {
-        Some(value) => value,
-        None => panic!("ld used with incorrect address mode"),
-    };
+    let mut cycles = cpu.queued_read_memory(addr_mode);
 
-    cpu.set_register(register, value);
+    cycles.push(Box::new(move |cpu| {
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(val) => val.to_le_bytes()[0],
+            None => panic!("unexpected lack of instruction ctx after memory read"),
+        };
+        cpu.set_register(register, value);
+
+        return TaskCycleVariant::Partial;
+    }));
+
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn lda_im(cpu: &mut CPU) {

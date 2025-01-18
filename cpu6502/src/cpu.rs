@@ -391,6 +391,23 @@ impl<'a> CPU<'a> {
         return Some(value);
     }
 
+    fn queued_read_memory(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledCycle> {
+        let mut cycles = self.queued_get_address(addr_mode);
+
+        cycles.push(Box::new(move |cpu: &mut CPU| {
+            let value = cpu.access_memory(cpu.address_output);
+            cpu.set_ctx_lo(value);
+
+            if access_cycle_has_been_done_during_address_fixing(addr_mode) {
+                return TaskCycleVariant::Partial;
+            }
+
+            return TaskCycleVariant::Full;
+        }));
+
+        return cycles;
+    }
+
     fn get_program_counter_lo(&self) -> Byte {
         return self.program_counter.to_le_bytes()[0];
     }
@@ -549,7 +566,7 @@ impl<'a> CPU<'a> {
                 }));
 
                 cycles.push(Box::new(|cpu| {
-                    let addr_output = cpu.address_output;
+                    let addr_output = cpu.address_output as Byte;
                     let final_address = addr_output.wrapping_add(cpu.index_register_y.into());
                     cpu.set_address_output(final_address);
 
@@ -566,7 +583,7 @@ impl<'a> CPU<'a> {
                 }));
 
                 cycles.push(Box::new(|cpu| {
-                    let addr_output = cpu.address_output;
+                    let addr_output = cpu.address_output as Byte;
                     let final_address = addr_output.wrapping_add(cpu.index_register_x.into());
                     cpu.set_address_output(final_address);
 
