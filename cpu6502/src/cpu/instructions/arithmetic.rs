@@ -4,7 +4,7 @@ use crate::{
 };
 
 fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
-    let mut cycles = cpu.queued_read_memory(addr_mode);
+    let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
         let value = match cpu.get_current_instruction_ctx() {
@@ -124,7 +124,7 @@ pub fn operations_with_carry(
     addr_mode: AddressingMode,
     op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
 ) {
-    let mut cycles = cpu.queued_read_memory(addr_mode);
+    let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
         let value = match cpu.get_current_instruction_ctx() {
