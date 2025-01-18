@@ -1,7 +1,7 @@
 use crate::cpu::{AddressingMode, ScheduledCycle, TaskCycleVariant, CPU};
 
 pub fn jsr_a(cpu: &mut CPU) {
-    let mut cycles = cpu.queued_get_address(AddressingMode::Absolute);
+    let mut cycles = cpu.get_address(AddressingMode::Absolute);
 
     cycles.push(Box::new(|cpu: &mut CPU| {
         let [_, ret_program_counter_hi] = cpu.program_counter.clone().wrapping_sub(1).to_le_bytes();
@@ -63,7 +63,7 @@ pub fn rts(cpu: &mut CPU) {
 }
 
 fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.queued_get_address(addr_mode);
+    let mut cycles = cpu.get_address(addr_mode);
     cycles.push(Box::new(|cpu| {
         cpu.program_counter = cpu.address_output;
 
