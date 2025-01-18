@@ -4,10 +4,7 @@ pub fn and(cpu: &mut CPU, addr_mode: AddressingMode) {
     let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
-        let value = match cpu.get_current_instruction_ctx() {
-            Some(val) => val.to_le_bytes()[0],
-            None => panic!("unexpected lack of instruction ctx after memory read"),
-        };
+        let value = cpu.get_read_memory_result();
         let result_value = cpu.get_register(Registers::Accumulator) & value;
 
         cpu.set_register(Registers::Accumulator, result_value);
@@ -54,10 +51,7 @@ pub fn eor(cpu: &mut CPU, addr_mode: AddressingMode) {
     let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
-        let value = match cpu.get_current_instruction_ctx() {
-            Some(val) => val.to_le_bytes()[0],
-            None => panic!("unexpected lack of instruction ctx after memory read"),
-        };
+        let value = cpu.get_read_memory_result();
         let result_value = cpu.get_register(Registers::Accumulator) ^ value;
 
         cpu.set_register(Registers::Accumulator, result_value);
@@ -104,11 +98,7 @@ pub fn ora(cpu: &mut CPU, addr_mode: AddressingMode) {
     let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
-        let value = match cpu.get_current_instruction_ctx() {
-            Some(val) => val.to_le_bytes()[0],
-            None => panic!("unexpected lack of instruction ctx after memory read"),
-        };
-
+        let value = cpu.get_read_memory_result();
         let result_value = cpu.get_register(Registers::Accumulator) | value;
 
         cpu.set_register(Registers::Accumulator, result_value);
@@ -155,11 +145,7 @@ pub fn bit(cpu: &mut CPU, addr_mode: AddressingMode) {
     let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
-        let value = match cpu.get_current_instruction_ctx() {
-            Some(val) => val.to_le_bytes()[0],
-            None => panic!("unexpected lack of instruction ctx after memory read"),
-        };
-
+        let value = cpu.get_read_memory_result();
         cpu.set_bit_status(cpu.accumulator & value);
 
         return TaskCycleVariant::Partial;
