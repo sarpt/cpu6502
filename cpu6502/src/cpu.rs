@@ -174,23 +174,6 @@ impl<'a> CPU<'a> {
         };
     }
 
-    fn offset_addr(&mut self, addr: Word, offset: Byte) -> Word {
-        let [lo, mut hi] = addr.to_le_bytes();
-        let (new_lo, carry) = lo.overflowing_add(offset);
-        let mut address = Word::from_le_bytes([new_lo, hi]);
-        self.cycle += 1;
-
-        if !carry {
-            return address;
-        };
-
-        hi = hi.wrapping_add(1);
-        address = Word::from_le_bytes([new_lo, hi]);
-        self.cycle += 1;
-
-        return address;
-    }
-
     fn offset_address_output(&mut self, offset: Byte) -> Vec<ScheduledCycle> {
         let mut cycles: Vec<ScheduledCycle> = Vec::new();
 
@@ -235,15 +218,6 @@ impl<'a> CPU<'a> {
         return opcode;
     }
 
-    fn fetch_address(&mut self) -> Word {
-        let lo = self.access_memory(self.program_counter);
-        self.increment_program_counter();
-        let hi = self.access_memory(self.program_counter);
-        self.increment_program_counter();
-
-        return Word::from_le_bytes([lo, hi]);
-    }
-
     fn fetch_address_from(&mut self, addr: Word) -> Word {
         let lo = self.access_memory(addr);
         self.cycle += 1;
@@ -251,25 +225,6 @@ impl<'a> CPU<'a> {
         self.cycle += 1;
 
         return Word::from_le_bytes([lo, hi]);
-    }
-
-    fn fetch_zero_page_address(&mut self) -> Word {
-        let address: Word = self.access_memory(self.program_counter).into();
-        self.increment_program_counter();
-
-        return address;
-    }
-
-    fn fetch_zero_page_address_lsb(&mut self) -> Byte {
-        let address: Byte = self.access_memory(self.program_counter);
-        self.increment_program_counter();
-
-        return address;
-    }
-
-    fn fetch_zero_page_address_with_idx_register_offset(&mut self, register: Registers) -> Word {
-        let zero_page_addr = self.fetch_zero_page_address_lsb();
-        return self.sum_with_idx_register(zero_page_addr, register).into();
     }
 
     fn set_status_of_register(&mut self, register: Registers) {
@@ -303,18 +258,6 @@ impl<'a> CPU<'a> {
             .change_overflow_flag((value & 0b01000000) > 0);
         self.processor_status
             .change_negative_flag((value & 0b10000000) > 0);
-    }
-
-    fn sum_with_idx_register(&mut self, val: Byte, register: Registers) -> Byte {
-        let register_value = match register {
-            Registers::IndexX | Registers::IndexY => self.get_register(register),
-            _ => panic!("cannot sum with non-idx register"),
-        };
-
-        let res = val.wrapping_add(register_value);
-        self.cycle += 1;
-
-        return res;
     }
 
     fn push_byte_to_stack(&mut self, val: Byte) {
