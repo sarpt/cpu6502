@@ -1,15 +1,22 @@
 use crate::{
     consts::Byte,
-    cpu::{AddressingMode, Registers, CPU},
+    cpu::{AddressingMode, Registers, TaskCycleVariant, CPU},
 };
 
 fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
-    let value = match cpu.read_memory(addr_mode) {
-        Some(value) => value,
-        None => panic!("compare used with incorrect address mode"),
-    };
+    let mut cycles = cpu.queued_read_memory(addr_mode);
 
-    cpu.set_cmp_status(register, value);
+    cycles.push(Box::new(move |cpu| {
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(val) => val.to_le_bytes()[0],
+            None => panic!("unexpected lack of instruction ctx after memory read"),
+        };
+        cpu.set_cmp_status(register, value);
+
+        return TaskCycleVariant::Partial;
+    }));
+
+    cpu.schedule_instruction(cycles);
 }
 
 pub fn cmp_im(cpu: &mut CPU) {
