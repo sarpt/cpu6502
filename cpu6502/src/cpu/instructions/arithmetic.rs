@@ -7,10 +7,7 @@ fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
-        let value = match cpu.get_current_instruction_ctx() {
-            Some(val) => val.to_le_bytes()[0],
-            None => panic!("unexpected lack of instruction ctx after memory read"),
-        };
+        let value = cpu.get_read_memory_result();
         cpu.set_cmp_status(register, value);
 
         return TaskCycleVariant::Partial;
@@ -127,10 +124,7 @@ pub fn operations_with_carry(
     let mut cycles = cpu.read_memory(addr_mode);
 
     cycles.push(Box::new(move |cpu| {
-        let value = match cpu.get_current_instruction_ctx() {
-            Some(val) => val.to_le_bytes()[0],
-            None => panic!("unexpected lack of instruction ctx after memory read"),
-        };
+        let value = cpu.get_read_memory_result();
         let accumulator = cpu.get_register(Registers::Accumulator);
         let (value, carry, overflow) =
             op(value, accumulator, cpu.processor_status.get_carry_flag());

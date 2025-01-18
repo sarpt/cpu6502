@@ -286,10 +286,30 @@ impl<'a> CPU<'a> {
         self.address_output = Word::from_le_bytes([self.address_output.to_le_bytes()[0], hi]);
     }
 
-    fn get_current_instruction_ctx(&mut self) -> &mut Option<Word> {
-        return match &mut self.current_instruction {
-            Some(current_instruciton) => &mut current_instruciton.ctx,
+    fn get_current_instruction_ctx(&self) -> Option<Word> {
+        return match &self.current_instruction {
+            Some(current_instruciton) => current_instruciton.ctx,
             None => panic!("cannot get ctx for non-exisiting instruction"),
+        };
+    }
+
+    fn set_current_instruction_ctx(&mut self, vals: (Option<Byte>, Option<Byte>)) {
+        match &mut self.current_instruction {
+            Some(current_instruction) => {
+                let [old_lo, old_hi] = current_instruction.ctx.unwrap_or(0).to_le_bytes();
+                let new_lo = vals.0.unwrap_or(old_lo);
+                let new_hi = vals.1.unwrap_or(old_hi);
+                let new_val = Word::from_le_bytes([new_lo, new_hi]);
+                current_instruction.ctx = Some(new_val);
+            }
+            None => panic!("cannot get ctx for non-exisiting instruction"),
+        };
+    }
+
+    fn get_read_memory_result(&self) -> Byte {
+        return match self.get_current_instruction_ctx() {
+            Some(val) => val.to_le_bytes()[0],
+            None => panic!("unexpected lack of instruction ctx after memory read"),
         };
     }
 
@@ -301,23 +321,11 @@ impl<'a> CPU<'a> {
     }
 
     fn set_ctx_lo(&mut self, lo: Byte) {
-        let ctx = self.get_current_instruction_ctx();
-        let hi = match &ctx {
-            Some(ctx) => ctx.to_le_bytes()[1],
-            None => 0,
-        };
-
-        *ctx = Some(Word::from_le_bytes([lo, hi]));
+        self.set_current_instruction_ctx((Some(lo), None));
     }
 
     fn set_ctx_hi(&mut self, hi: Byte) {
-        let ctx = self.get_current_instruction_ctx();
-        let lo = match &ctx {
-            Some(ctx) => ctx.to_le_bytes()[0],
-            None => 0,
-        };
-
-        *ctx = Some(Word::from_le_bytes([lo, hi]));
+        self.set_current_instruction_ctx((None, Some(hi)));
     }
 
     fn read_memory(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledCycle> {
@@ -529,7 +537,7 @@ impl<'a> CPU<'a> {
 
                     cycles.push(Box::new(|cpu| {
                         let addr = match cpu.get_current_instruction_ctx() {
-                            Some(addr) => *addr,
+                            Some(addr) => addr,
                             None => panic!("could not retrieve address from ctx"),
                         };
                         let addr_lo = cpu.access_memory(addr);
@@ -540,7 +548,7 @@ impl<'a> CPU<'a> {
 
                     cycles.push(Box::new(|cpu| {
                         let addr = match cpu.get_current_instruction_ctx() {
-                            Some(addr) => *addr,
+                            Some(addr) => addr,
                             None => panic!("could not retrieve address from ctx"),
                         };
                         let addr_hi = cpu.access_memory(addr + 1);
@@ -553,7 +561,7 @@ impl<'a> CPU<'a> {
 
                 cycles.push(Box::new(|cpu| {
                     let addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => *addr,
+                        Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
                     };
                     let addr_lo = cpu.access_memory(addr);
@@ -564,7 +572,7 @@ impl<'a> CPU<'a> {
 
                 cycles.push(Box::new(|cpu| {
                     let addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => *addr,
+                        Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
                     };
                     let should_incorrectly_jump = addr & 0x00FF == 0x00FF;
@@ -597,7 +605,7 @@ impl<'a> CPU<'a> {
 
                 cycles.push(Box::new(|cpu| {
                     let tgt_addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => *addr,
+                        Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
                     };
 
@@ -609,7 +617,7 @@ impl<'a> CPU<'a> {
 
                 cycles.push(Box::new(|cpu| {
                     let tgt_addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => *addr,
+                        Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
                     };
                     let addr_hi = cpu.access_memory(tgt_addr.wrapping_add(1));
@@ -629,7 +637,7 @@ impl<'a> CPU<'a> {
 
                 cycles.push(Box::new(|cpu| {
                     let tgt_addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => *addr,
+                        Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
                     };
 
@@ -641,7 +649,7 @@ impl<'a> CPU<'a> {
 
                 cycles.push(Box::new(|cpu| {
                     let tgt_addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => *addr,
+                        Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
                     };
                     let addr_hi = cpu.access_memory(tgt_addr.wrapping_add(1));
