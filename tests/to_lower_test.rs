@@ -1,5 +1,5 @@
 use cpu6502::cpu::CPU;
-use cpu6502::memory::VecMemory;
+use cpu6502::memory::Generic64kMem;
 use std::cell::RefCell;
 use std::str;
 
@@ -59,7 +59,7 @@ fn should_change_word_to_lower_case() {
         (0x040B, 0x65),
     ];
     let program: &[(u16, u8)] = &[src_string, TO_LOWER_PROCEDURE, BOOTSTRAP].concat();
-    let memory = RefCell::new(VecMemory::from(program));
+    let memory = RefCell::new(Generic64kMem::from(program));
 
     let mut cpu = CPU::new_nmos(&memory);
     cpu.reset();
@@ -75,7 +75,7 @@ fn should_change_word_to_lower_case() {
 #[test]
 fn should_report_string_too_long() {
     let program: &[(u16, u8)] = &[TO_LOWER_PROCEDURE, BOOTSTRAP].concat();
-    let memory = RefCell::new(VecMemory::from(program));
+    let memory = RefCell::new(Generic64kMem::from(program));
     memory.borrow_mut().insert(0x0400, &[0x53; 256]);
 
     let mut cpu = CPU::new_nmos(&memory);
@@ -92,7 +92,7 @@ fn should_report_string_too_long() {
 #[test]
 fn should_handle_empty_string() {
     let program: &[(u16, u8)] = &[TO_LOWER_PROCEDURE, BOOTSTRAP].concat();
-    let memory = RefCell::new(VecMemory::from(program));
+    let memory = RefCell::new(Generic64kMem::from(program));
 
     let mut cpu = CPU::new_nmos(&memory);
     cpu.reset();
