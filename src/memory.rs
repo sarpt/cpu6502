@@ -7,13 +7,13 @@ const MAX_MEMORY_KB: usize = 64 * 1024;
 
 pub trait Memory: IndexMut<Word, Output = Byte> + Index<Word, Output = Byte> {}
 
-pub struct VecMemory {
+pub struct Generic64kMem {
     pub data: Vec<Byte>,
 }
 
-impl VecMemory {
+impl Generic64kMem {
     pub fn new() -> Self {
-        return VecMemory {
+        return Generic64kMem {
             data: vec![0; MAX_MEMORY_KB],
         };
     }
@@ -34,9 +34,9 @@ impl VecMemory {
     }
 }
 
-impl Memory for VecMemory {}
+impl Memory for Generic64kMem {}
 
-impl Index<Word> for VecMemory {
+impl Index<Word> for Generic64kMem {
     type Output = Byte;
 
     fn index(&self, idx: Word) -> &Self::Output {
@@ -45,7 +45,7 @@ impl Index<Word> for VecMemory {
     }
 }
 
-impl Index<Range<Word>> for VecMemory {
+impl Index<Range<Word>> for Generic64kMem {
     type Output = [Byte];
 
     fn index(&self, idx: Range<Word>) -> &Self::Output {
@@ -55,16 +55,16 @@ impl Index<Range<Word>> for VecMemory {
     }
 }
 
-impl IndexMut<Word> for VecMemory {
+impl IndexMut<Word> for Generic64kMem {
     fn index_mut(&mut self, idx: Word) -> &mut Self::Output {
         let mem_address: usize = idx.into();
         return &mut self.data[mem_address];
     }
 }
 
-impl From<&[(Word, Byte)]> for VecMemory {
+impl From<&[(Word, Byte)]> for Generic64kMem {
     fn from(value: &[(Word, Byte)]) -> Self {
-        let mut res = VecMemory::new();
+        let mut res = Generic64kMem::new();
         res.store(value);
 
         return res;
