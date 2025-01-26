@@ -1,2 +1,2 @@
-# emu6502
-toy 6502 emulator written in rust
+# cpu6502
+toy 6502 cpu emulator written in rust
