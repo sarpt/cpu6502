@@ -15,6 +15,7 @@ mod cmp {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -28,6 +29,7 @@ mod cmp {
             cpu.cycle = 0;
 
             cmp_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -48,6 +50,7 @@ mod cmp {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -61,6 +64,7 @@ mod cmp {
             cpu.cycle = 0;
 
             cmp_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -82,6 +86,7 @@ mod cmp {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -96,6 +101,7 @@ mod cmp {
             cpu.cycle = 0;
 
             cmp_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -116,6 +122,7 @@ mod cmp {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -129,6 +136,7 @@ mod cmp {
             cpu.cycle = 0;
 
             cmp_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -160,6 +168,7 @@ mod cmp {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -176,6 +185,7 @@ mod cmp {
             cpu.cycle = 0;
 
             cmp_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -197,6 +207,7 @@ mod cmp {
             cpu.cycle = 0;
 
             cmp_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -228,6 +239,7 @@ mod cmp {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -244,6 +256,7 @@ mod cmp {
             cpu.cycle = 0;
 
             cmp_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -265,6 +278,7 @@ mod cmp {
             cpu.cycle = 0;
 
             cmp_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -303,6 +317,7 @@ mod cmp {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cmp_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -325,6 +340,7 @@ mod cmp {
             cpu.cycle = 0;
 
             cmp_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -345,6 +361,7 @@ mod cmp {
             cpu.cycle = 0;
 
             cmp_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -368,6 +385,7 @@ mod cpy {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cpy_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -381,6 +399,7 @@ mod cpy {
             cpu.cycle = 0;
 
             cpy_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -401,6 +420,7 @@ mod cpy {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cpy_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -414,6 +434,7 @@ mod cpy {
             cpu.cycle = 0;
 
             cpy_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -434,6 +455,7 @@ mod cpy {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cpy_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -447,6 +469,7 @@ mod cpy {
             cpu.cycle = 0;
 
             cpy_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -470,6 +493,7 @@ mod cpx {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cpx_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -483,6 +507,7 @@ mod cpx {
             cpu.cycle = 0;
 
             cpx_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -503,6 +528,7 @@ mod cpx {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cpx_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -516,6 +542,7 @@ mod cpx {
             cpu.cycle = 0;
 
             cpx_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -536,6 +563,7 @@ mod cpx {
             assert_eq!(cpu.processor_status, 0b00000000);
 
             cpx_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -549,6 +577,7 @@ mod cpx {
             cpu.cycle = 0;
 
             cpx_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -676,6 +705,7 @@ mod adc {
             cpu.program_counter = 0x00;
 
             adc_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -690,6 +720,7 @@ mod adc {
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
             adc_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -703,6 +734,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -728,6 +760,7 @@ mod adc {
             cpu.accumulator = 0x02;
 
             adc_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -742,6 +775,7 @@ mod adc {
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
             adc_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -754,6 +788,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -780,6 +815,7 @@ mod adc {
             cpu.accumulator = 0x02;
 
             adc_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -795,6 +831,7 @@ mod adc {
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
             adc_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -809,6 +846,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -832,6 +870,7 @@ mod adc {
             cpu.accumulator = 0x02;
 
             adc_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -846,6 +885,7 @@ mod adc {
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
             adc_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -859,6 +899,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -891,6 +932,7 @@ mod adc {
             cpu.accumulator = 0x02;
 
             adc_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -908,6 +950,7 @@ mod adc {
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
             adc_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -924,6 +967,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -943,6 +987,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -975,6 +1020,7 @@ mod adc {
             cpu.accumulator = 0x02;
 
             adc_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -992,6 +1038,7 @@ mod adc {
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
             adc_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -1008,6 +1055,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1027,6 +1075,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1065,6 +1114,7 @@ mod adc {
             cpu.accumulator = 0x02;
 
             adc_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -1087,6 +1137,7 @@ mod adc {
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
             adc_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -1109,6 +1160,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1129,6 +1181,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1165,6 +1218,7 @@ mod adc {
             cpu.index_register_x = OFFSET;
 
             adc_inx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -1187,6 +1241,7 @@ mod adc {
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
             adc_inx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -1208,6 +1263,7 @@ mod adc {
             cpu.cycle = 0;
 
             adc_inx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1337,6 +1393,7 @@ mod sbc {
             cpu.program_counter = 0x00;
 
             sbc_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1351,6 +1408,7 @@ mod sbc {
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
             sbc_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1365,6 +1423,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -1391,6 +1450,7 @@ mod sbc {
             cpu.accumulator = 0x50;
 
             sbc_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1405,6 +1465,7 @@ mod sbc {
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
             sbc_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1419,6 +1480,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -1446,6 +1508,7 @@ mod sbc {
             cpu.accumulator = 0x50;
 
             sbc_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1461,6 +1524,7 @@ mod sbc {
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
             sbc_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1475,6 +1539,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1499,6 +1564,7 @@ mod sbc {
             cpu.accumulator = 0x50;
 
             sbc_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1513,6 +1579,7 @@ mod sbc {
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
             sbc_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1527,6 +1594,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1560,6 +1628,7 @@ mod sbc {
             cpu.accumulator = 0x50;
 
             sbc_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1577,6 +1646,7 @@ mod sbc {
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
             sbc_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1594,6 +1664,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1614,6 +1685,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1647,6 +1719,7 @@ mod sbc {
             cpu.accumulator = 0x50;
 
             sbc_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1664,6 +1737,7 @@ mod sbc {
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
             sbc_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1681,6 +1755,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1701,6 +1776,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1740,6 +1816,7 @@ mod sbc {
             cpu.accumulator = 0x50;
 
             sbc_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1762,6 +1839,7 @@ mod sbc {
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
             sbc_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1785,6 +1863,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1806,6 +1885,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1843,6 +1923,7 @@ mod sbc {
             cpu.index_register_x = OFFSET;
 
             sbc_inx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1865,6 +1946,7 @@ mod sbc {
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
             sbc_inx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1887,6 +1969,7 @@ mod sbc {
             cpu.cycle = 0;
 
             sbc_inx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }

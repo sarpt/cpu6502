@@ -371,32 +371,37 @@ impl<'a> CPU<'a> {
     }
 
     fn tick(&mut self) {
-        self.cycle += 1;
-    }
-
-    fn run_next_cycle(&mut self) {
         let current_instruction = match &mut self.current_instruction {
             Some(current) => current,
-            None => panic!("could not execute next cycle - there is no instruction scheduled"),
+            None => {
+                let opcode = self.fetch_instruction();
+                let handler = self.opcode_handlers.get(&opcode);
+                match handler {
+                    Some(cb) => cb(self),
+                    None => panic!("illegal opcode found: {opcode}"),
+                }
+
+                match &mut self.current_instruction {
+                    Some(current) => current,
+                    None => panic!(
+                        "running opcode handler {opcode} did not result in a new instruction"
+                    ),
+                }
+            }
         };
 
         match current_instruction.cycle_queue.pop_front() {
             Some(next_cycle_runner) => {
                 let cycle_variant = next_cycle_runner(self);
                 if cycle_variant == TaskCycleVariant::Full {
-                    self.tick()
+                    self.cycle += 1;
                 };
             }
-            None => {
-                panic!(
-                    "could not run a queued cycle since there are no cycles queued for execution"
-                )
-            }
+            None => self.current_instruction = None,
         }
     }
 
     fn schedule_instruction(&mut self, cycles: Vec<ScheduledCycle>) {
-        let cycles_count = cycles.len();
         self.current_instruction = Some(InstructionExecution {
             ctx: None,
             cycle_queue: cycles.into(),
@@ -404,12 +409,6 @@ impl<'a> CPU<'a> {
             starting_cycle: self.cycle,
             length: 0,
         });
-
-        // TODO: this is temporary until all instructions are implemented in queued cycles form.
-        // after converting all instructions "run_next_cycle" will be called separately on demand
-        for _ in 1..=cycles_count {
-            self.run_next_cycle();
-        }
     }
 
     fn get_address(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledCycle> {
@@ -680,11 +679,11 @@ impl<'a> CPU<'a> {
     }
 
     pub fn execute_next_instruction(&mut self) {
-        let opcode = self.fetch_instruction();
-        let handler = self.opcode_handlers.get(&opcode);
-        match handler {
-            Some(cb) => cb(self),
-            None => panic!("illegal opcode found: {opcode}"),
+        loop {
+            self.tick();
+            if self.current_instruction.is_none() {
+                break;
+            }
         }
     }
 

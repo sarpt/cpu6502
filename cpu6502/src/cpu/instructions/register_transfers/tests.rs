@@ -11,6 +11,7 @@ mod tax {
         cpu.accumulator = 0xDE;
 
         tax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.index_register_x, 0xDE);
     }
@@ -23,6 +24,7 @@ mod tax {
         cpu.cycle = 0;
 
         tax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -35,6 +37,7 @@ mod tax {
         cpu.processor_status = (0x00 as u8).into();
 
         tax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -53,6 +56,7 @@ mod txa {
         cpu.index_register_x = 0xDE;
 
         txa(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.accumulator, 0xDE);
     }
@@ -65,6 +69,7 @@ mod txa {
         cpu.cycle = 0;
 
         txa(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -77,6 +82,7 @@ mod txa {
         cpu.processor_status = (0x00 as u8).into();
 
         txa(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -95,6 +101,7 @@ mod tay {
         cpu.accumulator = 0xDE;
 
         tay(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.index_register_y, 0xDE);
     }
@@ -107,6 +114,7 @@ mod tay {
         cpu.cycle = 0;
 
         tay(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -119,6 +127,7 @@ mod tay {
         cpu.processor_status = (0x00 as u8).into();
 
         tay(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -137,6 +146,7 @@ mod tya {
         cpu.index_register_y = 0xDE;
 
         tya(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.accumulator, 0xDE);
     }
@@ -149,6 +159,7 @@ mod tya {
         cpu.cycle = 0;
 
         tya(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -161,6 +172,7 @@ mod tya {
         cpu.processor_status = (0x00 as u8).into();
 
         tya(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }

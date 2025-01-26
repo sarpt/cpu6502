@@ -12,6 +12,7 @@ mod jsr_a {
         cpu.stack_pointer = 0xFF;
 
         jsr_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x5144);
     }
@@ -24,6 +25,7 @@ mod jsr_a {
         cpu.stack_pointer = 0xFF;
 
         jsr_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[0x01FF], 0x00);
         assert_eq!(memory.borrow()[0x01FE], 0x01);
@@ -37,6 +39,7 @@ mod jsr_a {
         cpu.stack_pointer = 0xFF;
 
         jsr_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.stack_pointer, 0xFD);
     }
@@ -49,6 +52,7 @@ mod jsr_a {
         cpu.cycle = 0;
 
         jsr_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -70,6 +74,7 @@ mod rts {
         cpu.stack_pointer = 0xFD;
 
         rts(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x4452);
     }
@@ -84,6 +89,7 @@ mod rts {
         cpu.stack_pointer = 0xFD;
 
         rts(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.stack_pointer, 0xFF);
     }
@@ -99,6 +105,7 @@ mod rts {
         cpu.cycle = 0;
 
         rts(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -117,6 +124,7 @@ mod jmp_a {
         cpu.program_counter = 0x00;
 
         jmp_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x5144);
     }
@@ -129,6 +137,7 @@ mod jmp_a {
         cpu.cycle = 0;
 
         jmp_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -149,6 +158,7 @@ mod jmp_in {
             cpu.program_counter = 0x00;
 
             jmp_in(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.program_counter, 0x0001);
         }
@@ -168,6 +178,7 @@ mod jmp_in {
             cpu.cycle = 0;
 
             jmp_in(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -187,6 +198,7 @@ mod jmp_in {
             cpu.cycle = 0;
 
             jmp_in(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }

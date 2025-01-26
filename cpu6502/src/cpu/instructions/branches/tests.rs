@@ -15,6 +15,7 @@ mod common_branch {
 
         let condition: fn(&CPU) -> bool = |_| false;
         branch(&mut cpu, condition);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -28,6 +29,7 @@ mod common_branch {
 
         let condition: fn(&CPU) -> bool = |_| true;
         branch(&mut cpu, condition);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -48,6 +50,7 @@ mod common_branch {
 
         let condition: fn(&CPU) -> bool = |_| true;
         branch(&mut cpu, condition);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x00);
     }
@@ -63,6 +66,7 @@ mod common_branch {
 
         let condition: fn(&CPU) -> bool = |_| true;
         branch(&mut cpu, condition);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0103);
     }
@@ -83,6 +87,7 @@ mod common_branch {
 
         let condition: fn(&CPU) -> bool = |_| true;
         branch(&mut cpu, condition);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0xFFFE);
     }
@@ -96,6 +101,7 @@ mod common_branch {
 
         let condition: fn(&CPU) -> bool = |_| false;
         branch(&mut cpu, condition);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -110,6 +116,7 @@ mod common_branch {
 
         let condition: fn(&CPU) -> bool = |_| true;
         branch(&mut cpu, condition);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -126,6 +133,7 @@ mod common_branch {
 
         let condition: fn(&CPU) -> bool = |_| true;
         branch(&mut cpu, condition);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -148,6 +156,7 @@ mod bcc {
         cpu.program_counter = 0x00;
 
         bcc(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -161,6 +170,7 @@ mod bcc {
         cpu.program_counter = 0x00;
 
         bcc(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -183,6 +193,7 @@ mod bcs {
         cpu.program_counter = 0x00;
 
         bcs(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -196,6 +207,7 @@ mod bcs {
         cpu.program_counter = 0x00;
 
         bcs(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -218,6 +230,7 @@ mod beq {
         cpu.program_counter = 0x00;
 
         beq(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -231,6 +244,7 @@ mod beq {
         cpu.program_counter = 0x00;
 
         beq(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -253,6 +267,7 @@ mod bmi {
         cpu.program_counter = 0x00;
 
         bmi(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -266,6 +281,7 @@ mod bmi {
         cpu.program_counter = 0x00;
 
         bmi(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -288,6 +304,7 @@ mod bne {
         cpu.program_counter = 0x00;
 
         bne(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -301,6 +318,7 @@ mod bne {
         cpu.program_counter = 0x00;
 
         bne(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -323,6 +341,7 @@ mod bpl {
         cpu.program_counter = 0x00;
 
         bpl(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -336,6 +355,7 @@ mod bpl {
         cpu.program_counter = 0x00;
 
         bpl(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -358,6 +378,7 @@ mod bvc {
         cpu.program_counter = 0x00;
 
         bvc(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -371,6 +392,7 @@ mod bvc {
         cpu.program_counter = 0x00;
 
         bvc(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -393,6 +415,7 @@ mod bvs {
         cpu.program_counter = 0x00;
 
         bvs(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -406,6 +429,7 @@ mod bvs {
         cpu.program_counter = 0x00;
 
         bvs(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x0004);
     }

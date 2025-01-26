@@ -14,6 +14,7 @@ mod lda {
             assert_eq!(cpu.accumulator, 0x0);
 
             lda_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x44);
         }
@@ -25,6 +26,7 @@ mod lda {
             cpu.program_counter = 0x04;
 
             lda_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -37,6 +39,7 @@ mod lda {
             cpu.cycle = 0;
 
             lda_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -57,6 +60,7 @@ mod lda {
             assert_eq!(cpu.accumulator, 0x0);
 
             lda_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x45);
         }
@@ -68,6 +72,7 @@ mod lda {
             cpu.program_counter = 0x00;
 
             lda_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -80,6 +85,7 @@ mod lda {
             cpu.cycle = 0;
 
             lda_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -101,6 +107,7 @@ mod lda {
             assert_eq!(cpu.accumulator, 0x0);
 
             lda_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x55);
         }
@@ -113,6 +120,7 @@ mod lda {
             cpu.program_counter = 0x00;
 
             lda_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x88);
         }
@@ -125,6 +133,7 @@ mod lda {
             cpu.program_counter = 0x00;
 
             lda_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -138,6 +147,7 @@ mod lda {
             cpu.cycle = 0;
 
             lda_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -158,6 +168,7 @@ mod lda {
             assert_eq!(cpu.accumulator, 0x0);
 
             lda_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x45);
         }
@@ -169,6 +180,7 @@ mod lda {
             cpu.program_counter = 0x00;
 
             lda_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -181,6 +193,7 @@ mod lda {
             cpu.cycle = 0;
 
             lda_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -212,6 +225,7 @@ mod lda {
             assert_eq!(cpu.accumulator, 0x0);
 
             lda_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, VALUE);
         }
@@ -226,6 +240,7 @@ mod lda {
             cpu.index_register_x = 0x02;
 
             lda_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -241,6 +256,7 @@ mod lda {
             cpu.cycle = 0;
 
             lda_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -261,6 +277,7 @@ mod lda {
             cpu.cycle = 0;
 
             lda_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -292,6 +309,7 @@ mod lda {
             assert_eq!(cpu.accumulator, 0x0);
 
             lda_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, VALUE);
         }
@@ -306,6 +324,7 @@ mod lda {
             cpu.index_register_y = 0x02;
 
             lda_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -321,6 +340,7 @@ mod lda {
             cpu.cycle = 0;
 
             lda_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -341,6 +361,7 @@ mod lda {
             cpu.cycle = 0;
 
             lda_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -377,6 +398,7 @@ mod lda {
             assert_eq!(cpu.accumulator, 0x0);
 
             lda_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, VALUE);
         }
@@ -396,6 +418,7 @@ mod lda {
             cpu.program_counter = 0x00;
 
             lda_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -417,6 +440,7 @@ mod lda {
             cpu.cycle = 0;
 
             lda_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -436,6 +460,7 @@ mod lda {
             cpu.cycle = 0;
 
             lda_iny(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -458,6 +483,7 @@ mod ldx {
             assert_eq!(cpu.index_register_x, 0x0);
 
             ldx_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_x, 0x44);
         }
@@ -469,6 +495,7 @@ mod ldx {
             cpu.program_counter = 0x04;
 
             ldx_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -481,6 +508,7 @@ mod ldx {
             cpu.cycle = 0;
 
             ldx_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -501,6 +529,7 @@ mod ldx {
             assert_eq!(cpu.index_register_x, 0x0);
 
             ldx_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_x, 0x45);
         }
@@ -512,6 +541,7 @@ mod ldx {
             cpu.program_counter = 0x00;
 
             ldx_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -524,6 +554,7 @@ mod ldx {
             cpu.cycle = 0;
 
             ldx_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -545,6 +576,7 @@ mod ldx {
             assert_eq!(cpu.index_register_x, 0x0);
 
             ldx_zpy(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_x, 0x55);
         }
@@ -557,6 +589,7 @@ mod ldx {
             cpu.program_counter = 0x00;
 
             ldx_zpy(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_x, 0x88);
         }
@@ -569,6 +602,7 @@ mod ldx {
             cpu.program_counter = 0x00;
 
             ldx_zpy(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -582,6 +616,7 @@ mod ldx {
             cpu.cycle = 0;
 
             ldx_zpy(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -602,6 +637,7 @@ mod ldx {
             assert_eq!(cpu.index_register_x, 0x0);
 
             ldx_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_x, 0x45);
         }
@@ -613,6 +649,7 @@ mod ldx {
             cpu.program_counter = 0x00;
 
             ldx_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -625,6 +662,7 @@ mod ldx {
             cpu.cycle = 0;
 
             ldx_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -656,6 +694,7 @@ mod ldx {
             assert_eq!(cpu.index_register_x, 0x0);
 
             ldx_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_x, VALUE);
         }
@@ -670,6 +709,7 @@ mod ldx {
             cpu.index_register_y = 0x02;
 
             ldx_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -685,6 +725,7 @@ mod ldx {
             cpu.cycle = 0;
 
             ldx_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -705,6 +746,7 @@ mod ldx {
             cpu.cycle = 0;
 
             ldx_ay(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -727,6 +769,7 @@ mod ldy {
             assert_eq!(cpu.index_register_y, 0x0);
 
             ldy_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_y, 0x44);
         }
@@ -738,6 +781,7 @@ mod ldy {
             cpu.program_counter = 0x04;
 
             ldy_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -750,6 +794,7 @@ mod ldy {
             cpu.cycle = 0;
 
             ldy_im(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -770,6 +815,7 @@ mod ldy {
             assert_eq!(cpu.index_register_y, 0x0);
 
             ldy_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_y, 0x45);
         }
@@ -781,6 +827,7 @@ mod ldy {
             cpu.program_counter = 0x00;
 
             ldy_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -793,6 +840,7 @@ mod ldy {
             cpu.cycle = 0;
 
             ldy_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -814,6 +862,7 @@ mod ldy {
             assert_eq!(cpu.index_register_y, 0x0);
 
             ldy_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_y, 0x55);
         }
@@ -826,6 +875,7 @@ mod ldy {
             cpu.program_counter = 0x00;
 
             ldy_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_y, 0x88);
         }
@@ -838,6 +888,7 @@ mod ldy {
             cpu.program_counter = 0x00;
 
             ldy_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -851,6 +902,7 @@ mod ldy {
             cpu.cycle = 0;
 
             ldy_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -871,6 +923,7 @@ mod ldy {
             assert_eq!(cpu.index_register_y, 0x0);
 
             ldy_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_y, 0x45);
         }
@@ -882,6 +935,7 @@ mod ldy {
             cpu.program_counter = 0x00;
 
             ldy_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -894,6 +948,7 @@ mod ldy {
             cpu.cycle = 0;
 
             ldy_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -925,6 +980,7 @@ mod ldy {
             assert_eq!(cpu.index_register_y, 0x0);
 
             ldy_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.index_register_y, VALUE);
         }
@@ -939,6 +995,7 @@ mod ldy {
             cpu.index_register_x = 0x02;
 
             ldy_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -954,6 +1011,7 @@ mod ldy {
             cpu.cycle = 0;
 
             ldy_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -974,6 +1032,7 @@ mod ldy {
             cpu.cycle = 0;
 
             ldy_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -996,6 +1055,7 @@ mod sta_zp {
         cpu.program_counter = 0x00;
 
         sta_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR.into()], 0x02);
     }
@@ -1009,6 +1069,7 @@ mod sta_zp {
         cpu.cycle = 0;
 
         sta_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -1032,6 +1093,7 @@ mod sta_zpx {
         cpu.program_counter = 0x00;
 
         sta_zpx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_X], 0x05);
     }
@@ -1046,6 +1108,7 @@ mod sta_zpx {
         cpu.cycle = 0;
 
         sta_zpx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -1069,6 +1132,7 @@ mod sta_a {
         cpu.program_counter = 0x00;
 
         sta_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ADDR as Word], 0x0A);
     }
@@ -1082,6 +1146,7 @@ mod sta_a {
         cpu.cycle = 0;
 
         sta_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -1107,6 +1172,7 @@ mod sta_ax {
         cpu.index_register_x = OFFSET;
 
         sta_ax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ADDR_OFFSET_BY_X], 0x08);
     }
@@ -1121,6 +1187,7 @@ mod sta_ax {
         cpu.cycle = 0;
 
         sta_ax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 4);
     }
@@ -1146,6 +1213,7 @@ mod sta_ay {
         cpu.index_register_y = OFFSET;
 
         sta_ay(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ADDR_OFFSET_BY_Y], 0x08);
     }
@@ -1160,6 +1228,7 @@ mod sta_ay {
         cpu.cycle = 0;
 
         sta_ay(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 4);
     }
@@ -1195,6 +1264,7 @@ mod sta_inx {
         cpu.index_register_x = OFFSET;
 
         sta_inx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[EFFECTIVE_ADDRESS], 0xA9);
     }
@@ -1217,6 +1287,7 @@ mod sta_inx {
         cpu.cycle = 0;
 
         sta_inx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -1246,6 +1317,7 @@ mod sta_iny {
         cpu.program_counter = 0x00;
 
         sta_iny(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[EFFECTIVE_ADDRESS], 0xDF);
     }
@@ -1262,6 +1334,7 @@ mod sta_iny {
         cpu.cycle = 0;
 
         sta_iny(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -1283,6 +1356,7 @@ mod stx_zp {
         cpu.program_counter = 0x00;
 
         stx_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x02);
     }
@@ -1296,6 +1370,7 @@ mod stx_zp {
         cpu.cycle = 0;
 
         stx_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -1320,6 +1395,7 @@ mod stx_zpy {
         cpu.program_counter = 0x00;
 
         stx_zpy(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_Y], 0x05);
     }
@@ -1334,6 +1410,7 @@ mod stx_zpy {
         cpu.cycle = 0;
 
         stx_zpy(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -1357,6 +1434,7 @@ mod stx_a {
         cpu.program_counter = 0x00;
 
         stx_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ADDR], 0x0A);
     }
@@ -1370,6 +1448,7 @@ mod stx_a {
         cpu.cycle = 0;
 
         stx_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -1391,6 +1470,7 @@ mod sty_zp {
         cpu.program_counter = 0x00;
 
         sty_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x02);
     }
@@ -1404,6 +1484,7 @@ mod sty_zp {
         cpu.cycle = 0;
 
         sty_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -1428,6 +1509,7 @@ mod sty_zpx {
         cpu.program_counter = 0x00;
 
         sty_zpx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_X], 0x05);
     }
@@ -1442,6 +1524,7 @@ mod sty_zpx {
         cpu.cycle = 0;
 
         sty_zpx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -1465,6 +1548,7 @@ mod sty_a {
         cpu.program_counter = 0x00;
 
         sty_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ADDR], 0x0A);
     }
@@ -1478,6 +1562,7 @@ mod sty_a {
         cpu.cycle = 0;
 
         sty_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 3);
     }
