@@ -124,6 +124,54 @@ impl<'a> CPU<'a> {
         return self.processor_status.into();
     }
 
+    pub fn execute_next_instruction(&mut self) {
+        loop {
+            self.tick();
+            if self.current_instruction.is_none() {
+                break;
+            }
+        }
+    }
+
+    pub fn execute_until_break(&mut self) -> u64 {
+        while !self.processor_status.get_break_flag() {
+            self.execute_next_instruction();
+        }
+
+        return self.cycle;
+    }
+
+    pub fn tick(&mut self) {
+        let current_instruction = match &mut self.current_instruction {
+            Some(current) => current,
+            None => {
+                let opcode = self.fetch_instruction();
+                let handler = self.opcode_handlers.get(&opcode);
+                match handler {
+                    Some(cb) => cb(self),
+                    None => panic!("illegal opcode found: {opcode}"),
+                }
+
+                match &mut self.current_instruction {
+                    Some(current) => current,
+                    None => panic!(
+                        "running opcode handler {opcode} did not result in a new instruction"
+                    ),
+                }
+            }
+        };
+
+        match current_instruction.cycle_queue.pop_front() {
+            Some(next_cycle_runner) => {
+                let cycle_variant = next_cycle_runner(self);
+                if cycle_variant == TaskCycleVariant::Full {
+                    self.cycle += 1;
+                };
+            }
+            None => self.current_instruction = None,
+        }
+    }
+
     fn access_memory(&mut self, addr: Word) -> Byte {
         return self.memory.borrow()[addr];
     }
@@ -368,37 +416,6 @@ impl<'a> CPU<'a> {
 
     fn dummy_fetch(&mut self) {
         self.access_memory(self.program_counter); // fetch and discard
-    }
-
-    fn tick(&mut self) {
-        let current_instruction = match &mut self.current_instruction {
-            Some(current) => current,
-            None => {
-                let opcode = self.fetch_instruction();
-                let handler = self.opcode_handlers.get(&opcode);
-                match handler {
-                    Some(cb) => cb(self),
-                    None => panic!("illegal opcode found: {opcode}"),
-                }
-
-                match &mut self.current_instruction {
-                    Some(current) => current,
-                    None => panic!(
-                        "running opcode handler {opcode} did not result in a new instruction"
-                    ),
-                }
-            }
-        };
-
-        match current_instruction.cycle_queue.pop_front() {
-            Some(next_cycle_runner) => {
-                let cycle_variant = next_cycle_runner(self);
-                if cycle_variant == TaskCycleVariant::Full {
-                    self.cycle += 1;
-                };
-            }
-            None => self.current_instruction = None,
-        }
     }
 
     fn schedule_instruction(&mut self, cycles: Vec<ScheduledCycle>) {
@@ -676,23 +693,6 @@ impl<'a> CPU<'a> {
         }
 
         return cycles;
-    }
-
-    pub fn execute_next_instruction(&mut self) {
-        loop {
-            self.tick();
-            if self.current_instruction.is_none() {
-                break;
-            }
-        }
-    }
-
-    pub fn execute_until_break(&mut self) -> u64 {
-        while !self.processor_status.get_break_flag() {
-            self.execute_next_instruction();
-        }
-
-        return self.cycle;
     }
 }
 
