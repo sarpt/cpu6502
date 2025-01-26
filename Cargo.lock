@@ -5,10 +5,3 @@ version = 3
 [[package]]
 name = "cpu6502"
 version = "0.1.0"
-
-[[package]]
-name = "emu65"
-version = "0.1.0"
-dependencies = [
- "cpu6502",
-]
