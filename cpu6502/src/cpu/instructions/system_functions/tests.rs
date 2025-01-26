@@ -18,6 +18,7 @@ mod brk {
             cpu.program_counter = 0xABCD;
 
             brk(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[0x01FF], 0xAB);
             assert_eq!(memory.borrow()[0x01FE], 0xCE);
@@ -36,6 +37,7 @@ mod brk {
             cpu.program_counter = 0x00;
 
             brk(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.program_counter, 0x9BAD);
         }
@@ -48,6 +50,7 @@ mod brk {
             cpu.processor_status.change_break_flag(false);
 
             brk(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_break_flag(), true);
         }
@@ -60,6 +63,7 @@ mod brk {
             cpu.cycle = 0;
 
             brk(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -86,6 +90,7 @@ mod brk {
                 cpu.processor_status.change_decimal_mode_flag(true);
 
                 brk(&mut cpu);
+                cpu.execute_next_instruction();
 
                 assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
             }
@@ -103,6 +108,7 @@ mod brk {
                 cpu.processor_status.change_decimal_mode_flag(true);
 
                 brk(&mut cpu);
+                cpu.execute_next_instruction();
 
                 assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
             }
@@ -126,6 +132,7 @@ mod brk {
             cpu.processor_status.change_decimal_mode_flag(true);
 
             brk(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_decimal_mode_flag(), true);
         }
@@ -151,6 +158,7 @@ mod rti {
         cpu.program_counter = 0x00;
 
         rti(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b11111111);
         assert_eq!(cpu.program_counter, 0xABCD);
@@ -164,6 +172,7 @@ mod rti {
         cpu.cycle = 0;
 
         rti(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -182,6 +191,7 @@ mod nop {
         cpu.program_counter = 0x05;
 
         nop(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.program_counter, 0x06);
     }
@@ -194,6 +204,7 @@ mod nop {
         cpu.cycle = 0;
 
         nop(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }

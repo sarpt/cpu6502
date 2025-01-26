@@ -564,6 +564,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Absolute);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0xCBFF);
         }
@@ -576,6 +577,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Absolute);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -589,6 +591,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Absolute);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 2);
         }
@@ -612,6 +615,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::AbsoluteX);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0x52CC);
         }
@@ -625,6 +629,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::AbsoluteX);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0x04);
         }
@@ -640,6 +645,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::AbsoluteX);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 3);
         }
@@ -655,6 +661,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::AbsoluteX);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 4);
         }
@@ -678,6 +685,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::AbsoluteY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0x52CC);
         }
@@ -691,6 +699,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::AbsoluteY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0x04);
         }
@@ -706,6 +715,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::AbsoluteY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 3);
         }
@@ -721,6 +731,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::AbsoluteY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 4);
         }
@@ -742,6 +753,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Immediate);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0xCB);
         }
@@ -754,6 +766,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Immediate);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0xCC);
         }
@@ -767,6 +780,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Immediate);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 0);
         }
@@ -790,6 +804,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::IndexIndirectX);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0xDD03);
         }
@@ -803,6 +818,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::IndexIndirectX);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0x01);
         }
@@ -817,6 +833,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::IndexIndirectX);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 4);
         }
@@ -839,6 +856,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::IndirectIndexY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0xDD05);
         }
@@ -852,6 +870,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::IndirectIndexY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0x01);
         }
@@ -867,6 +886,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::IndirectIndexY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 4);
         }
@@ -882,6 +902,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::IndirectIndexY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 5);
         }
@@ -904,6 +925,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::ZeroPage);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0x00CB);
         }
@@ -916,6 +938,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::ZeroPage);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -929,6 +952,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::ZeroPage);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 1);
         }
@@ -952,6 +976,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::ZeroPageX);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0x00CE);
         }
@@ -965,6 +990,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::ZeroPageX);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -979,6 +1005,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::ZeroPageX);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 2);
         }
@@ -1002,6 +1029,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::ZeroPageY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0x0055);
         }
@@ -1015,6 +1043,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::ZeroPageY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -1029,6 +1058,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::ZeroPageY);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 2);
         }
@@ -1052,6 +1082,7 @@ mod get_address {
 
                 let cycles = uut.get_address(AddressingMode::Indirect);
                 uut.schedule_instruction(cycles);
+                uut.execute_next_instruction();
 
                 assert_eq!(uut.address_output, 0x0001);
             }
@@ -1064,6 +1095,7 @@ mod get_address {
 
                 let cycles = uut.get_address(AddressingMode::Indirect);
                 uut.schedule_instruction(cycles);
+                uut.execute_next_instruction();
 
                 assert_eq!(uut.program_counter, 0x02);
             }
@@ -1087,6 +1119,7 @@ mod get_address {
 
                 let cycles = uut.get_address(AddressingMode::Indirect);
                 uut.schedule_instruction(cycles);
+                uut.execute_next_instruction();
 
                 assert_eq!(uut.cycle, 4);
             }
@@ -1115,6 +1148,7 @@ mod get_address {
 
                 let cycles = uut.get_address(AddressingMode::Indirect);
                 uut.schedule_instruction(cycles);
+                uut.execute_next_instruction();
 
                 assert_eq!(uut.address_output, 0x09A5);
             }
@@ -1138,6 +1172,7 @@ mod get_address {
 
                 let cycles = uut.get_address(AddressingMode::Indirect);
                 uut.schedule_instruction(cycles);
+                uut.execute_next_instruction();
 
                 assert_eq!(uut.cycle, 5);
             }
@@ -1164,6 +1199,7 @@ mod get_address {
 
                 let cycles = uut.get_address(AddressingMode::Indirect);
                 uut.schedule_instruction(cycles);
+                uut.execute_next_instruction();
 
                 assert_eq!(uut.address_output, 0xCCA5);
             }
@@ -1186,6 +1222,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Implicit);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0x0);
         }
@@ -1198,6 +1235,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Implicit);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0x00);
         }
@@ -1211,6 +1249,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Implicit);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 0);
         }
@@ -1232,6 +1271,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Relative);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.address_output, 0x0);
         }
@@ -1244,6 +1284,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Relative);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.program_counter, 0x00);
         }
@@ -1257,6 +1298,7 @@ mod get_address {
 
             let cycles = uut.get_address(AddressingMode::Relative);
             uut.schedule_instruction(cycles);
+            uut.execute_next_instruction();
 
             assert_eq!(uut.cycle, 0);
         }

@@ -12,6 +12,7 @@ mod pha {
         cpu.accumulator = 0xDE;
 
         pha(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[0x01FF], 0xDE);
     }
@@ -25,6 +26,7 @@ mod pha {
         cpu.cycle = 0;
 
         pha(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -45,6 +47,7 @@ mod pla {
         cpu.accumulator = 0x00;
 
         pla(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.accumulator, 0xDE);
     }
@@ -58,6 +61,7 @@ mod pla {
         cpu.cycle = 0;
 
         pla(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -71,6 +75,7 @@ mod pla {
         cpu.processor_status = (0x00 as u8).into();
 
         pla(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -90,6 +95,7 @@ mod php {
         cpu.stack_pointer = 0xFF;
 
         php(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[0x01FF], 0b10101010);
     }
@@ -103,6 +109,7 @@ mod php {
         cpu.cycle = 0;
 
         php(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -123,6 +130,7 @@ mod plp {
         cpu.processor_status = (0x00 as u8).into();
 
         plp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0xDE);
     }
@@ -137,6 +145,7 @@ mod plp {
         cpu.cycle = 0;
 
         plp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -155,6 +164,7 @@ mod txs {
         cpu.index_register_x = 0xDE;
 
         txs(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.stack_pointer, 0xDE);
     }
@@ -167,6 +177,7 @@ mod txs {
         cpu.cycle = 0;
 
         txs(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -185,6 +196,7 @@ mod tsx {
         cpu.stack_pointer = 0xDE;
 
         tsx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.index_register_x, 0xDE);
     }
@@ -197,6 +209,7 @@ mod tsx {
         cpu.cycle = 0;
 
         tsx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -209,6 +222,7 @@ mod tsx {
         cpu.processor_status = (0x00 as u8).into();
 
         tsx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }

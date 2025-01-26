@@ -15,6 +15,7 @@ mod asl {
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
             asl_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_carry_flag(), true);
         }
@@ -28,6 +29,7 @@ mod asl {
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
             asl_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
         }
@@ -41,6 +43,7 @@ mod asl {
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
             asl_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_zero_flag(), true);
         }
@@ -54,6 +57,7 @@ mod asl {
             assert_eq!(cpu.processor_status.get_negative_flag(), false);
 
             asl_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_negative_flag(), true);
         }
@@ -77,6 +81,7 @@ mod asl {
             cpu.program_counter = 0x00;
 
             asl_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x04);
         }
@@ -90,6 +95,7 @@ mod asl {
             cpu.cycle = 0;
 
             asl_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -114,6 +120,7 @@ mod asl {
             cpu.program_counter = 0x00;
 
             asl_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x04);
         }
@@ -126,6 +133,7 @@ mod asl {
             cpu.cycle = 0;
 
             asl_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -152,6 +160,7 @@ mod asl {
             cpu.program_counter = 0x00;
 
             asl_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word], 0x04);
         }
@@ -165,6 +174,7 @@ mod asl {
             cpu.cycle = 0;
 
             asl_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -195,6 +205,7 @@ mod asl {
             cpu.program_counter = 0x00;
 
             asl_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0x04);
         }
@@ -212,6 +223,7 @@ mod asl {
             cpu.cycle = 0;
 
             asl_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -245,6 +257,7 @@ mod asl {
             cpu.program_counter = 0x00;
 
             asl_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word], 0x04);
         }
@@ -264,6 +277,7 @@ mod asl {
             cpu.cycle = 0;
 
             asl_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -287,6 +301,7 @@ mod lsr {
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
             lsr_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_carry_flag(), true);
         }
@@ -300,6 +315,7 @@ mod lsr {
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
             lsr_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
         }
@@ -313,6 +329,7 @@ mod lsr {
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
             lsr_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_zero_flag(), true);
         }
@@ -336,6 +353,7 @@ mod lsr {
             cpu.program_counter = 0x00;
 
             lsr_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0x01);
         }
@@ -349,6 +367,7 @@ mod lsr {
             cpu.cycle = 0;
 
             lsr_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -373,6 +392,7 @@ mod lsr {
             cpu.program_counter = 0x00;
 
             lsr_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x01);
         }
@@ -385,6 +405,7 @@ mod lsr {
             cpu.cycle = 0;
 
             lsr_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -411,6 +432,7 @@ mod lsr {
             cpu.program_counter = 0x00;
 
             lsr_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word], 0x01);
         }
@@ -424,6 +446,7 @@ mod lsr {
             cpu.cycle = 0;
 
             lsr_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -454,6 +477,7 @@ mod lsr {
             cpu.program_counter = 0x00;
 
             lsr_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0x01);
         }
@@ -471,6 +495,7 @@ mod lsr {
             cpu.cycle = 0;
 
             lsr_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -504,6 +529,7 @@ mod lsr {
             cpu.program_counter = 0x00;
 
             lsr_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word], 0x01);
         }
@@ -523,6 +549,7 @@ mod lsr {
             cpu.cycle = 0;
 
             lsr_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -546,6 +573,7 @@ mod rol {
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
             rol_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_carry_flag(), true);
         }
@@ -559,6 +587,7 @@ mod rol {
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
             rol_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
         }
@@ -572,6 +601,7 @@ mod rol {
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
             rol_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_zero_flag(), true);
         }
@@ -595,6 +625,7 @@ mod rol {
             cpu.accumulator = VALUE;
 
             rol_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0b00000100);
         }
@@ -607,6 +638,7 @@ mod rol {
             cpu.accumulator = VALUE;
 
             rol_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0b00000101);
         }
@@ -619,6 +651,7 @@ mod rol {
             cpu.accumulator = VALUE;
 
             rol_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0b00000100);
         }
@@ -632,6 +665,7 @@ mod rol {
             cpu.cycle = 0;
 
             rol_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -656,6 +690,7 @@ mod rol {
             cpu.program_counter = 0x00;
 
             rol_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000100);
         }
@@ -668,6 +703,7 @@ mod rol {
             cpu.processor_status.change_carry_flag(true);
 
             rol_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000101);
         }
@@ -680,6 +716,7 @@ mod rol {
             cpu.processor_status.change_carry_flag(false);
 
             rol_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000100);
         }
@@ -692,6 +729,7 @@ mod rol {
             cpu.cycle = 0;
 
             rol_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -718,6 +756,7 @@ mod rol {
             cpu.program_counter = 0x00;
 
             rol_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -734,6 +773,7 @@ mod rol {
             cpu.processor_status.change_carry_flag(true);
 
             rol_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -750,6 +790,7 @@ mod rol {
             cpu.processor_status.change_carry_flag(false);
 
             rol_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -766,6 +807,7 @@ mod rol {
             cpu.cycle = 0;
 
             rol_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -796,6 +838,7 @@ mod rol {
             cpu.program_counter = 0x00;
 
             rol_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000100);
         }
@@ -813,6 +856,7 @@ mod rol {
             cpu.processor_status.change_carry_flag(true);
 
             rol_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000101);
         }
@@ -830,6 +874,7 @@ mod rol {
             cpu.processor_status.change_carry_flag(false);
 
             rol_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000100);
         }
@@ -847,6 +892,7 @@ mod rol {
             cpu.cycle = 0;
 
             rol_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -880,6 +926,7 @@ mod rol {
             cpu.program_counter = 0x00;
 
             rol_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -902,6 +949,7 @@ mod rol {
             cpu.processor_status.change_carry_flag(true);
 
             rol_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -924,6 +972,7 @@ mod rol {
             cpu.processor_status.change_carry_flag(false);
 
             rol_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -946,6 +995,7 @@ mod rol {
             cpu.cycle = 0;
 
             rol_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -969,6 +1019,7 @@ mod ror {
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
             ror_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_carry_flag(), true);
         }
@@ -982,6 +1033,7 @@ mod ror {
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
             ror_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
         }
@@ -995,6 +1047,7 @@ mod ror {
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
             ror_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.processor_status.get_zero_flag(), true);
         }
@@ -1018,6 +1071,7 @@ mod ror {
             cpu.accumulator = VALUE;
 
             ror_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0b00000001);
         }
@@ -1030,6 +1084,7 @@ mod ror {
             cpu.accumulator = VALUE;
 
             ror_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0b10000001);
         }
@@ -1042,6 +1097,7 @@ mod ror {
             cpu.accumulator = VALUE;
 
             ror_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.accumulator, 0b00000001);
         }
@@ -1055,6 +1111,7 @@ mod ror {
             cpu.cycle = 0;
 
             ror_acc(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -1079,6 +1136,7 @@ mod ror {
             cpu.program_counter = 0x00;
 
             ror_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000001);
         }
@@ -1091,6 +1149,7 @@ mod ror {
             cpu.processor_status.change_carry_flag(true);
 
             ror_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b10000001);
         }
@@ -1103,6 +1162,7 @@ mod ror {
             cpu.processor_status.change_carry_flag(false);
 
             ror_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000001);
         }
@@ -1115,6 +1175,7 @@ mod ror {
             cpu.cycle = 0;
 
             ror_zp(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1141,6 +1202,7 @@ mod ror {
             cpu.program_counter = 0x00;
 
             ror_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1157,6 +1219,7 @@ mod ror {
             cpu.processor_status.change_carry_flag(true);
 
             ror_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1173,6 +1236,7 @@ mod ror {
             cpu.processor_status.change_carry_flag(false);
 
             ror_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1189,6 +1253,7 @@ mod ror {
             cpu.cycle = 0;
 
             ror_zpx(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1219,6 +1284,7 @@ mod ror {
             cpu.program_counter = 0x00;
 
             ror_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000001);
         }
@@ -1236,6 +1302,7 @@ mod ror {
             cpu.processor_status.change_carry_flag(true);
 
             ror_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b10000001);
         }
@@ -1253,6 +1320,7 @@ mod ror {
             cpu.processor_status.change_carry_flag(false);
 
             ror_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000001);
         }
@@ -1270,6 +1338,7 @@ mod ror {
             cpu.cycle = 0;
 
             ror_a(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1303,6 +1372,7 @@ mod ror {
             cpu.program_counter = 0x00;
 
             ror_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1325,6 +1395,7 @@ mod ror {
             cpu.processor_status.change_carry_flag(true);
 
             ror_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1347,6 +1418,7 @@ mod ror {
             cpu.processor_status.change_carry_flag(false);
 
             ror_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1369,6 +1441,7 @@ mod ror {
             cpu.cycle = 0;
 
             ror_ax(&mut cpu);
+            cpu.execute_next_instruction();
 
             assert_eq!(cpu.cycle, 6);
         }

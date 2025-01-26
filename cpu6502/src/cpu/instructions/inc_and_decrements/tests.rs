@@ -11,6 +11,7 @@ mod inx_im {
         cpu.index_register_x = 0x02;
 
         inx_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.index_register_x, 0x03);
     }
@@ -23,6 +24,7 @@ mod inx_im {
         cpu.cycle = 0;
 
         inx_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -34,6 +36,7 @@ mod inx_im {
         cpu.index_register_x = 0xFF;
 
         inx_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -52,6 +55,7 @@ mod iny_im {
         cpu.index_register_y = 0x02;
 
         iny_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.index_register_y, 0x03);
     }
@@ -64,6 +68,7 @@ mod iny_im {
         cpu.cycle = 0;
 
         iny_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -75,6 +80,7 @@ mod iny_im {
         cpu.index_register_y = 0xFF;
 
         iny_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -96,6 +102,7 @@ mod inc_zp {
         cpu.program_counter = 0x00;
 
         inc_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x03);
     }
@@ -108,6 +115,7 @@ mod inc_zp {
         cpu.cycle = 0;
 
         inc_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 4);
     }
@@ -120,6 +128,7 @@ mod inc_zp {
         cpu.program_counter = 0x00;
 
         inc_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -143,6 +152,7 @@ mod inc_zpx {
         cpu.index_register_x = 0x02;
 
         inc_zpx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_X as Word], 0x0A);
     }
@@ -156,6 +166,7 @@ mod inc_zpx {
         cpu.cycle = 0;
 
         inc_zpx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -169,6 +180,7 @@ mod inc_zpx {
         cpu.index_register_x = 0x02;
 
         inc_zpx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -192,6 +204,7 @@ mod inc_a {
         cpu.program_counter = 0x00;
 
         inc_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ADDR as Word], 0x0A);
     }
@@ -204,6 +217,7 @@ mod inc_a {
         cpu.cycle = 0;
 
         inc_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -216,6 +230,7 @@ mod inc_a {
         cpu.program_counter = 0x00;
 
         inc_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -241,6 +256,7 @@ mod inc_ax {
         cpu.index_register_x = OFFSET;
 
         inc_ax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ADDR_OFFSET_BY_X], 0x0A);
     }
@@ -254,6 +270,7 @@ mod inc_ax {
         cpu.cycle = 0;
 
         inc_ax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 6);
     }
@@ -267,6 +284,7 @@ mod inc_ax {
         cpu.index_register_x = OFFSET;
 
         inc_ax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -285,6 +303,7 @@ mod dex_im {
         cpu.index_register_x = 0x02;
 
         dex_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.index_register_x, 0x01);
     }
@@ -297,6 +316,7 @@ mod dex_im {
         cpu.cycle = 0;
 
         dex_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -308,6 +328,7 @@ mod dex_im {
         cpu.index_register_x = 0x01;
 
         dex_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -326,6 +347,7 @@ mod dey_im {
         cpu.index_register_y = 0x02;
 
         dey_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.index_register_y, 0x01);
     }
@@ -338,6 +360,7 @@ mod dey_im {
         cpu.cycle = 0;
 
         dey_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -349,6 +372,7 @@ mod dey_im {
         cpu.index_register_y = 0x01;
 
         dey_im(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -370,6 +394,7 @@ mod dec_zp {
         cpu.program_counter = 0x00;
 
         dec_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x01);
     }
@@ -382,6 +407,7 @@ mod dec_zp {
         cpu.cycle = 0;
 
         dec_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 4);
     }
@@ -394,6 +420,7 @@ mod dec_zp {
         cpu.program_counter = 0x00;
 
         dec_zp(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -417,6 +444,7 @@ mod dec_zpx {
         cpu.index_register_x = 0x02;
 
         dec_zpx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_X as Word], 0x08);
     }
@@ -430,6 +458,7 @@ mod dec_zpx {
         cpu.cycle = 0;
 
         dec_zpx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -443,6 +472,7 @@ mod dec_zpx {
         cpu.index_register_x = 0x02;
 
         dec_zpx(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -466,6 +496,7 @@ mod dec_a {
         cpu.program_counter = 0x00;
 
         dec_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ADDR as Word], 0x08);
     }
@@ -478,6 +509,7 @@ mod dec_a {
         cpu.cycle = 0;
 
         dec_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -490,6 +522,7 @@ mod dec_a {
         cpu.program_counter = 0x00;
 
         dec_a(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -515,6 +548,7 @@ mod dec_ax {
         cpu.index_register_x = OFFSET;
 
         dec_ax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(memory.borrow()[ADDR_OFFSET_BY_X], 0x08);
     }
@@ -528,6 +562,7 @@ mod dec_ax {
         cpu.cycle = 0;
 
         dec_ax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 6);
     }
@@ -541,6 +576,7 @@ mod dec_ax {
         cpu.index_register_x = OFFSET;
 
         dec_ax(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }

@@ -11,6 +11,7 @@ mod clc {
         cpu.processor_status.change_carry_flag(true);
 
         clc(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status.get_carry_flag(), false);
     }
@@ -23,6 +24,7 @@ mod clc {
         cpu.cycle = 0;
 
         clc(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -41,6 +43,7 @@ mod cld {
         cpu.processor_status.change_decimal_mode_flag(true);
 
         cld(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
     }
@@ -53,6 +56,7 @@ mod cld {
         cpu.cycle = 0;
 
         cld(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -71,6 +75,7 @@ mod cli {
         cpu.processor_status.change_interrupt_disable_flag(true);
 
         cli(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status.get_interrupt_disable_flag(), false);
     }
@@ -83,6 +88,7 @@ mod cli {
         cpu.cycle = 0;
 
         cli(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -101,6 +107,7 @@ mod clv {
         cpu.processor_status.change_overflow_flag(true);
 
         clv(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status.get_overflow_flag(), false);
     }
@@ -113,6 +120,7 @@ mod clv {
         cpu.cycle = 0;
 
         clv(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -131,6 +139,7 @@ mod sec {
         cpu.processor_status.change_carry_flag(false);
 
         sec(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status.get_carry_flag(), true);
     }
@@ -143,6 +152,7 @@ mod sec {
         cpu.cycle = 0;
 
         sec(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -161,6 +171,7 @@ mod sed {
         cpu.processor_status.change_decimal_mode_flag(false);
 
         sed(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status.get_decimal_mode_flag(), true);
     }
@@ -173,6 +184,7 @@ mod sed {
         cpu.cycle = 0;
 
         sed(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -191,6 +203,7 @@ mod sei {
         cpu.processor_status.change_interrupt_disable_flag(false);
 
         sei(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.processor_status.get_interrupt_disable_flag(), true);
     }
@@ -203,6 +216,7 @@ mod sei {
         cpu.cycle = 0;
 
         sei(&mut cpu);
+        cpu.execute_next_instruction();
 
         assert_eq!(cpu.cycle, 1);
     }
