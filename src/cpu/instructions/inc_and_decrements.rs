@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::cpu::{AddressingMode, Registers, ScheduledCycle, TaskCycleVariant, CPU};
 
 fn decrement_cb(value: &u8) -> u8 {
@@ -11,7 +13,7 @@ fn increment_cb(value: &u8) -> u8 {
 fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
     let mut cycles = modify_memory(cpu, addr_mode, Box::new(decrement_cb));
 
-    cycles.push(Box::new(|cpu| {
+    cycles.push(Rc::new(|cpu| {
         let modified_value = match cpu.get_current_instruction_ctx() {
             Some(val) => val.to_le_bytes()[1],
             None => panic!("unexpected lack of instruction ctx after memory modification"),
@@ -27,7 +29,7 @@ fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
 fn decrement_register(cpu: &mut CPU, register: Registers) {
     match register {
         Registers::IndexX | Registers::IndexY => {
-            cpu.schedule_instruction(Vec::from([Box::new(move |cpu: &mut CPU| {
+            cpu.schedule_instruction(Vec::from([Rc::new(move |cpu: &mut CPU| {
                 cpu.decrement_register(register);
 
                 return TaskCycleVariant::Full;
@@ -64,7 +66,7 @@ pub fn dey_im(cpu: &mut CPU) {
 fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
     let mut cycles = modify_memory(cpu, addr_mode, Box::new(increment_cb));
 
-    cycles.push(Box::new(|cpu| {
+    cycles.push(Rc::new(|cpu| {
         let modified_value = match cpu.get_current_instruction_ctx() {
             Some(val) => val.to_le_bytes()[1],
             None => panic!("unexpected lack of instruction ctx after memory modification"),
@@ -80,7 +82,7 @@ fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
 fn increment_register(cpu: &mut CPU, register: Registers) {
     match register {
         Registers::IndexX | Registers::IndexY => {
-            cpu.schedule_instruction(Vec::from([Box::new(move |cpu: &mut CPU| {
+            cpu.schedule_instruction(Vec::from([Rc::new(move |cpu: &mut CPU| {
                 cpu.increment_register(register);
 
                 return TaskCycleVariant::Full;
@@ -121,14 +123,14 @@ fn modify_memory(
 ) -> Vec<ScheduledCycle> {
     let mut cycles = cpu.get_address(addr_mode);
 
-    cycles.push(Box::new(|cpu| {
+    cycles.push(Rc::new(|cpu| {
         let value = cpu.access_memory(cpu.address_output);
         cpu.set_ctx_lo(value);
 
         return TaskCycleVariant::Full;
     }));
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let value = match cpu.get_current_instruction_ctx() {
             Some(ctx) => ctx.to_le_bytes()[0],
             None => panic!("unexpected lack of value in instruction context to modify"),
@@ -140,7 +142,7 @@ fn modify_memory(
         return TaskCycleVariant::Full;
     }));
 
-    cycles.push(Box::new(|cpu| {
+    cycles.push(Rc::new(|cpu| {
         let modified_value = match cpu.get_current_instruction_ctx() {
             Some(ctx) => ctx.to_le_bytes()[1],
             None => panic!("unexpected lack of value in instruction context to modify"),

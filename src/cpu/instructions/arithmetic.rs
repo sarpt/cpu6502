@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     consts::Byte,
     cpu::{AddressingMode, Registers, TaskCycleVariant, CPU},
@@ -6,7 +8,7 @@ use crate::{
 fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     let mut cycles = cpu.read_memory(addr_mode);
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let value = cpu.get_read_memory_result();
         cpu.set_cmp_status(register, value);
 
@@ -123,7 +125,7 @@ pub fn operations_with_carry(
 ) {
     let mut cycles = cpu.read_memory(addr_mode);
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let value = cpu.get_read_memory_result();
         let accumulator = cpu.get_register(Registers::Accumulator);
         let (value, carry, overflow) =

@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::collections::{HashMap, VecDeque};
+use std::rc::Rc;
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
@@ -52,7 +53,7 @@ enum TaskCycleVariant {
 }
 
 type OpcodeHandler = fn(&mut CPU) -> ();
-type ScheduledCycle = Box<dyn Fn(&mut CPU) -> TaskCycleVariant>;
+type ScheduledCycle = Rc<dyn Fn(&mut CPU) -> TaskCycleVariant>;
 
 type InstructionCtx = Option<Word>;
 struct InstructionExecution {
@@ -225,7 +226,7 @@ impl<'a> CPU<'a> {
     fn offset_address_output(&mut self, offset: Byte) -> Vec<ScheduledCycle> {
         let mut cycles: Vec<ScheduledCycle> = Vec::new();
 
-        cycles.push(Box::new(move |cpu| {
+        cycles.push(Rc::new(move |cpu| {
             let [lo, hi] = cpu.address_output.to_le_bytes();
             let (new_lo, carry) = lo.overflowing_add(offset);
             cpu.address_output = Word::from_le_bytes([new_lo, hi]);
@@ -239,7 +240,7 @@ impl<'a> CPU<'a> {
             return TaskCycleVariant::Full;
         }));
 
-        cycles.push(Box::new(|cpu| {
+        cycles.push(Rc::new(|cpu| {
             let carry = match cpu.get_current_instruction_ctx() {
                 Some(val) => val.to_le_bytes()[1],
                 None => panic!("unexpected lack of instruction ctx for offset address output"),
@@ -380,7 +381,7 @@ impl<'a> CPU<'a> {
     fn read_memory(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledCycle> {
         let mut cycles = self.get_address(addr_mode);
 
-        cycles.push(Box::new(move |cpu: &mut CPU| {
+        cycles.push(Rc::new(move |cpu: &mut CPU| {
             let value = cpu.access_memory(cpu.address_output);
             cpu.set_ctx_lo(value);
 
@@ -433,7 +434,7 @@ impl<'a> CPU<'a> {
         let mut cycles: Vec<ScheduledCycle> = Vec::new();
         match addr_mode {
             AddressingMode::ZeroPage => {
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output(addr);
                     cpu.increment_program_counter();
@@ -442,7 +443,7 @@ impl<'a> CPU<'a> {
                 }));
             }
             AddressingMode::ZeroPageY => {
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output(addr);
                     cpu.increment_program_counter();
@@ -450,7 +451,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_output = cpu.address_output as Byte;
                     let final_address = addr_output.wrapping_add(cpu.index_register_y.into());
                     cpu.set_address_output(final_address);
@@ -459,7 +460,7 @@ impl<'a> CPU<'a> {
                 }));
             }
             AddressingMode::ZeroPageX => {
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output(addr);
                     cpu.increment_program_counter();
@@ -467,7 +468,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_output = cpu.address_output as Byte;
                     let final_address = addr_output.wrapping_add(cpu.index_register_x.into());
                     cpu.set_address_output(final_address);
@@ -476,7 +477,7 @@ impl<'a> CPU<'a> {
                 }));
             }
             AddressingMode::Absolute => {
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_lo(addr_lo);
                     cpu.increment_program_counter();
@@ -484,7 +485,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_hi(addr_hi);
                     cpu.increment_program_counter();
@@ -493,7 +494,7 @@ impl<'a> CPU<'a> {
                 }));
             }
             AddressingMode::AbsoluteX => {
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_lo(addr_lo);
                     cpu.increment_program_counter();
@@ -501,7 +502,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_hi(addr_hi);
                     cpu.increment_program_counter();
@@ -513,7 +514,7 @@ impl<'a> CPU<'a> {
                 cycles.append(&mut offset_cycles);
             }
             AddressingMode::AbsoluteY => {
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_lo(addr_lo);
                     cpu.increment_program_counter();
@@ -521,7 +522,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_hi(addr_hi);
                     cpu.increment_program_counter();
@@ -533,7 +534,7 @@ impl<'a> CPU<'a> {
                 cycles.append(&mut offset_cycles);
             }
             AddressingMode::Indirect => {
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
                     cpu.set_ctx_lo(addr_lo);
                     cpu.increment_program_counter();
@@ -541,7 +542,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_ctx_hi(addr_hi);
                     cpu.increment_program_counter();
@@ -550,9 +551,9 @@ impl<'a> CPU<'a> {
                 }));
 
                 if self.chip_variant != ChipVariant::NMOS {
-                    cycles.push(Box::new(|_| TaskCycleVariant::Full)); // dummy tick used for fixing incorrect address
+                    cycles.push(Rc::new(|_| TaskCycleVariant::Full)); // dummy tick used for fixing incorrect address
 
-                    cycles.push(Box::new(|cpu| {
+                    cycles.push(Rc::new(|cpu| {
                         let addr = match cpu.get_current_instruction_ctx() {
                             Some(addr) => addr,
                             None => panic!("could not retrieve address from ctx"),
@@ -563,7 +564,7 @@ impl<'a> CPU<'a> {
                         return TaskCycleVariant::Full;
                     }));
 
-                    cycles.push(Box::new(|cpu| {
+                    cycles.push(Rc::new(|cpu| {
                         let addr = match cpu.get_current_instruction_ctx() {
                             Some(addr) => addr,
                             None => panic!("could not retrieve address from ctx"),
@@ -576,7 +577,7 @@ impl<'a> CPU<'a> {
                     return cycles;
                 }
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr = match cpu.get_current_instruction_ctx() {
                         Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
@@ -587,7 +588,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr = match cpu.get_current_instruction_ctx() {
                         Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
@@ -604,7 +605,7 @@ impl<'a> CPU<'a> {
                 }));
             }
             AddressingMode::IndexIndirectX => {
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output(addr);
                     cpu.increment_program_counter();
@@ -612,7 +613,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr_output = cpu.address_output;
                     let target_address = addr_output.wrapping_add(cpu.index_register_x.into());
                     cpu.set_ctx(target_address);
@@ -620,7 +621,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let tgt_addr = match cpu.get_current_instruction_ctx() {
                         Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
@@ -632,7 +633,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let tgt_addr = match cpu.get_current_instruction_ctx() {
                         Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
@@ -644,7 +645,7 @@ impl<'a> CPU<'a> {
                 }));
             }
             AddressingMode::IndirectIndexY => {
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_ctx(addr.into());
                     cpu.increment_program_counter();
@@ -652,7 +653,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let tgt_addr = match cpu.get_current_instruction_ctx() {
                         Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
@@ -664,7 +665,7 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let tgt_addr = match cpu.get_current_instruction_ctx() {
                         Some(addr) => addr,
                         None => panic!("could not retrieve address from ctx"),
@@ -679,7 +680,7 @@ impl<'a> CPU<'a> {
                 cycles.append(&mut offset_cycles);
             }
             AddressingMode::Immediate => {
-                cycles.push(Box::new(|cpu| {
+                cycles.push(Rc::new(|cpu| {
                     let addr = cpu.program_counter;
                     cpu.set_address_output(addr);
                     cpu.increment_program_counter();

@@ -1,9 +1,11 @@
+use std::rc::Rc;
+
 use crate::cpu::{AddressingMode, Registers, TaskCycleVariant, CPU};
 
 pub fn and(cpu: &mut CPU, addr_mode: AddressingMode) {
     let mut cycles = cpu.read_memory(addr_mode);
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let value = cpu.get_read_memory_result();
         let result_value = cpu.get_register(Registers::Accumulator) & value;
 
@@ -50,7 +52,7 @@ pub fn and_iny(cpu: &mut CPU) {
 pub fn eor(cpu: &mut CPU, addr_mode: AddressingMode) {
     let mut cycles = cpu.read_memory(addr_mode);
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let value = cpu.get_read_memory_result();
         let result_value = cpu.get_register(Registers::Accumulator) ^ value;
 
@@ -97,7 +99,7 @@ pub fn eor_iny(cpu: &mut CPU) {
 pub fn ora(cpu: &mut CPU, addr_mode: AddressingMode) {
     let mut cycles = cpu.read_memory(addr_mode);
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let value = cpu.get_read_memory_result();
         let result_value = cpu.get_register(Registers::Accumulator) | value;
 
@@ -144,7 +146,7 @@ pub fn ora_iny(cpu: &mut CPU) {
 pub fn bit(cpu: &mut CPU, addr_mode: AddressingMode) {
     let mut cycles = cpu.read_memory(addr_mode);
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let value = cpu.get_read_memory_result();
         cpu.set_bit_status(cpu.accumulator & value);
 
