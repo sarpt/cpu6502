@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
-use crate::cpu::{Registers, ScheduledCycle, TaskCycleVariant, CPU};
+use crate::cpu::{Registers, ScheduledTask, TaskCycleVariant, CPU};
 
 fn push_register(cpu: &mut CPU, register: Registers) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
     cycles.push(Rc::new(|cpu| {
         cpu.dummy_fetch();
 
@@ -29,7 +29,7 @@ pub fn php(cpu: &mut CPU) {
 }
 
 fn pull_register(cpu: &mut CPU, register: Registers) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
     cycles.push(Rc::new(|cpu| {
         cpu.dummy_fetch();
 
@@ -60,7 +60,7 @@ pub fn plp(cpu: &mut CPU) {
 }
 
 pub fn tsx(cpu: &mut CPU) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
     cycles.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::StackPointer, Registers::IndexX);
 
@@ -71,7 +71,7 @@ pub fn tsx(cpu: &mut CPU) {
 }
 
 pub fn txs(cpu: &mut CPU) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
     cycles.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::IndexX, Registers::StackPointer);
 

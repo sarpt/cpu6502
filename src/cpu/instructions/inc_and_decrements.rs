@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::cpu::{AddressingMode, Registers, ScheduledCycle, TaskCycleVariant, CPU};
+use crate::cpu::{AddressingMode, Registers, ScheduledTask, TaskCycleVariant, CPU};
 
 fn decrement_cb(value: &u8) -> u8 {
     return value.wrapping_sub(1);
@@ -33,7 +33,7 @@ fn decrement_register(cpu: &mut CPU, register: Registers) {
                 cpu.decrement_register(register);
 
                 return TaskCycleVariant::Full;
-            }) as ScheduledCycle]));
+            }) as ScheduledTask]));
         }
         _ => panic!("decrement_register used with incorrect register"),
     }
@@ -86,7 +86,7 @@ fn increment_register(cpu: &mut CPU, register: Registers) {
                 cpu.increment_register(register);
 
                 return TaskCycleVariant::Full;
-            }) as ScheduledCycle]));
+            }) as ScheduledTask]));
         }
         _ => panic!("increment_register used with incorrect register"),
     }
@@ -120,7 +120,7 @@ fn modify_memory(
     cpu: &mut CPU,
     addr_mode: AddressingMode,
     cb: Box<dyn Fn(&u8) -> u8>,
-) -> Vec<ScheduledCycle> {
+) -> Vec<ScheduledTask> {
     let mut cycles = cpu.get_address(addr_mode);
 
     cycles.push(Rc::new(|cpu| {

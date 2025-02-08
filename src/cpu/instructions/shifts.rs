@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::{
     consts::Byte,
-    cpu::{AddressingMode, Registers, ScheduledCycle, TaskCycleVariant, CPU},
+    cpu::{AddressingMode, Registers, ScheduledTask, TaskCycleVariant, CPU},
 };
 
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -42,7 +42,7 @@ fn shift_right_cb(value: &u8) -> u8 {
 }
 
 fn op_acc(cpu: &mut CPU, op: Box<dyn Fn(bool) -> Box<dyn Fn(&u8) -> u8>>, dir: Directions) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
 
     cycles.push(Rc::new(move |cpu| {
         let previous_value: Byte;
@@ -74,7 +74,7 @@ fn op_mem(
     op: Box<dyn Fn(bool) -> Box<dyn Fn(&u8) -> u8>>,
     dir: Directions,
 ) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
 
     let mut addr_cycles = cpu.get_address(addr_mode);
     cycles.append(&mut addr_cycles);
