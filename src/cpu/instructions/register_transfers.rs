@@ -1,8 +1,10 @@
+use std::rc::Rc;
+
 use crate::cpu::{Registers, ScheduledCycle, TaskCycleVariant, CPU};
 
 pub fn tax(cpu: &mut CPU) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
-    cycles.push(Box::new(|cpu| {
+    cycles.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::Accumulator, Registers::IndexX);
 
         return TaskCycleVariant::Full;
@@ -13,7 +15,7 @@ pub fn tax(cpu: &mut CPU) {
 
 pub fn txa(cpu: &mut CPU) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
-    cycles.push(Box::new(|cpu| {
+    cycles.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::IndexX, Registers::Accumulator);
 
         return TaskCycleVariant::Full;
@@ -24,7 +26,7 @@ pub fn txa(cpu: &mut CPU) {
 
 pub fn tay(cpu: &mut CPU) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
-    cycles.push(Box::new(|cpu| {
+    cycles.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::Accumulator, Registers::IndexY);
 
         return TaskCycleVariant::Full;
@@ -35,7 +37,7 @@ pub fn tay(cpu: &mut CPU) {
 
 pub fn tya(cpu: &mut CPU) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
-    cycles.push(Box::new(|cpu| {
+    cycles.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::IndexY, Registers::Accumulator);
 
         return TaskCycleVariant::Full;

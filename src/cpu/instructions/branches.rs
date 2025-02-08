@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     consts::{Byte, Word},
     cpu::{ScheduledCycle, TaskCycleVariant, CPU},
@@ -5,7 +7,7 @@ use crate::{
 
 fn branch(cpu: &mut CPU, condition: fn(&CPU) -> bool) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
-    cycles.push(Box::new(move |cpu: &mut CPU| {
+    cycles.push(Rc::new(move |cpu: &mut CPU| {
         let operand = cpu.access_memory(cpu.program_counter);
         cpu.increment_program_counter();
 
@@ -74,7 +76,7 @@ pub fn bvc(cpu: &mut CPU) {
 fn offset_program_counter() -> Vec<ScheduledCycle> {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
 
-    cycles.push(Box::new(|cpu: &mut CPU| {
+    cycles.push(Rc::new(|cpu: &mut CPU| {
         let [offset, condition_met] = match cpu.get_current_instruction_ctx() {
             Some(val) => val.to_le_bytes(),
             None => panic!("context for offseting program counter is unexpectedly not set after previous cycle"),
@@ -108,7 +110,7 @@ fn offset_program_counter() -> Vec<ScheduledCycle> {
         return TaskCycleVariant::Full;
     }));
 
-    cycles.push(Box::new(|cpu: &mut CPU| {
+    cycles.push(Rc::new(|cpu: &mut CPU| {
         let [offset, carry] = match cpu.get_current_instruction_ctx() {
             Some(val) => val.to_le_bytes(),
             None => panic!("context for offseting program counter is unexpectedly not set after previous cycle"),

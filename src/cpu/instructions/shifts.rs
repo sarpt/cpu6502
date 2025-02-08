@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     consts::Byte,
     cpu::{AddressingMode, Registers, ScheduledCycle, TaskCycleVariant, CPU},
@@ -42,7 +44,7 @@ fn shift_right_cb(value: &u8) -> u8 {
 fn op_acc(cpu: &mut CPU, op: Box<dyn Fn(bool) -> Box<dyn Fn(&u8) -> u8>>, dir: Directions) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let previous_value: Byte;
         let modified_value: Byte;
         let current_carry = cpu.processor_status.get_carry_flag();
@@ -77,14 +79,14 @@ fn op_mem(
     let mut addr_cycles = cpu.get_address(addr_mode);
     cycles.append(&mut addr_cycles);
 
-    cycles.push(Box::new(|cpu| {
+    cycles.push(Rc::new(|cpu| {
         let value = cpu.access_memory(cpu.address_output);
         cpu.set_ctx_lo(value);
 
         return TaskCycleVariant::Full;
     }));
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let current_carry = cpu.processor_status.get_carry_flag();
         let cb = op(current_carry);
         let value = match cpu.get_current_instruction_ctx() {
@@ -98,7 +100,7 @@ fn op_mem(
         return TaskCycleVariant::Full;
     }));
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let [previous_value, modified_value] = match cpu.get_current_instruction_ctx() {
             Some(ctx) => ctx.to_le_bytes(),
             None => panic!("unexpected lack of value in instruction context to modify"),

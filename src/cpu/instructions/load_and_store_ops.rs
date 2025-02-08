@@ -1,9 +1,11 @@
+use std::rc::Rc;
+
 use crate::cpu::{AddressingMode, Registers, ScheduledCycle, TaskCycleVariant, CPU};
 
 fn ld(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     let mut cycles = cpu.read_memory(addr_mode);
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let value = cpu.get_read_memory_result();
         cpu.set_register(register, value);
 
@@ -91,7 +93,7 @@ pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     let addr_cycles = &mut cpu.get_address(addr_mode);
     cycles.append(addr_cycles);
 
-    cycles.push(Box::new(move |cpu| {
+    cycles.push(Rc::new(move |cpu| {
         let value = cpu.get_register(register);
         cpu.put_into_memory(cpu.address_output, value);
 
