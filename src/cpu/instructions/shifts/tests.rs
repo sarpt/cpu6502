@@ -4,7 +4,7 @@ mod asl {
     mod common {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::shifts::asl_acc, tests::MemoryMock, Registers, CPU};
+        use crate::cpu::{instructions::shifts::asl_acc, tests::MemoryMock, CPU};
 
         #[test]
         fn should_set_carry_when_bit_7_is_set() {
@@ -290,7 +290,7 @@ mod lsr {
     mod common {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::shifts::lsr_acc, tests::MemoryMock, Registers, CPU};
+        use crate::cpu::{instructions::shifts::lsr_acc, tests::MemoryMock, CPU};
 
         #[test]
         fn should_set_carry_when_bit_0_is_set() {
@@ -562,7 +562,7 @@ mod rol {
     mod common {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::shifts::rol_acc, tests::MemoryMock, Registers, CPU};
+        use crate::cpu::{instructions::shifts::rol_acc, tests::MemoryMock, CPU};
 
         #[test]
         fn should_set_carry_when_bit_7_is_set() {
@@ -1008,7 +1008,7 @@ mod ror {
     mod common {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::shifts::ror_acc, tests::MemoryMock, Registers, CPU};
+        use crate::cpu::{instructions::shifts::ror_acc, tests::MemoryMock, CPU};
 
         #[test]
         fn should_set_carry_when_bit_0_is_set() {

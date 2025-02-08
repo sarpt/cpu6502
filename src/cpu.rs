@@ -370,13 +370,6 @@ impl<'a> CPU<'a> {
         };
     }
 
-    fn get_read_memory_result(&self) -> Byte {
-        return match self.get_current_instruction_ctx() {
-            Some(val) => val.to_le_bytes()[0],
-            None => panic!("unexpected lack of instruction ctx after memory read"),
-        };
-    }
-
     fn set_ctx(&mut self, val: Word) {
         return match &mut self.current_instruction {
             Some(current_instruciton) => current_instruciton.ctx = Some(val),
@@ -392,12 +385,20 @@ impl<'a> CPU<'a> {
         self.set_current_instruction_ctx((None, Some(hi)));
     }
 
-    fn read_memory(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledTask> {
+    fn read_memory(
+        &mut self,
+        addr_mode: AddressingMode,
+        value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
+    ) -> Vec<ScheduledTask> {
         let mut tasks = self.get_address(addr_mode);
 
         tasks.push(Rc::new(move |cpu: &mut CPU| {
             let value = cpu.access_memory(cpu.address_output);
             cpu.set_ctx_lo(value);
+
+            if let Some(vr) = &value_reader {
+                vr(cpu, value)
+            }
 
             if access_cycle_has_been_done_during_address_fixing(addr_mode) {
                 return TaskCycleVariant::Partial;

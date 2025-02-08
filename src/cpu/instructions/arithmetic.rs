@@ -1,21 +1,15 @@
-use std::rc::Rc;
-
 use crate::{
     consts::Byte,
-    cpu::{AddressingMode, Registers, TaskCycleVariant, CPU},
+    cpu::{AddressingMode, Registers, CPU},
 };
 
 fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
-    let mut cycles = cpu.read_memory(addr_mode);
-
-    cycles.push(Rc::new(move |cpu| {
-        let value = cpu.get_read_memory_result();
+    let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(move |cpu, value| {
         cpu.set_cmp_status(register, value);
+    });
 
-        return TaskCycleVariant::Partial;
-    }));
-
-    cpu.schedule_instruction(cycles);
+    let tasks = cpu.read_memory(addr_mode, Some(cb));
+    cpu.schedule_instruction(tasks);
 }
 
 pub fn cmp_im(cpu: &mut CPU) {
@@ -123,10 +117,7 @@ pub fn operations_with_carry(
     addr_mode: AddressingMode,
     op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
 ) {
-    let mut cycles = cpu.read_memory(addr_mode);
-
-    cycles.push(Rc::new(move |cpu| {
-        let value = cpu.get_read_memory_result();
+    let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(move |cpu, value| {
         let accumulator = cpu.get_register(Registers::Accumulator);
         let (value, carry, overflow) =
             op(value, accumulator, cpu.processor_status.get_carry_flag());
@@ -140,11 +131,10 @@ pub fn operations_with_carry(
             cpu.processor_status
                 .change_overflow_flag(overflow == FlagOp::Set)
         }
+    });
 
-        return TaskCycleVariant::Partial;
-    }));
-
-    cpu.schedule_instruction(cycles);
+    let tasks = cpu.read_memory(addr_mode, Some(cb));
+    cpu.schedule_instruction(tasks);
 }
 
 pub fn adc_im(cpu: &mut CPU) {

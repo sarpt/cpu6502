@@ -1,18 +1,17 @@
 use std::rc::Rc;
 
-use crate::cpu::{AddressingMode, Registers, ScheduledTask, TaskCycleVariant, CPU};
+use crate::{
+    consts::Byte,
+    cpu::{AddressingMode, Registers, ScheduledTask, TaskCycleVariant, CPU},
+};
 
 fn ld(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
-    let mut cycles = cpu.read_memory(addr_mode);
-
-    cycles.push(Rc::new(move |cpu| {
-        let value = cpu.get_read_memory_result();
+    let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(move |cpu, value| {
         cpu.set_register(register, value);
+    });
 
-        return TaskCycleVariant::Partial;
-    }));
-
-    cpu.schedule_instruction(cycles);
+    let tasks = cpu.read_memory(addr_mode, Some(cb));
+    cpu.schedule_instruction(tasks);
 }
 
 pub fn lda_im(cpu: &mut CPU) {

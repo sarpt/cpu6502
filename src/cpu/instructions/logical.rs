@@ -1,20 +1,17 @@
-use std::rc::Rc;
-
-use crate::cpu::{AddressingMode, Registers, TaskCycleVariant, CPU};
+use crate::{
+    consts::Byte,
+    cpu::{AddressingMode, Registers, CPU},
+};
 
 pub fn and(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.read_memory(addr_mode);
-
-    cycles.push(Rc::new(move |cpu| {
-        let value = cpu.get_read_memory_result();
+    let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(|cpu, value| {
         let result_value = cpu.get_register(Registers::Accumulator) & value;
 
         cpu.set_register(Registers::Accumulator, result_value);
+    });
 
-        return TaskCycleVariant::Partial;
-    }));
-
-    cpu.schedule_instruction(cycles);
+    let tasks = cpu.read_memory(addr_mode, Some(cb));
+    cpu.schedule_instruction(tasks);
 }
 
 pub fn and_im(cpu: &mut CPU) {
@@ -50,18 +47,14 @@ pub fn and_iny(cpu: &mut CPU) {
 }
 
 pub fn eor(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.read_memory(addr_mode);
-
-    cycles.push(Rc::new(move |cpu| {
-        let value = cpu.get_read_memory_result();
+    let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(|cpu, value| {
         let result_value = cpu.get_register(Registers::Accumulator) ^ value;
 
         cpu.set_register(Registers::Accumulator, result_value);
+    });
 
-        return TaskCycleVariant::Partial;
-    }));
-
-    cpu.schedule_instruction(cycles);
+    let tasks = cpu.read_memory(addr_mode, Some(cb));
+    cpu.schedule_instruction(tasks);
 }
 
 pub fn eor_im(cpu: &mut CPU) {
@@ -97,18 +90,14 @@ pub fn eor_iny(cpu: &mut CPU) {
 }
 
 pub fn ora(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.read_memory(addr_mode);
-
-    cycles.push(Rc::new(move |cpu| {
-        let value = cpu.get_read_memory_result();
+    let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(|cpu, value| {
         let result_value = cpu.get_register(Registers::Accumulator) | value;
 
         cpu.set_register(Registers::Accumulator, result_value);
+    });
 
-        return TaskCycleVariant::Partial;
-    }));
-
-    cpu.schedule_instruction(cycles);
+    let tasks = cpu.read_memory(addr_mode, Some(cb));
+    cpu.schedule_instruction(tasks);
 }
 
 pub fn ora_im(cpu: &mut CPU) {
@@ -144,16 +133,12 @@ pub fn ora_iny(cpu: &mut CPU) {
 }
 
 pub fn bit(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = cpu.read_memory(addr_mode);
-
-    cycles.push(Rc::new(move |cpu| {
-        let value = cpu.get_read_memory_result();
+    let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(|cpu, value| {
         cpu.set_bit_status(cpu.accumulator & value);
+    });
 
-        return TaskCycleVariant::Partial;
-    }));
-
-    cpu.schedule_instruction(cycles);
+    let tasks = cpu.read_memory(addr_mode, Some(cb));
+    cpu.schedule_instruction(tasks);
 }
 
 pub fn bit_zp(cpu: &mut CPU) {
