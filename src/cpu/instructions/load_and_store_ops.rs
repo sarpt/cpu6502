@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::cpu::{AddressingMode, Registers, ScheduledCycle, TaskCycleVariant, CPU};
+use crate::cpu::{AddressingMode, Registers, ScheduledTask, TaskCycleVariant, CPU};
 
 fn ld(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
     let mut cycles = cpu.read_memory(addr_mode);
@@ -88,7 +88,7 @@ pub fn ldx_ay(cpu: &mut CPU) {
 }
 
 pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
 
     let addr_cycles = &mut cpu.get_address(addr_mode);
     cycles.append(addr_cycles);

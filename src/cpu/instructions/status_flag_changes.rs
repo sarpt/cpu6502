@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
-use crate::cpu::{processor_status::Flags, ScheduledCycle, TaskCycleVariant, CPU};
+use crate::cpu::{processor_status::Flags, ScheduledTask, TaskCycleVariant, CPU};
 
 fn change_flag_value(cpu: &mut CPU, flag: Flags, value: bool) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
     cycles.push(Rc::new(move |cpu: &mut CPU| {
         cpu.processor_status.change_flag(flag, value);
 

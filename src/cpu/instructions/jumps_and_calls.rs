@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::cpu::{AddressingMode, ScheduledCycle, TaskCycleVariant, CPU};
+use crate::cpu::{AddressingMode, ScheduledTask, TaskCycleVariant, CPU};
 
 pub fn jsr_a(cpu: &mut CPU) {
     let mut cycles = cpu.get_address(AddressingMode::Absolute);
@@ -29,7 +29,7 @@ pub fn jsr_a(cpu: &mut CPU) {
 }
 
 pub fn rts(cpu: &mut CPU) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
     cycles.push(Rc::new(|cpu| {
         cpu.dummy_fetch();
 

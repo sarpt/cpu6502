@@ -2,11 +2,11 @@ use std::rc::Rc;
 
 use crate::{
     consts::BRK_INTERRUPT_VECTOR,
-    cpu::{ChipVariant, ScheduledCycle, TaskCycleVariant, CPU},
+    cpu::{ChipVariant, ScheduledTask, TaskCycleVariant, CPU},
 };
 
 pub fn nop(cpu: &mut CPU) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
     cycles.push(Rc::new(|cpu: &mut CPU| {
         cpu.increment_program_counter();
 
@@ -17,7 +17,7 @@ pub fn nop(cpu: &mut CPU) {
 }
 
 pub fn brk(cpu: &mut CPU) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
     cycles.push(Rc::new(|cpu: &mut CPU| {
         cpu.access_memory(cpu.program_counter); // fetch and discard
         cpu.increment_program_counter();
@@ -66,7 +66,7 @@ pub fn brk(cpu: &mut CPU) {
 }
 
 pub fn rti(cpu: &mut CPU) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
     cycles.push(Rc::new(|cpu: &mut CPU| {
         cpu.dummy_fetch();
 

@@ -2,11 +2,11 @@ use std::rc::Rc;
 
 use crate::{
     consts::{Byte, Word},
-    cpu::{ScheduledCycle, TaskCycleVariant, CPU},
+    cpu::{ScheduledTask, TaskCycleVariant, CPU},
 };
 
 fn branch(cpu: &mut CPU, condition: fn(&CPU) -> bool) {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
     cycles.push(Rc::new(move |cpu: &mut CPU| {
         let operand = cpu.access_memory(cpu.program_counter);
         cpu.increment_program_counter();
@@ -73,8 +73,8 @@ pub fn bvc(cpu: &mut CPU) {
     });
 }
 
-fn offset_program_counter() -> Vec<ScheduledCycle> {
-    let mut cycles: Vec<ScheduledCycle> = Vec::new();
+fn offset_program_counter() -> Vec<ScheduledTask> {
+    let mut cycles: Vec<ScheduledTask> = Vec::new();
 
     cycles.push(Rc::new(|cpu: &mut CPU| {
         let [offset, condition_met] = match cpu.get_current_instruction_ctx() {
