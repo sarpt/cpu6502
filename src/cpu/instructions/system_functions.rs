@@ -6,7 +6,7 @@ use crate::{
 pub fn nop(cpu: &mut CPU) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
     cycles.push(Box::new(|cpu: &mut CPU| {
-        cpu.queued_increment_program_counter();
+        cpu.increment_program_counter();
 
         return TaskCycleVariant::Full;
     }));
@@ -18,7 +18,7 @@ pub fn brk(cpu: &mut CPU) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
     cycles.push(Box::new(|cpu: &mut CPU| {
         cpu.access_memory(cpu.program_counter); // fetch and discard
-        cpu.queued_increment_program_counter();
+        cpu.increment_program_counter();
 
         return TaskCycleVariant::Full;
     }));
