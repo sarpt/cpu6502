@@ -11,17 +11,7 @@ fn increment_cb(value: &u8) -> u8 {
 }
 
 fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = modify_memory(cpu, addr_mode, Box::new(decrement_cb));
-
-    cycles.push(Rc::new(|cpu| {
-        let modified_value = match cpu.get_current_instruction_ctx() {
-            Some(val) => val.to_le_bytes()[1],
-            None => panic!("unexpected lack of instruction ctx after memory modification"),
-        };
-        cpu.set_status_of_value(modified_value);
-
-        return TaskCycleVariant::Partial;
-    }));
+    let cycles = modify_memory(cpu, addr_mode, Box::new(decrement_cb));
 
     cpu.schedule_instruction(cycles);
 }
@@ -64,17 +54,7 @@ pub fn dey_im(cpu: &mut CPU) {
 }
 
 fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) {
-    let mut cycles = modify_memory(cpu, addr_mode, Box::new(increment_cb));
-
-    cycles.push(Rc::new(|cpu| {
-        let modified_value = match cpu.get_current_instruction_ctx() {
-            Some(val) => val.to_le_bytes()[1],
-            None => panic!("unexpected lack of instruction ctx after memory modification"),
-        };
-        cpu.set_status_of_value(modified_value);
-
-        return TaskCycleVariant::Partial;
-    }));
+    let cycles = modify_memory(cpu, addr_mode, Box::new(increment_cb));
 
     cpu.schedule_instruction(cycles);
 }
@@ -148,6 +128,7 @@ fn modify_memory(
             None => panic!("unexpected lack of value in instruction context to modify"),
         };
         cpu.put_into_memory(cpu.address_output, modified_value);
+        cpu.set_status_of_value(modified_value);
 
         return TaskCycleVariant::Full;
     }));
