@@ -73,10 +73,7 @@ mod brk {
     mod cmos {
         use std::cell::RefCell;
 
-        use crate::{
-            consts::Byte,
-            cpu::{instructions::brk, tests::MemoryMock, CPU},
-        };
+        use crate::cpu::{instructions::brk, tests::MemoryMock, CPU};
 
         #[cfg(test)]
         mod rockwell {
@@ -119,10 +116,7 @@ mod brk {
     mod nmos {
         use std::cell::RefCell;
 
-        use crate::{
-            consts::Byte,
-            cpu::{instructions::brk, tests::MemoryMock, CPU},
-        };
+        use crate::cpu::{instructions::brk, tests::MemoryMock, CPU};
 
         #[test]
         fn should_not_clear_decimal_processor_status_flag() {
