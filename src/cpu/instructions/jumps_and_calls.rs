@@ -54,7 +54,7 @@ pub fn rts(cpu: &mut CPU) {
     }));
 
     cycles.push(Box::new(|cpu| {
-        cpu.queued_increment_program_counter();
+        cpu.increment_program_counter();
 
         return TaskCycleVariant::Full;
     }));

@@ -368,8 +368,8 @@ mod pop_byte_from_stack {
     fn should_increment_stack_pointer_once() {
         let memory = &RefCell::new(MemoryMock::default());
         let mut uut = CPU::new_nmos(memory);
-        uut.memory.borrow_mut()[0x01FF] = 0xDF;
-        uut.memory.borrow_mut()[0x01FE] = 0x48;
+        uut.memory.borrow_mut()[0x01FF] = 0x00;
+        uut.memory.borrow_mut()[0x01FE] = 0x00;
         uut.stack_pointer = 0xFD;
 
         uut.pop_byte_from_stack();
@@ -1302,5 +1302,41 @@ mod get_address {
 
             assert_eq!(uut.cycle, 0);
         }
+    }
+}
+
+#[cfg(test)]
+mod sync {
+    use std::cell::RefCell;
+
+    use super::super::*;
+    use super::MemoryMock;
+
+    #[test]
+    fn should_be_true_during_opcode_fetching_cycle() {
+        let memory = &RefCell::new(MemoryMock::new(&[0xA9, 0xFF]));
+        let mut uut = CPU::new_nmos(memory);
+
+        assert_eq!(uut.sync(), false);
+
+        uut.tick();
+
+        assert_eq!(uut.sync(), true);
+    }
+
+    #[test]
+    fn should_be_false_after_opcode_fetching_cycle() {
+        let memory = &RefCell::new(MemoryMock::new(&[0xA9, 0xFF]));
+        let mut uut = CPU::new_nmos(memory);
+
+        assert_eq!(uut.sync(), false);
+
+        uut.tick();
+
+        assert_eq!(uut.sync(), true);
+
+        uut.tick();
+
+        assert_eq!(uut.sync(), false);
     }
 }

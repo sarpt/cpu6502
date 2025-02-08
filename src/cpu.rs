@@ -77,6 +77,7 @@ pub struct CPU<'a> {
     memory: &'a RefCell<dyn Memory>,
     opcode_handlers: HashMap<Byte, OpcodeHandler>,
     address_output: Word,
+    sync: bool,
 }
 
 impl<'a> CPU<'a> {
@@ -95,6 +96,7 @@ impl<'a> CPU<'a> {
             memory: memory,
             opcode_handlers: instructions::get_instructions(),
             address_output: 0,
+            sync: false,
         };
     }
 
@@ -143,21 +145,20 @@ impl<'a> CPU<'a> {
 
     pub fn tick(&mut self) {
         let current_instruction = match &mut self.current_instruction {
-            Some(current) => current,
+            Some(current) => {
+                self.sync = false;
+                current
+            }
             None => {
+                self.sync = true;
                 let opcode = self.fetch_instruction();
                 let handler = self.opcode_handlers.get(&opcode);
                 match handler {
                     Some(cb) => cb(self),
-                    None => panic!("illegal opcode found: {opcode}"),
+                    None => panic!("illegal opcode found: {:#04x}", opcode),
                 }
 
-                match &mut self.current_instruction {
-                    Some(current) => current,
-                    None => panic!(
-                        "running opcode handler {opcode} did not result in a new instruction"
-                    ),
-                }
+                return;
             }
         };
 
@@ -172,6 +173,10 @@ impl<'a> CPU<'a> {
         }
     }
 
+    pub fn sync(&mut self) -> bool {
+        return self.sync;
+    }
+
     fn access_memory(&mut self, addr: Word) -> Byte {
         return self.memory.borrow()[addr];
     }
@@ -181,11 +186,6 @@ impl<'a> CPU<'a> {
     }
 
     fn increment_program_counter(&mut self) {
-        self.program_counter = self.program_counter.wrapping_add(1);
-        self.cycle += 1;
-    }
-
-    fn queued_increment_program_counter(&mut self) {
         self.program_counter = self.program_counter.wrapping_add(1);
     }
 
@@ -262,6 +262,7 @@ impl<'a> CPU<'a> {
     fn fetch_instruction(&mut self) -> Instruction {
         let opcode = self.access_memory(self.program_counter);
         self.increment_program_counter();
+        self.cycle += 1;
 
         return opcode;
     }
@@ -435,7 +436,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output(addr);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -444,7 +445,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output(addr);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -461,7 +462,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output(addr);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -478,7 +479,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_lo(addr_lo);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -486,7 +487,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_hi(addr_hi);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -495,7 +496,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_lo(addr_lo);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -503,7 +504,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_hi(addr_hi);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -515,7 +516,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_lo(addr_lo);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -523,7 +524,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output_hi(addr_hi);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -535,7 +536,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr_lo = cpu.access_memory(cpu.program_counter);
                     cpu.set_ctx_lo(addr_lo);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -543,7 +544,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr_hi = cpu.access_memory(cpu.program_counter);
                     cpu.set_ctx_hi(addr_hi);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -606,7 +607,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_address_output(addr);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -646,7 +647,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr: Byte = cpu.access_memory(cpu.program_counter);
                     cpu.set_ctx(addr.into());
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Full;
                 }));
@@ -681,7 +682,7 @@ impl<'a> CPU<'a> {
                 cycles.push(Box::new(|cpu| {
                     let addr = cpu.program_counter;
                     cpu.set_address_output(addr);
-                    cpu.queued_increment_program_counter();
+                    cpu.increment_program_counter();
 
                     return TaskCycleVariant::Partial;
                 }));

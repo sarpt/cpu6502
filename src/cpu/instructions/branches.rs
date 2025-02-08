@@ -7,7 +7,7 @@ fn branch(cpu: &mut CPU, condition: fn(&CPU) -> bool) {
     let mut cycles: Vec<ScheduledCycle> = Vec::new();
     cycles.push(Box::new(move |cpu: &mut CPU| {
         let operand = cpu.access_memory(cpu.program_counter);
-        cpu.queued_increment_program_counter();
+        cpu.increment_program_counter();
 
         cpu.set_ctx_lo(operand);
         if condition(cpu) {
