@@ -2,7 +2,11 @@
 mod jsr_a {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::jsr_a, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::jsr_a,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_fetch_address_pointed_by_program_counter_and_put_in_program_counter() {
@@ -11,8 +15,8 @@ mod jsr_a {
         cpu.program_counter = 0x00;
         cpu.stack_pointer = 0xFF;
 
-        jsr_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = jsr_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x5144);
     }
@@ -24,8 +28,8 @@ mod jsr_a {
         cpu.program_counter = 0x00;
         cpu.stack_pointer = 0xFF;
 
-        jsr_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = jsr_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[0x01FF], 0x00);
         assert_eq!(memory.borrow()[0x01FE], 0x01);
@@ -38,8 +42,8 @@ mod jsr_a {
         cpu.program_counter = 0x00;
         cpu.stack_pointer = 0xFF;
 
-        jsr_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = jsr_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.stack_pointer, 0xFD);
     }
@@ -51,8 +55,8 @@ mod jsr_a {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        jsr_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = jsr_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -62,7 +66,11 @@ mod jsr_a {
 mod rts {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::rts, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::rts,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_fetch_address_from_stack_and_put_it_in_program_counter_incremented_by_one() {
@@ -73,8 +81,8 @@ mod rts {
         memory.borrow_mut()[0x01FE] = 0x51;
         cpu.stack_pointer = 0xFD;
 
-        rts(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = rts(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x4452);
     }
@@ -88,8 +96,8 @@ mod rts {
         memory.borrow_mut()[0x01FE] = 0x51;
         cpu.stack_pointer = 0xFD;
 
-        rts(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = rts(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.stack_pointer, 0xFF);
     }
@@ -104,8 +112,8 @@ mod rts {
         cpu.stack_pointer = 0xFD;
         cpu.cycle = 0;
 
-        rts(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = rts(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -115,7 +123,11 @@ mod rts {
 mod jmp_a {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::jmp_a, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::jmp_a,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_put_address_stored_in_memory_at_program_counter_as_a_new_program_counter() {
@@ -123,8 +135,8 @@ mod jmp_a {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        jmp_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = jmp_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x5144);
     }
@@ -136,8 +148,8 @@ mod jmp_a {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        jmp_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = jmp_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -149,7 +161,11 @@ mod jmp_in {
     mod common {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::jmp_in, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::jmp_in,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_fetch_indirect_address_from_memory_and_put_in_program_counter() {
@@ -157,8 +173,8 @@ mod jmp_in {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            jmp_in(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = jmp_in(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.program_counter, 0x0001);
         }
@@ -168,7 +184,11 @@ mod jmp_in {
     mod nmos {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::jmp_in, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::jmp_in,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_take_four_cycles() {
@@ -177,8 +197,8 @@ mod jmp_in {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            jmp_in(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = jmp_in(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -188,7 +208,11 @@ mod jmp_in {
     mod cmos {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::jmp_in, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::jmp_in,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_take_five_cycles() {
@@ -197,8 +221,8 @@ mod jmp_in {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            jmp_in(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = jmp_in(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }

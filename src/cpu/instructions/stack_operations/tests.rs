@@ -2,7 +2,11 @@
 mod pha {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::pha, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::pha,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_push_accumulator_into_stack() {
@@ -11,8 +15,8 @@ mod pha {
         cpu.stack_pointer = 0xFF;
         cpu.accumulator = 0xDE;
 
-        pha(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = pha(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[0x01FF], 0xDE);
     }
@@ -25,8 +29,8 @@ mod pha {
         cpu.stack_pointer = 0xFF;
         cpu.cycle = 0;
 
-        pha(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = pha(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -36,7 +40,11 @@ mod pha {
 mod pla {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::pla, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::pla,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_pull_stack_into_accumulator() {
@@ -46,8 +54,8 @@ mod pla {
         memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.accumulator = 0x00;
 
-        pla(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = pla(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.accumulator, 0xDE);
     }
@@ -60,8 +68,8 @@ mod pla {
         memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.cycle = 0;
 
-        pla(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = pla(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -74,8 +82,8 @@ mod pla {
         memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        pla(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = pla(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -85,7 +93,11 @@ mod pla {
 mod php {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::php, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::php,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_push_processor_status_into_stack() {
@@ -94,8 +106,8 @@ mod php {
         cpu.processor_status = (0b10101010 as u8).into();
         cpu.stack_pointer = 0xFF;
 
-        php(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = php(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[0x01FF], 0b10101010);
     }
@@ -108,8 +120,8 @@ mod php {
         cpu.stack_pointer = 0xFF;
         cpu.cycle = 0;
 
-        php(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = php(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -119,7 +131,11 @@ mod php {
 mod plp {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::plp, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::plp,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_pull_stack_into_accumulator() {
@@ -129,8 +145,8 @@ mod plp {
         memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        plp(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = plp(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0xDE);
     }
@@ -144,8 +160,8 @@ mod plp {
         cpu.processor_status = (0x00 as u8).into();
         cpu.cycle = 0;
 
-        plp(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = plp(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -155,7 +171,11 @@ mod plp {
 mod txs {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::txs, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::txs,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_push_index_x_register_into_stack_pointer_register() {
@@ -163,8 +183,8 @@ mod txs {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0xDE;
 
-        txs(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = txs(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.stack_pointer, 0xDE);
     }
@@ -176,8 +196,8 @@ mod txs {
         cpu.index_register_x = 0xDE;
         cpu.cycle = 0;
 
-        txs(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = txs(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -187,7 +207,11 @@ mod txs {
 mod tsx {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::tsx, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::tsx,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_push_stack_pointer_into_index_x_register_register() {
@@ -195,8 +219,8 @@ mod tsx {
         let mut cpu = CPU::new_nmos(memory);
         cpu.stack_pointer = 0xDE;
 
-        tsx(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tsx(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.index_register_x, 0xDE);
     }
@@ -208,8 +232,8 @@ mod tsx {
         cpu.stack_pointer = 0xDE;
         cpu.cycle = 0;
 
-        tsx(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tsx(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -221,8 +245,8 @@ mod tsx {
         cpu.stack_pointer = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        tsx(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tsx(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }

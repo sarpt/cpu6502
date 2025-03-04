@@ -2,7 +2,11 @@
 mod tax {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::tax, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::tax,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_push_accumulator_into_index_x_register_register() {
@@ -10,8 +14,8 @@ mod tax {
         let mut cpu = CPU::new_nmos(memory);
         cpu.accumulator = 0xDE;
 
-        tax(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tax(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.index_register_x, 0xDE);
     }
@@ -23,8 +27,8 @@ mod tax {
         cpu.accumulator = 0xDE;
         cpu.cycle = 0;
 
-        tax(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tax(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -36,8 +40,8 @@ mod tax {
         cpu.accumulator = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        tax(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tax(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -47,7 +51,11 @@ mod tax {
 mod txa {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::txa, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::txa,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_push_index_x_register_into_stack_pointer_register() {
@@ -55,8 +63,8 @@ mod txa {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0xDE;
 
-        txa(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = txa(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.accumulator, 0xDE);
     }
@@ -68,8 +76,8 @@ mod txa {
         cpu.index_register_x = 0xDE;
         cpu.cycle = 0;
 
-        txa(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = txa(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -81,8 +89,8 @@ mod txa {
         cpu.index_register_x = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        txa(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = txa(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -92,7 +100,11 @@ mod txa {
 mod tay {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::tay, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::tay,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_push_accumulator_into_index_y_register_register() {
@@ -100,8 +112,8 @@ mod tay {
         let mut cpu = CPU::new_nmos(memory);
         cpu.accumulator = 0xDE;
 
-        tay(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tay(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.index_register_y, 0xDE);
     }
@@ -113,8 +125,8 @@ mod tay {
         cpu.accumulator = 0xDE;
         cpu.cycle = 0;
 
-        tay(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tay(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -126,8 +138,8 @@ mod tay {
         cpu.accumulator = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        tay(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tay(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -137,7 +149,11 @@ mod tay {
 mod tya {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::tya, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::tya,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_push_index_y_register_into_stack_pointer_register() {
@@ -145,8 +161,8 @@ mod tya {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0xDE;
 
-        tya(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tya(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.accumulator, 0xDE);
     }
@@ -158,8 +174,8 @@ mod tya {
         cpu.index_register_y = 0xDE;
         cpu.cycle = 0;
 
-        tya(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tya(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -171,8 +187,8 @@ mod tya {
         cpu.index_register_y = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        tya(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = tya(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }

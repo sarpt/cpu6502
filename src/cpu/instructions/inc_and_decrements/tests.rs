@@ -2,7 +2,11 @@
 mod inx_im {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::inx_im, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::inx_im,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_increment_x_register() {
@@ -10,8 +14,8 @@ mod inx_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0x02;
 
-        inx_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inx_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.index_register_x, 0x03);
     }
@@ -23,8 +27,8 @@ mod inx_im {
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
 
-        inx_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inx_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -35,8 +39,8 @@ mod inx_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0xFF;
 
-        inx_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inx_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -46,7 +50,11 @@ mod inx_im {
 mod iny_im {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::iny_im, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::iny_im,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_increment_y_register() {
@@ -54,8 +62,8 @@ mod iny_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0x02;
 
-        iny_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = iny_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.index_register_y, 0x03);
     }
@@ -67,8 +75,8 @@ mod iny_im {
         cpu.index_register_y = 0x02;
         cpu.cycle = 0;
 
-        iny_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = iny_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -79,8 +87,8 @@ mod iny_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0xFF;
 
-        iny_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = iny_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -90,7 +98,11 @@ mod iny_im {
 mod inc_zp {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::inc_zp, tests::MemoryMock, Byte, Word, CPU};
+    use crate::cpu::{
+        instructions::inc_zp,
+        tests::{run_tasks, MemoryMock},
+        Byte, Word, CPU,
+    };
 
     const VALUE: Byte = 0x02;
     const ZERO_PAGE_ADDR: Byte = 0x03;
@@ -101,8 +113,8 @@ mod inc_zp {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        inc_zp(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_zp(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x03);
     }
@@ -114,8 +126,8 @@ mod inc_zp {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        inc_zp(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_zp(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 4);
     }
@@ -127,8 +139,8 @@ mod inc_zp {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        inc_zp(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_zp(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -138,7 +150,11 @@ mod inc_zp {
 mod inc_zpx {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::inc_zpx, tests::MemoryMock, Byte, Word, CPU};
+    use crate::cpu::{
+        instructions::inc_zpx,
+        tests::{run_tasks, MemoryMock},
+        Byte, Word, CPU,
+    };
 
     const VALUE: Byte = 0x09;
     const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -151,8 +167,8 @@ mod inc_zpx {
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
-        inc_zpx(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_zpx(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_X as Word], 0x0A);
     }
@@ -165,8 +181,8 @@ mod inc_zpx {
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
 
-        inc_zpx(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_zpx(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -179,8 +195,8 @@ mod inc_zpx {
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
-        inc_zpx(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_zpx(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -190,7 +206,11 @@ mod inc_zpx {
 mod inc_a {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::inc_a, tests::MemoryMock, Byte, Word, CPU};
+    use crate::cpu::{
+        instructions::inc_a,
+        tests::{run_tasks, MemoryMock},
+        Byte, Word, CPU,
+    };
 
     const VALUE: Byte = 0x09;
     const ADDR_LO: Byte = 0x04;
@@ -203,8 +223,8 @@ mod inc_a {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        inc_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[ADDR as Word], 0x0A);
     }
@@ -216,8 +236,8 @@ mod inc_a {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        inc_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -229,8 +249,8 @@ mod inc_a {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        inc_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -240,7 +260,11 @@ mod inc_a {
 mod inc_ax {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::inc_ax, tests::MemoryMock, Byte, Word, CPU};
+    use crate::cpu::{
+        instructions::inc_ax,
+        tests::{run_tasks, MemoryMock},
+        Byte, Word, CPU,
+    };
 
     const VALUE: Byte = 0x09;
     const ADDR_LO: Byte = 0x02;
@@ -255,8 +279,8 @@ mod inc_ax {
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
-        inc_ax(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_ax(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[ADDR_OFFSET_BY_X], 0x0A);
     }
@@ -269,8 +293,8 @@ mod inc_ax {
         cpu.index_register_x = OFFSET;
         cpu.cycle = 0;
 
-        inc_ax(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_ax(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 6);
     }
@@ -283,8 +307,8 @@ mod inc_ax {
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
-        inc_ax(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = inc_ax(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -294,7 +318,11 @@ mod inc_ax {
 mod dex_im {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::dex_im, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::dex_im,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_decrement_x_register() {
@@ -302,8 +330,8 @@ mod dex_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0x02;
 
-        dex_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dex_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.index_register_x, 0x01);
     }
@@ -315,8 +343,8 @@ mod dex_im {
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
 
-        dex_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dex_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -327,8 +355,8 @@ mod dex_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0x01;
 
-        dex_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dex_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -338,7 +366,11 @@ mod dex_im {
 mod dey_im {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::dey_im, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::dey_im,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_decrement_y_register() {
@@ -346,8 +378,8 @@ mod dey_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0x02;
 
-        dey_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dey_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.index_register_y, 0x01);
     }
@@ -359,8 +391,8 @@ mod dey_im {
         cpu.index_register_y = 0x02;
         cpu.cycle = 0;
 
-        dey_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dey_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -371,8 +403,8 @@ mod dey_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0x01;
 
-        dey_im(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dey_im(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -382,7 +414,11 @@ mod dey_im {
 mod dec_zp {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::dec_zp, tests::MemoryMock, Byte, Word, CPU};
+    use crate::cpu::{
+        instructions::dec_zp,
+        tests::{run_tasks, MemoryMock},
+        Byte, Word, CPU,
+    };
 
     const VALUE: Byte = 0x02;
     const ZERO_PAGE_ADDR: Byte = 0x03;
@@ -393,8 +429,8 @@ mod dec_zp {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        dec_zp(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_zp(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x01);
     }
@@ -406,8 +442,8 @@ mod dec_zp {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        dec_zp(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_zp(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 4);
     }
@@ -419,8 +455,8 @@ mod dec_zp {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        dec_zp(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_zp(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -430,7 +466,11 @@ mod dec_zp {
 mod dec_zpx {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::dec_zpx, tests::MemoryMock, Byte, Word, CPU};
+    use crate::cpu::{
+        instructions::dec_zpx,
+        tests::{run_tasks, MemoryMock},
+        Byte, Word, CPU,
+    };
 
     const VALUE: Byte = 0x09;
     const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -443,8 +483,8 @@ mod dec_zpx {
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
-        dec_zpx(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_zpx(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_X as Word], 0x08);
     }
@@ -457,8 +497,8 @@ mod dec_zpx {
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
 
-        dec_zpx(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_zpx(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -471,8 +511,8 @@ mod dec_zpx {
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
-        dec_zpx(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_zpx(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -482,7 +522,11 @@ mod dec_zpx {
 mod dec_a {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::dec_a, tests::MemoryMock, Byte, Word, CPU};
+    use crate::cpu::{
+        instructions::dec_a,
+        tests::{run_tasks, MemoryMock},
+        Byte, Word, CPU,
+    };
 
     const VALUE: Byte = 0x09;
     const ADDR_LO: Byte = 0x04;
@@ -495,8 +539,8 @@ mod dec_a {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        dec_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[ADDR as Word], 0x08);
     }
@@ -508,8 +552,8 @@ mod dec_a {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        dec_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -521,8 +565,8 @@ mod dec_a {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        dec_a(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_a(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -532,7 +576,11 @@ mod dec_a {
 mod dec_ax {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::dec_ax, tests::MemoryMock, Byte, Word, CPU};
+    use crate::cpu::{
+        instructions::dec_ax,
+        tests::{run_tasks, MemoryMock},
+        Byte, Word, CPU,
+    };
 
     const VALUE: Byte = 0x09;
     const ADDR_LO: Byte = 0x02;
@@ -547,8 +595,8 @@ mod dec_ax {
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
-        dec_ax(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_ax(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(memory.borrow()[ADDR_OFFSET_BY_X], 0x08);
     }
@@ -561,8 +609,8 @@ mod dec_ax {
         cpu.index_register_x = OFFSET;
         cpu.cycle = 0;
 
-        dec_ax(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_ax(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 6);
     }
@@ -575,8 +623,8 @@ mod dec_ax {
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
-        dec_ax(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = dec_ax(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }

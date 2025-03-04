@@ -2,7 +2,11 @@
 mod clc {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::clc, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::clc,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_clear_carry_flag() {
@@ -10,8 +14,8 @@ mod clc {
         let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_carry_flag(true);
 
-        clc(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = clc(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status.get_carry_flag(), false);
     }
@@ -23,8 +27,8 @@ mod clc {
         cpu.processor_status.change_carry_flag(true);
         cpu.cycle = 0;
 
-        clc(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = clc(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -34,7 +38,11 @@ mod clc {
 mod cld {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::cld, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::cld,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_clear_decimal_flag() {
@@ -42,8 +50,8 @@ mod cld {
         let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_decimal_mode_flag(true);
 
-        cld(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = cld(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
     }
@@ -55,8 +63,8 @@ mod cld {
         cpu.processor_status.change_decimal_mode_flag(true);
         cpu.cycle = 0;
 
-        cld(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = cld(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -66,7 +74,11 @@ mod cld {
 mod cli {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::cli, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::cli,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_clear_interrupt_disable_flag() {
@@ -74,8 +86,8 @@ mod cli {
         let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_interrupt_disable_flag(true);
 
-        cli(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = cli(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status.get_interrupt_disable_flag(), false);
     }
@@ -87,8 +99,8 @@ mod cli {
         cpu.processor_status.change_interrupt_disable_flag(true);
         cpu.cycle = 0;
 
-        cli(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = cli(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -98,7 +110,11 @@ mod cli {
 mod clv {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::clv, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::clv,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_clear_overflow_flag() {
@@ -106,8 +122,8 @@ mod clv {
         let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_overflow_flag(true);
 
-        clv(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = clv(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status.get_overflow_flag(), false);
     }
@@ -119,8 +135,8 @@ mod clv {
         cpu.processor_status.change_overflow_flag(true);
         cpu.cycle = 0;
 
-        clv(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = clv(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -130,7 +146,11 @@ mod clv {
 mod sec {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::sec, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::sec,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_set_carry_flag() {
@@ -138,8 +158,8 @@ mod sec {
         let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_carry_flag(false);
 
-        sec(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = sec(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status.get_carry_flag(), true);
     }
@@ -151,8 +171,8 @@ mod sec {
         cpu.processor_status.change_carry_flag(false);
         cpu.cycle = 0;
 
-        sec(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = sec(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -162,7 +182,11 @@ mod sec {
 mod sed {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::sed, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::sed,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_set_decimal_mode_flag() {
@@ -170,8 +194,8 @@ mod sed {
         let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_decimal_mode_flag(false);
 
-        sed(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = sed(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status.get_decimal_mode_flag(), true);
     }
@@ -183,8 +207,8 @@ mod sed {
         cpu.processor_status.change_decimal_mode_flag(false);
         cpu.cycle = 0;
 
-        sed(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = sed(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -194,7 +218,11 @@ mod sed {
 mod sei {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::sei, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::sei,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_set_interrupt_disable_flag() {
@@ -202,8 +230,8 @@ mod sei {
         let mut cpu = CPU::new_nmos(memory);
         cpu.processor_status.change_interrupt_disable_flag(false);
 
-        sei(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = sei(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status.get_interrupt_disable_flag(), true);
     }
@@ -215,8 +243,8 @@ mod sei {
         cpu.processor_status.change_interrupt_disable_flag(false);
         cpu.cycle = 0;
 
-        sei(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = sei(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }

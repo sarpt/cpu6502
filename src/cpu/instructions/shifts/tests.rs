@@ -4,7 +4,11 @@ mod asl {
     mod common {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::shifts::asl_acc, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::shifts::asl_acc,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_set_carry_when_bit_7_is_set() {
@@ -14,8 +18,8 @@ mod asl {
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            asl_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_carry_flag(), true);
         }
@@ -28,8 +32,8 @@ mod asl {
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            asl_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
         }
@@ -42,8 +46,8 @@ mod asl {
 
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-            asl_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_zero_flag(), true);
         }
@@ -56,8 +60,8 @@ mod asl {
 
             assert_eq!(cpu.processor_status.get_negative_flag(), false);
 
-            asl_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_negative_flag(), true);
         }
@@ -69,7 +73,11 @@ mod asl {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::shifts::asl_acc, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::asl_acc,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
         const VALUE: Byte = 0x02;
 
@@ -80,8 +88,8 @@ mod asl {
             cpu.accumulator = VALUE;
             cpu.program_counter = 0x00;
 
-            asl_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x04);
         }
@@ -94,8 +102,8 @@ mod asl {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            asl_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -107,7 +115,11 @@ mod asl {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::asl_zp, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::asl_zp,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -119,8 +131,8 @@ mod asl {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            asl_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x04);
         }
@@ -132,8 +144,8 @@ mod asl {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            asl_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -145,7 +157,11 @@ mod asl {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::asl_zpx, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::asl_zpx,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -159,8 +175,8 @@ mod asl {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            asl_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word], 0x04);
         }
@@ -173,8 +189,8 @@ mod asl {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            asl_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -186,7 +202,11 @@ mod asl {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::asl_a, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::asl_a,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ABSOLUTE_ADDR_HI: Byte = 0x00;
@@ -204,8 +224,8 @@ mod asl {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            asl_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0x04);
         }
@@ -222,8 +242,8 @@ mod asl {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            asl_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -235,7 +255,11 @@ mod asl {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::asl_ax, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::asl_ax,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ABSOLUTE_ADDR_HI: Byte = 0x00;
@@ -256,8 +280,8 @@ mod asl {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            asl_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word], 0x04);
         }
@@ -276,8 +300,8 @@ mod asl {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            asl_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = asl_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -290,7 +314,11 @@ mod lsr {
     mod common {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::shifts::lsr_acc, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::shifts::lsr_acc,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_set_carry_when_bit_0_is_set() {
@@ -300,8 +328,8 @@ mod lsr {
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            lsr_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_carry_flag(), true);
         }
@@ -314,8 +342,8 @@ mod lsr {
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            lsr_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
         }
@@ -328,8 +356,8 @@ mod lsr {
 
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-            lsr_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_zero_flag(), true);
         }
@@ -341,7 +369,11 @@ mod lsr {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::shifts::lsr_acc, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::lsr_acc,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
         const VALUE: Byte = 0x02;
 
@@ -352,8 +384,8 @@ mod lsr {
             cpu.accumulator = VALUE;
             cpu.program_counter = 0x00;
 
-            lsr_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x01);
         }
@@ -366,8 +398,8 @@ mod lsr {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            lsr_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -379,7 +411,11 @@ mod lsr {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::lsr_zp, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::lsr_zp,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -391,8 +427,8 @@ mod lsr {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            lsr_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x01);
         }
@@ -404,8 +440,8 @@ mod lsr {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            lsr_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -417,7 +453,11 @@ mod lsr {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::lsr_zpx, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::lsr_zpx,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -431,8 +471,8 @@ mod lsr {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            lsr_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word], 0x01);
         }
@@ -445,8 +485,8 @@ mod lsr {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            lsr_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -458,7 +498,11 @@ mod lsr {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::lsr_a, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::lsr_a,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ABSOLUTE_ADDR_HI: Byte = 0x00;
@@ -476,8 +520,8 @@ mod lsr {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            lsr_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0x01);
         }
@@ -494,8 +538,8 @@ mod lsr {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            lsr_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -507,7 +551,11 @@ mod lsr {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::lsr_ax, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::lsr_ax,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ABSOLUTE_ADDR_HI: Byte = 0x00;
@@ -528,8 +576,8 @@ mod lsr {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            lsr_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word], 0x01);
         }
@@ -548,8 +596,8 @@ mod lsr {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            lsr_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = lsr_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -562,7 +610,11 @@ mod rol {
     mod common {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::shifts::rol_acc, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::shifts::rol_acc,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_set_carry_when_bit_7_is_set() {
@@ -572,8 +624,8 @@ mod rol {
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            rol_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_carry_flag(), true);
         }
@@ -586,8 +638,8 @@ mod rol {
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            rol_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
         }
@@ -600,8 +652,8 @@ mod rol {
 
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-            rol_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_zero_flag(), true);
         }
@@ -613,7 +665,11 @@ mod rol {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::shifts::rol_acc, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::rol_acc,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const VALUE: Byte = 0x02;
@@ -624,8 +680,8 @@ mod rol {
             let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = VALUE;
 
-            rol_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0b00000100);
         }
@@ -637,8 +693,8 @@ mod rol {
             cpu.processor_status.change_carry_flag(true);
             cpu.accumulator = VALUE;
 
-            rol_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0b00000101);
         }
@@ -650,8 +706,8 @@ mod rol {
             cpu.processor_status.change_carry_flag(false);
             cpu.accumulator = VALUE;
 
-            rol_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0b00000100);
         }
@@ -664,8 +720,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            rol_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -677,7 +733,11 @@ mod rol {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::rol_zp, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::rol_zp,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -689,8 +749,8 @@ mod rol {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            rol_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000100);
         }
@@ -702,8 +762,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            rol_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000101);
         }
@@ -715,8 +775,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            rol_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000100);
         }
@@ -728,8 +788,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            rol_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -741,7 +801,11 @@ mod rol {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::rol_zpx, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::rol_zpx,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -755,8 +819,8 @@ mod rol {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            rol_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -772,8 +836,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            rol_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -789,8 +853,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            rol_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -806,8 +870,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            rol_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -819,7 +883,11 @@ mod rol {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::rol_a, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::rol_a,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ABSOLUTE_ADDR_HI: Byte = 0x00;
@@ -837,8 +905,8 @@ mod rol {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            rol_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000100);
         }
@@ -855,8 +923,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            rol_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000101);
         }
@@ -873,8 +941,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            rol_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000100);
         }
@@ -891,8 +959,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            rol_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -904,7 +972,11 @@ mod rol {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::rol_ax, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::rol_ax,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ABSOLUTE_ADDR_HI: Byte = 0x00;
@@ -925,8 +997,8 @@ mod rol {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            rol_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -948,8 +1020,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            rol_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -971,8 +1043,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            rol_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -994,8 +1066,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            rol_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = rol_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -1008,7 +1080,11 @@ mod ror {
     mod common {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::shifts::ror_acc, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::shifts::ror_acc,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_set_carry_when_bit_0_is_set() {
@@ -1018,8 +1094,8 @@ mod ror {
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            ror_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_carry_flag(), true);
         }
@@ -1032,8 +1108,8 @@ mod ror {
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            ror_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_carry_flag(), false);
         }
@@ -1046,8 +1122,8 @@ mod ror {
 
             assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-            ror_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_zero_flag(), true);
         }
@@ -1059,7 +1135,11 @@ mod ror {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::shifts::ror_acc, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::ror_acc,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const VALUE: Byte = 0x02;
@@ -1070,8 +1150,8 @@ mod ror {
             let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = VALUE;
 
-            ror_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0b00000001);
         }
@@ -1083,8 +1163,8 @@ mod ror {
             cpu.processor_status.change_carry_flag(true);
             cpu.accumulator = VALUE;
 
-            ror_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0b10000001);
         }
@@ -1096,8 +1176,8 @@ mod ror {
             cpu.processor_status.change_carry_flag(false);
             cpu.accumulator = VALUE;
 
-            ror_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0b00000001);
         }
@@ -1110,8 +1190,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            ror_acc(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -1123,7 +1203,11 @@ mod ror {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::ror_zp, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::ror_zp,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -1135,8 +1219,8 @@ mod ror {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            ror_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000001);
         }
@@ -1148,8 +1232,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            ror_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b10000001);
         }
@@ -1161,8 +1245,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            ror_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000001);
         }
@@ -1174,8 +1258,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            ror_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1187,7 +1271,11 @@ mod ror {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::ror_zpx, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::ror_zpx,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -1201,8 +1289,8 @@ mod ror {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            ror_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1218,8 +1306,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            ror_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1235,8 +1323,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            ror_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1252,8 +1340,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            ror_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1265,7 +1353,11 @@ mod ror {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::ror_a, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::ror_a,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ABSOLUTE_ADDR_HI: Byte = 0x00;
@@ -1283,8 +1375,8 @@ mod ror {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            ror_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000001);
         }
@@ -1301,8 +1393,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            ror_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b10000001);
         }
@@ -1319,8 +1411,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            ror_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000001);
         }
@@ -1337,8 +1429,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            ror_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1350,7 +1442,11 @@ mod ror {
 
         use crate::{
             consts::{Byte, Word},
-            cpu::{instructions::shifts::ror_ax, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::shifts::ror_ax,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ABSOLUTE_ADDR_HI: Byte = 0x00;
@@ -1371,8 +1467,8 @@ mod ror {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            ror_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1394,8 +1490,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            ror_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1417,8 +1513,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            ror_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1440,8 +1536,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            ror_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ror_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 6);
         }
