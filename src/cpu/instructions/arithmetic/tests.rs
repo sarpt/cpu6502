@@ -4,7 +4,11 @@ mod cmp {
     mod cmp_im {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::cmp_im, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::cmp_im,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_compare_accumulator_with_next_byte_from_memory() {
@@ -14,8 +18,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cmp_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -28,8 +32,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cmp_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -39,7 +43,11 @@ mod cmp {
     mod cmp_zp {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::cmp_zp, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::cmp_zp,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_compare_accumulator_with_a_value_from_a_zero_page_address() {
@@ -49,8 +57,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cmp_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -63,8 +71,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cmp_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -74,7 +82,11 @@ mod cmp {
     mod cmp_zpx {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::cmp_zpx, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::cmp_zpx,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_compare_accumulator_with_a_value_from_a_zero_page_summed_with_index_register_x() {
@@ -85,8 +97,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cmp_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -100,8 +112,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cmp_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -111,7 +123,11 @@ mod cmp {
     mod cmp_a {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::cmp_a, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::cmp_a,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_compare_accumulator_with_a_value_from_an_address() {
@@ -121,8 +137,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cmp_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -135,8 +151,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cmp_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -148,7 +164,11 @@ mod cmp {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::cmp_ax, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::cmp_ax,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
@@ -167,8 +187,8 @@ mod cmp {
             cpu.index_register_x = 0x02;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cmp_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -184,8 +204,8 @@ mod cmp {
             cpu.index_register_x = 0x02;
             cpu.cycle = 0;
 
-            cmp_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -206,8 +226,8 @@ mod cmp {
             cpu.index_register_x = 0x02;
             cpu.cycle = 0;
 
-            cmp_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -219,7 +239,11 @@ mod cmp {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::cmp_ay, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::cmp_ay,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ADDRESS_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
@@ -238,8 +262,8 @@ mod cmp {
             cpu.index_register_y = 0x02;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cmp_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -255,8 +279,8 @@ mod cmp {
             cpu.index_register_y = 0x02;
             cpu.cycle = 0;
 
-            cmp_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -277,8 +301,8 @@ mod cmp {
             cpu.index_register_y = 0x02;
             cpu.cycle = 0;
 
-            cmp_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -290,7 +314,11 @@ mod cmp {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::cmp_iny, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::cmp_iny,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const INDIRECT_ZERO_PAGE_ADDRESS_PLACE: Byte = 0x01;
@@ -316,8 +344,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cmp_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -339,8 +367,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cmp_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -360,8 +388,8 @@ mod cmp {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cmp_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cmp_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -374,7 +402,11 @@ mod cpy {
     mod cpy_im {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::cpy_im, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::cpy_im,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_compare_y_register_with_next_byte_from_memory() {
@@ -384,8 +416,8 @@ mod cpy {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cpy_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpy_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -398,8 +430,8 @@ mod cpy {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cpy_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpy_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -409,7 +441,11 @@ mod cpy {
     mod cpy_zp {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::cpy_zp, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::cpy_zp,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_compare_y_register_with_a_value_from_a_zero_page_address() {
@@ -419,8 +455,8 @@ mod cpy {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cpy_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpy_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -433,8 +469,8 @@ mod cpy {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cpy_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpy_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -444,7 +480,11 @@ mod cpy {
     mod cpy_a {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::cpy_a, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::cpy_a,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_compare_y_register_with_a_value_from_an_address() {
@@ -454,8 +494,8 @@ mod cpy {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cpy_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpy_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -468,8 +508,8 @@ mod cpy {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cpy_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpy_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -482,7 +522,11 @@ mod cpx {
     mod cpx_im {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::cpx_im, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::cpx_im,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_compare_x_register_with_next_byte_from_memory() {
@@ -492,8 +536,8 @@ mod cpx {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cpx_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpx_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -506,8 +550,8 @@ mod cpx {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cpx_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpx_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -517,7 +561,11 @@ mod cpx {
     mod cpx_zp {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::cpx_zp, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::cpx_zp,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_compare_x_register_with_a_value_from_a_zero_page_address() {
@@ -527,8 +575,8 @@ mod cpx {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cpx_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpx_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -541,8 +589,8 @@ mod cpx {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cpx_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpx_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -552,7 +600,11 @@ mod cpx {
     mod cpx_a {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::cpx_a, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::cpx_a,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_compare_x_register_with_a_value_from_an_address() {
@@ -562,8 +614,8 @@ mod cpx {
             cpu.program_counter = 0x00;
             assert_eq!(cpu.processor_status, 0b00000000);
 
-            cpx_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpx_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -576,8 +628,8 @@ mod cpx {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            cpx_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = cpx_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -692,7 +744,10 @@ mod adc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::adc_im, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::adc_im,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
         const VALUE: Byte = 0x03;
@@ -704,8 +759,8 @@ mod adc {
             cpu.accumulator = 0x02;
             cpu.program_counter = 0x00;
 
-            adc_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -719,8 +774,8 @@ mod adc {
             cpu.program_counter = 0x00;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
-            adc_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -733,8 +788,8 @@ mod adc {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            adc_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -747,7 +802,10 @@ mod adc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::adc_zp, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::adc_zp,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
         const VALUE: Byte = 0x03;
@@ -759,8 +817,8 @@ mod adc {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
 
-            adc_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -774,8 +832,8 @@ mod adc {
             cpu.program_counter = 0x00;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
-            adc_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -787,8 +845,8 @@ mod adc {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            adc_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -801,7 +859,10 @@ mod adc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::adc_zpx, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::adc_zpx,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
         const VALUE: Byte = 0x03;
@@ -814,8 +875,8 @@ mod adc {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
 
-            adc_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -830,8 +891,8 @@ mod adc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
-            adc_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -845,8 +906,8 @@ mod adc {
             cpu.accumulator = 0x02;
             cpu.cycle = 0;
 
-            adc_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -858,7 +919,12 @@ mod adc {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::adc_a, processor_status::ProcessorStatus, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::adc_a,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
         const VALUE: Byte = 0x03;
 
@@ -869,8 +935,8 @@ mod adc {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
 
-            adc_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -884,8 +950,8 @@ mod adc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
-            adc_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -898,8 +964,8 @@ mod adc {
             cpu.accumulator = 0x02;
             cpu.cycle = 0;
 
-            adc_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -912,7 +978,10 @@ mod adc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::adc_ax, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::adc_ax,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
 
@@ -931,8 +1000,8 @@ mod adc {
             cpu.index_register_x = 0x02;
             cpu.accumulator = 0x02;
 
-            adc_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -949,8 +1018,8 @@ mod adc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
-            adc_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -966,8 +1035,8 @@ mod adc {
             cpu.accumulator = 0x02;
             cpu.cycle = 0;
 
-            adc_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -986,8 +1055,8 @@ mod adc {
             cpu.accumulator = 0x02;
             cpu.cycle = 0;
 
-            adc_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1000,7 +1069,10 @@ mod adc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::adc_ay, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::adc_ay,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
 
@@ -1019,8 +1091,8 @@ mod adc {
             cpu.index_register_y = 0x02;
             cpu.accumulator = 0x02;
 
-            adc_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -1037,8 +1109,8 @@ mod adc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
-            adc_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -1054,8 +1126,8 @@ mod adc {
             cpu.accumulator = 0x02;
             cpu.cycle = 0;
 
-            adc_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1074,8 +1146,8 @@ mod adc {
             cpu.accumulator = 0x02;
             cpu.cycle = 0;
 
-            adc_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1086,7 +1158,10 @@ mod adc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::adc_iny, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::adc_iny,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
         use std::cell::RefCell;
@@ -1113,8 +1188,8 @@ mod adc {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x02;
 
-            adc_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -1136,8 +1211,8 @@ mod adc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
-            adc_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -1159,8 +1234,8 @@ mod adc {
             cpu.accumulator = 0x02;
             cpu.cycle = 0;
 
-            adc_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1180,8 +1255,8 @@ mod adc {
             cpu.accumulator = 0x02;
             cpu.cycle = 0;
 
-            adc_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1192,7 +1267,10 @@ mod adc {
         use std::cell::RefCell;
 
         use crate::cpu::{
-            instructions::adc_inx, processor_status::ProcessorStatus, tests::MemoryMock, Byte, CPU,
+            instructions::adc_inx,
+            processor_status::ProcessorStatus,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
         };
 
         const ZP_ADDRESS: Byte = 0x02;
@@ -1217,8 +1295,8 @@ mod adc {
             cpu.accumulator = 0x02;
             cpu.index_register_x = OFFSET;
 
-            adc_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x05);
         }
@@ -1240,8 +1318,8 @@ mod adc {
             cpu.index_register_x = OFFSET;
             cpu.processor_status = ProcessorStatus::from(0b00000000);
 
-            adc_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000001);
         }
@@ -1262,8 +1340,8 @@ mod adc {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            adc_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = adc_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1379,7 +1457,10 @@ mod sbc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::sbc_im, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::sbc_im,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
         const VALUE: Byte = 0x30;
@@ -1392,8 +1473,8 @@ mod sbc {
             cpu.accumulator = 0x50;
             cpu.program_counter = 0x00;
 
-            sbc_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1407,8 +1488,8 @@ mod sbc {
             cpu.program_counter = 0x00;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
-            sbc_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1422,8 +1503,8 @@ mod sbc {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            sbc_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -1436,7 +1517,10 @@ mod sbc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::sbc_zp, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::sbc_zp,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
         const VALUE: Byte = 0x30;
@@ -1449,8 +1533,8 @@ mod sbc {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x50;
 
-            sbc_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1464,8 +1548,8 @@ mod sbc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
-            sbc_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1479,8 +1563,8 @@ mod sbc {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            sbc_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -1493,7 +1577,10 @@ mod sbc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::sbc_zpx, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::sbc_zpx,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
         const VALUE: Byte = 0x30;
@@ -1507,8 +1594,8 @@ mod sbc {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x50;
 
-            sbc_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1523,8 +1610,8 @@ mod sbc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
-            sbc_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1538,8 +1625,8 @@ mod sbc {
             cpu.accumulator = 0x50;
             cpu.cycle = 0;
 
-            sbc_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1551,7 +1638,12 @@ mod sbc {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::sbc_a, processor_status::ProcessorStatus, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::sbc_a,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
         const VALUE: Byte = 0x30;
 
@@ -1563,8 +1655,8 @@ mod sbc {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x50;
 
-            sbc_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1578,8 +1670,8 @@ mod sbc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
-            sbc_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1593,8 +1685,8 @@ mod sbc {
             cpu.accumulator = 0x50;
             cpu.cycle = 0;
 
-            sbc_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1607,7 +1699,10 @@ mod sbc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::sbc_ax, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::sbc_ax,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
 
@@ -1627,8 +1722,8 @@ mod sbc {
             cpu.index_register_x = 0x02;
             cpu.accumulator = 0x50;
 
-            sbc_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1645,8 +1740,8 @@ mod sbc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
-            sbc_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1663,8 +1758,8 @@ mod sbc {
             cpu.accumulator = 0x50;
             cpu.cycle = 0;
 
-            sbc_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1684,8 +1779,8 @@ mod sbc {
             cpu.accumulator = 0x50;
             cpu.cycle = 0;
 
-            sbc_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1698,7 +1793,10 @@ mod sbc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::sbc_ay, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::sbc_ay,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
 
@@ -1718,8 +1816,8 @@ mod sbc {
             cpu.index_register_y = 0x02;
             cpu.accumulator = 0x50;
 
-            sbc_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1736,8 +1834,8 @@ mod sbc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
-            sbc_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1754,8 +1852,8 @@ mod sbc {
             cpu.accumulator = 0x50;
             cpu.cycle = 0;
 
-            sbc_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1775,8 +1873,8 @@ mod sbc {
             cpu.accumulator = 0x50;
             cpu.cycle = 0;
 
-            sbc_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1787,7 +1885,10 @@ mod sbc {
         use crate::{
             consts::Byte,
             cpu::{
-                instructions::sbc_iny, processor_status::ProcessorStatus, tests::MemoryMock, CPU,
+                instructions::sbc_iny,
+                processor_status::ProcessorStatus,
+                tests::{run_tasks, MemoryMock},
+                CPU,
             },
         };
         use std::cell::RefCell;
@@ -1815,8 +1916,8 @@ mod sbc {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x50;
 
-            sbc_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1838,8 +1939,8 @@ mod sbc {
             cpu.accumulator = 0xd0;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
-            sbc_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1862,8 +1963,8 @@ mod sbc {
             cpu.accumulator = 0x50;
             cpu.cycle = 0;
 
-            sbc_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1884,8 +1985,8 @@ mod sbc {
             cpu.accumulator = 0x50;
             cpu.cycle = 0;
 
-            sbc_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1896,7 +1997,10 @@ mod sbc {
         use std::cell::RefCell;
 
         use crate::cpu::{
-            instructions::sbc_inx, processor_status::ProcessorStatus, tests::MemoryMock, Byte, CPU,
+            instructions::sbc_inx,
+            processor_status::ProcessorStatus,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
         };
 
         const ZP_ADDRESS: Byte = 0x02;
@@ -1922,8 +2026,8 @@ mod sbc {
             cpu.accumulator = 0x50;
             cpu.index_register_x = OFFSET;
 
-            sbc_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x20);
         }
@@ -1945,8 +2049,8 @@ mod sbc {
             cpu.index_register_x = OFFSET;
             cpu.processor_status = ProcessorStatus::from(0b01000001);
 
-            sbc_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -1968,8 +2072,8 @@ mod sbc {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            sbc_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = sbc_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }

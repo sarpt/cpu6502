@@ -4,7 +4,11 @@ mod common_branch {
 
     use crate::{
         consts::Byte,
-        cpu::{instructions::branches::branch, tests::MemoryMock, CPU},
+        cpu::{
+            instructions::branches::branch,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        },
     };
 
     #[test]
@@ -14,8 +18,8 @@ mod common_branch {
         cpu.program_counter = 0x0000;
 
         let condition: fn(&CPU) -> bool = |_| false;
-        branch(&mut cpu, condition);
-        cpu.execute_next_instruction();
+        let tasks = branch(&mut cpu, condition);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -28,8 +32,8 @@ mod common_branch {
         cpu.program_counter = 0x00;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        branch(&mut cpu, condition);
-        cpu.execute_next_instruction();
+        let tasks = branch(&mut cpu, condition);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -49,8 +53,8 @@ mod common_branch {
         cpu.program_counter = 0x02;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        branch(&mut cpu, condition);
-        cpu.execute_next_instruction();
+        let tasks = branch(&mut cpu, condition);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x00);
     }
@@ -65,8 +69,8 @@ mod common_branch {
         cpu.program_counter = 0x00FE;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        branch(&mut cpu, condition);
-        cpu.execute_next_instruction();
+        let tasks = branch(&mut cpu, condition);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0103);
     }
@@ -86,8 +90,8 @@ mod common_branch {
         cpu.program_counter = 0x00;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        branch(&mut cpu, condition);
-        cpu.execute_next_instruction();
+        let tasks = branch(&mut cpu, condition);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0xFFFE);
     }
@@ -100,8 +104,8 @@ mod common_branch {
         cpu.cycle = 0;
 
         let condition: fn(&CPU) -> bool = |_| false;
-        branch(&mut cpu, condition);
-        cpu.execute_next_instruction();
+        let tasks = branch(&mut cpu, condition);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -115,8 +119,8 @@ mod common_branch {
         cpu.cycle = 0;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        branch(&mut cpu, condition);
-        cpu.execute_next_instruction();
+        let tasks = branch(&mut cpu, condition);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -132,8 +136,8 @@ mod common_branch {
         cpu.cycle = 0;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        branch(&mut cpu, condition);
-        cpu.execute_next_instruction();
+        let tasks = branch(&mut cpu, condition);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -145,7 +149,11 @@ mod bcc {
 
     use crate::{
         consts::Byte,
-        cpu::{instructions::bcc, tests::MemoryMock, CPU},
+        cpu::{
+            instructions::bcc,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        },
     };
 
     #[test]
@@ -155,8 +163,8 @@ mod bcc {
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
 
-        bcc(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bcc(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -169,8 +177,8 @@ mod bcc {
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
 
-        bcc(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bcc(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -182,7 +190,11 @@ mod bcs {
 
     use crate::{
         consts::Byte,
-        cpu::{instructions::bcs, tests::MemoryMock, CPU},
+        cpu::{
+            instructions::bcs,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        },
     };
 
     #[test]
@@ -192,8 +204,8 @@ mod bcs {
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
 
-        bcs(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bcs(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -206,8 +218,8 @@ mod bcs {
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
 
-        bcs(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bcs(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -219,7 +231,11 @@ mod beq {
 
     use crate::{
         consts::Byte,
-        cpu::{instructions::beq, tests::MemoryMock, CPU},
+        cpu::{
+            instructions::beq,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        },
     };
 
     #[test]
@@ -229,8 +245,8 @@ mod beq {
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
 
-        beq(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = beq(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -243,8 +259,8 @@ mod beq {
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
 
-        beq(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = beq(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -256,7 +272,11 @@ mod bmi {
 
     use crate::{
         consts::Byte,
-        cpu::{instructions::bmi, tests::MemoryMock, CPU},
+        cpu::{
+            instructions::bmi,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        },
     };
 
     #[test]
@@ -266,8 +286,8 @@ mod bmi {
         cpu.processor_status.change_negative_flag(false);
         cpu.program_counter = 0x00;
 
-        bmi(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bmi(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -280,8 +300,8 @@ mod bmi {
         cpu.processor_status.change_negative_flag(true);
         cpu.program_counter = 0x00;
 
-        bmi(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bmi(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -293,7 +313,11 @@ mod bne {
 
     use crate::{
         consts::Byte,
-        cpu::{instructions::bne, tests::MemoryMock, CPU},
+        cpu::{
+            instructions::bne,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        },
     };
 
     #[test]
@@ -303,8 +327,8 @@ mod bne {
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
 
-        bne(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bne(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -317,8 +341,8 @@ mod bne {
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
 
-        bne(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bne(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -330,7 +354,11 @@ mod bpl {
 
     use crate::{
         consts::Byte,
-        cpu::{instructions::bpl, tests::MemoryMock, CPU},
+        cpu::{
+            instructions::bpl,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        },
     };
 
     #[test]
@@ -340,8 +368,8 @@ mod bpl {
         cpu.processor_status.change_negative_flag(true);
         cpu.program_counter = 0x00;
 
-        bpl(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bpl(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -354,8 +382,8 @@ mod bpl {
         cpu.processor_status.change_negative_flag(false);
         cpu.program_counter = 0x00;
 
-        bpl(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bpl(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -367,7 +395,11 @@ mod bvc {
 
     use crate::{
         consts::Byte,
-        cpu::{instructions::bvc, tests::MemoryMock, CPU},
+        cpu::{
+            instructions::bvc,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        },
     };
 
     #[test]
@@ -377,8 +409,8 @@ mod bvc {
         cpu.processor_status.change_overflow_flag(true);
         cpu.program_counter = 0x00;
 
-        bvc(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bvc(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -391,8 +423,8 @@ mod bvc {
         cpu.processor_status.change_overflow_flag(false);
         cpu.program_counter = 0x00;
 
-        bvc(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bvc(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -404,7 +436,11 @@ mod bvs {
 
     use crate::{
         consts::Byte,
-        cpu::{instructions::bvs, tests::MemoryMock, CPU},
+        cpu::{
+            instructions::bvs,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        },
     };
 
     #[test]
@@ -414,8 +450,8 @@ mod bvs {
         cpu.processor_status.change_overflow_flag(false);
         cpu.program_counter = 0x00;
 
-        bvs(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bvs(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -428,8 +464,8 @@ mod bvs {
         cpu.processor_status.change_overflow_flag(true);
         cpu.program_counter = 0x00;
 
-        bvs(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = bvs(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }

@@ -4,7 +4,11 @@ mod ora {
     mod ora_im {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::ora_im, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::ora_im,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_or_accumulator_with_a_value_from_immediate_address() {
@@ -13,8 +17,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x16;
 
-            ora_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -26,8 +30,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x86;
 
-            ora_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -40,8 +44,8 @@ mod ora {
             cpu.accumulator = 0x14;
             cpu.cycle = 0;
 
-            ora_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -51,7 +55,11 @@ mod ora {
     mod ora_zp {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::ora_zp, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::ora_zp,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ZERO_PAGE_ADDR: Byte = 0x03;
         const VALUE: Byte = 0x22;
@@ -63,8 +71,8 @@ mod ora {
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
 
-            ora_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -76,8 +84,8 @@ mod ora {
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
-            ora_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -90,8 +98,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            ora_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -101,7 +109,11 @@ mod ora {
     mod ora_zpx {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::ora_zpx, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::ora_zpx,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
         const VALUE: Byte = 0x22;
@@ -115,8 +127,8 @@ mod ora {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            ora_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -129,8 +141,8 @@ mod ora {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            ora_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -144,8 +156,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            ora_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -155,7 +167,11 @@ mod ora {
     mod ora_a {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::ora_a, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::ora_a,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ADDR_LO: Byte = 0x04;
         const ADDR_HI: Byte = 0x00;
@@ -168,8 +184,8 @@ mod ora {
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
 
-            ora_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -181,8 +197,8 @@ mod ora {
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
-            ora_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -195,8 +211,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            ora_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -206,7 +222,11 @@ mod ora {
     mod ora_ax {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::ora_ax, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::ora_ax,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
@@ -223,8 +243,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            ora_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -237,8 +257,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            ora_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -252,8 +272,8 @@ mod ora {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            ora_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -274,8 +294,8 @@ mod ora {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            ora_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -285,7 +305,11 @@ mod ora {
     mod ora_ay {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::ora_ay, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::ora_ay,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
@@ -302,8 +326,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            ora_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -316,8 +340,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            ora_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -331,8 +355,8 @@ mod ora {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            ora_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -353,8 +377,8 @@ mod ora {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            ora_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -364,7 +388,11 @@ mod ora {
     mod ora_inx {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::ora_inx, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::ora_inx,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ZP_ADDRESS: Byte = 0x02;
         const OFFSET: Byte = 0x01;
@@ -388,8 +416,8 @@ mod ora {
             cpu.accumulator = 0x16;
             cpu.index_register_x = OFFSET;
 
-            ora_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -409,8 +437,8 @@ mod ora {
             cpu.accumulator = 0x86;
             cpu.index_register_x = OFFSET;
 
-            ora_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -431,8 +459,8 @@ mod ora {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            ora_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -444,7 +472,11 @@ mod ora {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::ora_iny, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::ora_iny,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const INDIRECT_ZERO_PAGE_ADDRESS_PLACE: Byte = 0x01;
@@ -469,8 +501,8 @@ mod ora {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            ora_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -490,8 +522,8 @@ mod ora {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            ora_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -513,8 +545,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            ora_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -534,8 +566,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            ora_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = ora_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -550,7 +582,11 @@ mod bit {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::bit_zp, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::bit_zp,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ZERO_PAGE_ADDR_LO: Byte = 0x01;
@@ -562,8 +598,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            bit_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = bit_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b00000010);
         }
@@ -576,8 +612,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            bit_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = bit_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -590,8 +626,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            bit_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = bit_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -603,8 +639,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            bit_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = bit_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -616,7 +652,11 @@ mod bit {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::bit_a, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::bit_a,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const ABSOLUTE_ADDR_LO: Byte = 0x03;
@@ -635,8 +675,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            bit_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = bit_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b00000010);
         }
@@ -654,8 +694,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            bit_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = bit_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -673,8 +713,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            bit_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = bit_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -691,8 +731,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            bit_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = bit_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -707,7 +747,11 @@ mod and {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::and_im, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::and_im,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const VALUE: Byte = 0x82;
@@ -719,8 +763,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
 
-            and_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -732,8 +776,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x86;
 
-            and_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -746,8 +790,8 @@ mod and {
             cpu.accumulator = 0x07;
             cpu.cycle = 0;
 
-            and_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -757,7 +801,11 @@ mod and {
     mod and_zp {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::and_zp, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::and_zp,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ZERO_PAGE_ADDR: Byte = 0x03;
         const VALUE: Byte = 0x82;
@@ -769,8 +817,8 @@ mod and {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            and_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -782,8 +830,8 @@ mod and {
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
-            and_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -796,8 +844,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            and_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -807,7 +855,11 @@ mod and {
     mod and_zpx {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::and_zpx, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::and_zpx,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
         const VALUE: Byte = 0x82;
@@ -821,8 +873,8 @@ mod and {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            and_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -835,8 +887,8 @@ mod and {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            and_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -850,8 +902,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            and_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -861,7 +913,11 @@ mod and {
     mod and_a {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::and_a, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::and_a,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ADDR_LO: Byte = 0x04;
         const ADDR_HI: Byte = 0x00;
@@ -874,8 +930,8 @@ mod and {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            and_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -887,8 +943,8 @@ mod and {
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
-            and_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -901,8 +957,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            and_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -912,7 +968,11 @@ mod and {
     mod and_ax {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::and_ax, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::and_ax,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
@@ -929,8 +989,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            and_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -943,8 +1003,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            and_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -958,8 +1018,8 @@ mod and {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            and_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -980,8 +1040,8 @@ mod and {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            and_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -991,7 +1051,11 @@ mod and {
     mod and_ay {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::and_ay, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::and_ay,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
@@ -1008,8 +1072,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            and_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -1022,8 +1086,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            and_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1037,8 +1101,8 @@ mod and {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            and_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1059,8 +1123,8 @@ mod and {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            and_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1070,7 +1134,11 @@ mod and {
     mod and_inx {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::and_inx, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::and_inx,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ZP_ADDRESS: Byte = 0x02;
         const OFFSET: Byte = 0x01;
@@ -1094,8 +1162,8 @@ mod and {
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
 
-            and_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -1115,8 +1183,8 @@ mod and {
             cpu.accumulator = 0x86;
             cpu.index_register_x = OFFSET;
 
-            and_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1137,8 +1205,8 @@ mod and {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            and_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1150,7 +1218,11 @@ mod and {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::and_iny, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::and_iny,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const INDIRECT_ZERO_PAGE_ADDRESS_PLACE: Byte = 0x01;
@@ -1175,8 +1247,8 @@ mod and {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            and_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -1196,8 +1268,8 @@ mod and {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            and_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1219,8 +1291,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            and_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1240,8 +1312,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            and_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = and_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1256,7 +1328,11 @@ mod eor {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::eor_im, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::eor_im,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const VALUE: Byte = 0x85;
@@ -1268,8 +1344,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
 
-            eor_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1281,8 +1357,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
 
-            eor_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1295,8 +1371,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.cycle = 0;
 
-            eor_im(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_im(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -1306,7 +1382,11 @@ mod eor {
     mod eor_zp {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::eor_zp, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::eor_zp,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ZERO_PAGE_ADDR: Byte = 0x03;
         const VALUE: Byte = 0x85;
@@ -1318,8 +1398,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            eor_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1331,8 +1411,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            eor_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1345,8 +1425,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            eor_zp(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_zp(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -1356,7 +1436,11 @@ mod eor {
     mod eor_zpx {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::eor_zpx, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::eor_zpx,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ZERO_PAGE_ADDR: Byte = 0x01;
         const VALUE: Byte = 0x85;
@@ -1370,8 +1454,8 @@ mod eor {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            eor_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1384,8 +1468,8 @@ mod eor {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            eor_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1399,8 +1483,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            eor_zpx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_zpx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1410,7 +1494,11 @@ mod eor {
     mod eor_a {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::eor_a, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::eor_a,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ADDR_LO: Byte = 0x04;
         const ADDR_HI: Byte = 0x00;
@@ -1423,8 +1511,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            eor_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1436,8 +1524,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            eor_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1450,8 +1538,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            eor_a(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_a(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1461,7 +1549,11 @@ mod eor {
     mod eor_ax {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::eor_ax, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::eor_ax,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
@@ -1478,8 +1570,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            eor_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1492,8 +1584,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            eor_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1507,8 +1599,8 @@ mod eor {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            eor_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1529,8 +1621,8 @@ mod eor {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            eor_ax(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_ax(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1540,7 +1632,11 @@ mod eor {
     mod eor_ay {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::eor_ay, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::eor_ay,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ADDR_LO: Byte = 0x02;
         const ADDR_HI: Byte = 0x00;
@@ -1557,8 +1653,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            eor_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1571,8 +1667,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            eor_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1586,8 +1682,8 @@ mod eor {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            eor_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1608,8 +1704,8 @@ mod eor {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            eor_ay(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_ay(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1619,7 +1715,11 @@ mod eor {
     mod eor_inx {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::eor_inx, tests::MemoryMock, Byte, CPU};
+        use crate::cpu::{
+            instructions::eor_inx,
+            tests::{run_tasks, MemoryMock},
+            Byte, CPU,
+        };
 
         const ZP_ADDRESS: Byte = 0x02;
         const OFFSET: Byte = 0x01;
@@ -1643,8 +1743,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
 
-            eor_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1664,8 +1764,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
 
-            eor_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1686,8 +1786,8 @@ mod eor {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            eor_inx(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_inx(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1699,7 +1799,11 @@ mod eor {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::eor_iny, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::eor_iny,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         const INDIRECT_ZERO_PAGE_ADDRESS_PLACE: Byte = 0x01;
@@ -1724,8 +1828,8 @@ mod eor {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            eor_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1745,8 +1849,8 @@ mod eor {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            eor_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1768,8 +1872,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            eor_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1789,8 +1893,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            eor_iny(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = eor_iny(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 5);
         }

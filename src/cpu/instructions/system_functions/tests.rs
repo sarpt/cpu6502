@@ -6,7 +6,11 @@ mod brk {
 
         use crate::{
             consts::Byte,
-            cpu::{instructions::brk, tests::MemoryMock, CPU},
+            cpu::{
+                instructions::brk,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            },
         };
 
         #[test]
@@ -17,8 +21,8 @@ mod brk {
             cpu.stack_pointer = 0xFF;
             cpu.program_counter = 0xABCD;
 
-            brk(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = brk(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(memory.borrow()[0x01FF], 0xAB);
             assert_eq!(memory.borrow()[0x01FE], 0xCE);
@@ -36,8 +40,8 @@ mod brk {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            brk(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = brk(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.program_counter, 0x9BAD);
         }
@@ -49,8 +53,8 @@ mod brk {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_break_flag(false);
 
-            brk(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = brk(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_break_flag(), true);
         }
@@ -62,8 +66,8 @@ mod brk {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            brk(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = brk(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -77,6 +81,8 @@ mod brk {
 
         #[cfg(test)]
         mod rockwell {
+            use crate::cpu::tests::run_tasks;
+
             use super::*;
 
             #[test]
@@ -86,8 +92,8 @@ mod brk {
                 cpu.program_counter = 0x00;
                 cpu.processor_status.change_decimal_mode_flag(true);
 
-                brk(&mut cpu);
-                cpu.execute_next_instruction();
+                let tasks = brk(&mut cpu);
+                run_tasks(&mut cpu, tasks);
 
                 assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
             }
@@ -95,6 +101,8 @@ mod brk {
 
         #[cfg(test)]
         mod wdc {
+            use crate::cpu::tests::run_tasks;
+
             use super::*;
 
             #[test]
@@ -104,8 +112,8 @@ mod brk {
                 cpu.program_counter = 0x00;
                 cpu.processor_status.change_decimal_mode_flag(true);
 
-                brk(&mut cpu);
-                cpu.execute_next_instruction();
+                let tasks = brk(&mut cpu);
+                run_tasks(&mut cpu, tasks);
 
                 assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
             }
@@ -116,7 +124,11 @@ mod brk {
     mod nmos {
         use std::cell::RefCell;
 
-        use crate::cpu::{instructions::brk, tests::MemoryMock, CPU};
+        use crate::cpu::{
+            instructions::brk,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
 
         #[test]
         fn should_not_clear_decimal_processor_status_flag() {
@@ -125,8 +137,8 @@ mod brk {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_decimal_mode_flag(true);
 
-            brk(&mut cpu);
-            cpu.execute_next_instruction();
+            let tasks = brk(&mut cpu);
+            run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.processor_status.get_decimal_mode_flag(), true);
         }
@@ -137,7 +149,11 @@ mod brk {
 mod rti {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::rti, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::rti,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_pop_processor_status_and_program_counter_from_stack() {
@@ -151,8 +167,8 @@ mod rti {
         cpu.stack_pointer = 0xFC;
         cpu.program_counter = 0x00;
 
-        rti(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = rti(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.processor_status, 0b11111111);
         assert_eq!(cpu.program_counter, 0xABCD);
@@ -165,8 +181,8 @@ mod rti {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        rti(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = rti(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -176,7 +192,11 @@ mod rti {
 mod nop {
     use std::cell::RefCell;
 
-    use crate::cpu::{instructions::nop, tests::MemoryMock, CPU};
+    use crate::cpu::{
+        instructions::nop,
+        tests::{run_tasks, MemoryMock},
+        CPU,
+    };
 
     #[test]
     fn should_increment_program_counter() {
@@ -184,8 +204,8 @@ mod nop {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x05;
 
-        nop(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = nop(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.program_counter, 0x06);
     }
@@ -197,8 +217,8 @@ mod nop {
         cpu.program_counter = 0x05;
         cpu.cycle = 0;
 
-        nop(&mut cpu);
-        cpu.execute_next_instruction();
+        let tasks = nop(&mut cpu);
+        run_tasks(&mut cpu, tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
