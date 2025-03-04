@@ -2,12 +2,12 @@ use std::rc::Rc;
 
 use crate::{
     consts::{Byte, Word},
-    cpu::{ScheduledTask, TaskCycleVariant, CPU},
+    cpu::{TaskCycleVariant, Tasks, CPU},
 };
 
-fn branch(cpu: &mut CPU, condition: fn(&CPU) -> bool) {
-    let mut cycles: Vec<ScheduledTask> = Vec::new();
-    cycles.push(Rc::new(move |cpu: &mut CPU| {
+fn branch(_cpu: &mut CPU, condition: fn(&CPU) -> bool) -> Tasks {
+    let mut tasks: Tasks = Vec::new();
+    tasks.push(Rc::new(move |cpu: &mut CPU| {
         let operand = cpu.access_memory(cpu.program_counter);
         cpu.increment_program_counter();
 
@@ -20,61 +20,61 @@ fn branch(cpu: &mut CPU, condition: fn(&CPU) -> bool) {
     }));
 
     let mut offset_cycles = offset_program_counter();
-    cycles.append(&mut offset_cycles);
+    tasks.append(&mut offset_cycles);
 
-    cpu.schedule_instruction(cycles);
+    return tasks;
 }
 
-pub fn bcc(cpu: &mut CPU) {
-    branch(cpu, |cpu: &CPU| -> bool {
+pub fn bcc(cpu: &mut CPU) -> Tasks {
+    return branch(cpu, |cpu: &CPU| -> bool {
         return !cpu.processor_status.get_carry_flag();
     });
 }
 
-pub fn bcs(cpu: &mut CPU) {
-    branch(cpu, |cpu: &CPU| -> bool {
+pub fn bcs(cpu: &mut CPU) -> Tasks {
+    return branch(cpu, |cpu: &CPU| -> bool {
         return cpu.processor_status.get_carry_flag();
     });
 }
 
-pub fn beq(cpu: &mut CPU) {
-    branch(cpu, |cpu: &CPU| -> bool {
+pub fn beq(cpu: &mut CPU) -> Tasks {
+    return branch(cpu, |cpu: &CPU| -> bool {
         return cpu.processor_status.get_zero_flag();
     });
 }
 
-pub fn bmi(cpu: &mut CPU) {
-    branch(cpu, |cpu: &CPU| -> bool {
+pub fn bmi(cpu: &mut CPU) -> Tasks {
+    return branch(cpu, |cpu: &CPU| -> bool {
         return cpu.processor_status.get_negative_flag();
     });
 }
 
-pub fn bne(cpu: &mut CPU) {
-    branch(cpu, |cpu: &CPU| -> bool {
+pub fn bne(cpu: &mut CPU) -> Tasks {
+    return branch(cpu, |cpu: &CPU| -> bool {
         return !cpu.processor_status.get_zero_flag();
     });
 }
 
-pub fn bpl(cpu: &mut CPU) {
-    branch(cpu, |cpu: &CPU| -> bool {
+pub fn bpl(cpu: &mut CPU) -> Tasks {
+    return branch(cpu, |cpu: &CPU| -> bool {
         return !cpu.processor_status.get_negative_flag();
     });
 }
 
-pub fn bvs(cpu: &mut CPU) {
-    branch(cpu, |cpu: &CPU| -> bool {
+pub fn bvs(cpu: &mut CPU) -> Tasks {
+    return branch(cpu, |cpu: &CPU| -> bool {
         return cpu.processor_status.get_overflow_flag();
     });
 }
 
-pub fn bvc(cpu: &mut CPU) {
-    branch(cpu, |cpu: &CPU| -> bool {
+pub fn bvc(cpu: &mut CPU) -> Tasks {
+    return branch(cpu, |cpu: &CPU| -> bool {
         return !cpu.processor_status.get_overflow_flag();
     });
 }
 
-fn offset_program_counter() -> Vec<ScheduledTask> {
-    let mut cycles: Vec<ScheduledTask> = Vec::new();
+fn offset_program_counter() -> Tasks {
+    let mut cycles: Tasks = Vec::new();
 
     cycles.push(Rc::new(|cpu: &mut CPU| {
         let [offset, condition_met] = match cpu.get_current_instruction_ctx() {
