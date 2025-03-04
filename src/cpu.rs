@@ -52,7 +52,8 @@ enum TaskCycleVariant {
     Full,
 }
 
-type OpcodeHandler = fn(&mut CPU) -> ();
+type Tasks = Vec<ScheduledTask>;
+type OpcodeHandler = fn(&mut CPU) -> Tasks;
 type ScheduledTask = Rc<dyn Fn(&mut CPU) -> TaskCycleVariant>;
 
 type InstructionCtx = Option<Word>;
@@ -60,7 +61,6 @@ struct InstructionExecution {
     opcode: Byte,
     ctx: InstructionCtx,
     starting_cycle: u64,
-    length: u64,
     tasks_queue: VecDeque<ScheduledTask>,
 }
 
@@ -152,12 +152,8 @@ impl<'a> CPU<'a> {
             }
             None => {
                 self.sync = true;
-                let opcode = self.fetch_instruction();
-                let handler = self.opcode_handlers.get(&opcode);
-                match handler {
-                    Some(cb) => cb(self),
-                    None => panic!("illegal opcode found: {:#04x}", opcode),
-                }
+                let opcode = self.fetch_opcode();
+                self.schedule_instruction(opcode);
 
                 return;
             }
@@ -237,8 +233,8 @@ impl<'a> CPU<'a> {
         };
     }
 
-    fn offset_address_output(&mut self, offset: Byte) -> Vec<ScheduledTask> {
-        let mut tasks: Vec<ScheduledTask> = Vec::new();
+    fn offset_address_output(&mut self, offset: Byte) -> Tasks {
+        let mut tasks: Tasks = Vec::new();
 
         tasks.push(Rc::new(move |cpu| {
             let [lo, hi] = cpu.address_output.to_le_bytes();
@@ -274,7 +270,7 @@ impl<'a> CPU<'a> {
         return tasks;
     }
 
-    fn fetch_instruction(&mut self) -> Instruction {
+    fn fetch_opcode(&mut self) -> Instruction {
         let opcode = self.access_memory(self.program_counter);
         self.increment_program_counter();
         self.cycle += 1;
@@ -389,7 +385,7 @@ impl<'a> CPU<'a> {
         &mut self,
         addr_mode: AddressingMode,
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
-    ) -> Vec<ScheduledTask> {
+    ) -> Tasks {
         let mut tasks = self.get_address(addr_mode);
 
         tasks.push(Rc::new(move |cpu: &mut CPU| {
@@ -435,18 +431,23 @@ impl<'a> CPU<'a> {
         self.access_memory(self.program_counter); // fetch and discard
     }
 
-    fn schedule_instruction(&mut self, tasks: Vec<ScheduledTask>) {
+    fn schedule_instruction(&mut self, opcode: Byte) {
+        let handler = self.opcode_handlers.get(&opcode);
+        let tasks = match handler {
+            Some(cb) => cb(self),
+            None => panic!("illegal opcode found: {:#04x}", opcode),
+        };
+
         self.current_instruction = Some(InstructionExecution {
             ctx: None,
             tasks_queue: tasks.into(),
-            opcode: self.current_opcode.unwrap_or(0),
+            opcode: opcode,
             starting_cycle: self.cycle,
-            length: 0,
         });
     }
 
-    fn get_address(&mut self, addr_mode: AddressingMode) -> Vec<ScheduledTask> {
-        let mut tasks: Vec<ScheduledTask> = Vec::new();
+    fn get_address(&mut self, addr_mode: AddressingMode) -> Tasks {
+        let mut tasks: Tasks = Vec::new();
         match addr_mode {
             AddressingMode::ZeroPage => {
                 tasks.push(Rc::new(|cpu| {

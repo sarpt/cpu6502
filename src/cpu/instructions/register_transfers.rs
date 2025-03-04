@@ -1,49 +1,49 @@
 use std::rc::Rc;
 
-use crate::cpu::{Registers, ScheduledTask, TaskCycleVariant, CPU};
+use crate::cpu::{Registers, TaskCycleVariant, Tasks, CPU};
 
-pub fn tax(cpu: &mut CPU) {
-    let mut cycles: Vec<ScheduledTask> = Vec::new();
-    cycles.push(Rc::new(|cpu| {
+pub fn tax(_cpu: &mut CPU) -> Tasks {
+    let mut tasks: Tasks = Vec::new();
+    tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::Accumulator, Registers::IndexX);
 
         return TaskCycleVariant::Full;
     }));
 
-    cpu.schedule_instruction(cycles);
+    return tasks;
 }
 
-pub fn txa(cpu: &mut CPU) {
-    let mut cycles: Vec<ScheduledTask> = Vec::new();
-    cycles.push(Rc::new(|cpu| {
+pub fn txa(_cpu: &mut CPU) -> Tasks {
+    let mut tasks: Tasks = Vec::new();
+    tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::IndexX, Registers::Accumulator);
 
         return TaskCycleVariant::Full;
     }));
 
-    cpu.schedule_instruction(cycles);
+    return tasks;
 }
 
-pub fn tay(cpu: &mut CPU) {
-    let mut cycles: Vec<ScheduledTask> = Vec::new();
-    cycles.push(Rc::new(|cpu| {
+pub fn tay(_cpu: &mut CPU) -> Tasks {
+    let mut tasks: Tasks = Vec::new();
+    tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::Accumulator, Registers::IndexY);
 
         return TaskCycleVariant::Full;
     }));
 
-    cpu.schedule_instruction(cycles);
+    return tasks;
 }
 
-pub fn tya(cpu: &mut CPU) {
-    let mut cycles: Vec<ScheduledTask> = Vec::new();
-    cycles.push(Rc::new(|cpu| {
+pub fn tya(_cpu: &mut CPU) -> Tasks {
+    let mut tasks: Tasks = Vec::new();
+    tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::IndexY, Registers::Accumulator);
 
         return TaskCycleVariant::Full;
     }));
 
-    cpu.schedule_instruction(cycles);
+    return tasks;
 }
 
 #[cfg(test)]

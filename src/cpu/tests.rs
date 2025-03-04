@@ -135,7 +135,7 @@ mod fetch_instruction {
         let mut uut = CPU::new_nmos(memory);
         uut.program_counter = 0x0001;
 
-        let result = uut.fetch_instruction();
+        let result = uut.fetch_opcode();
 
         assert_eq!(result, 0x51);
     }
@@ -148,7 +148,7 @@ mod fetch_instruction {
 
         assert_eq!(uut.cycle, 0);
 
-        uut.fetch_instruction();
+        uut.fetch_opcode();
 
         assert_eq!(uut.cycle, 1);
         assert_eq!(uut.program_counter, 0x0002);
@@ -553,7 +553,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_return_address_from_next_word_in_memory_relative_to_program_counter() {
@@ -562,10 +562,8 @@ mod get_address {
             uut.program_counter = 0x01;
             uut.address_output = 0x0;
 
-            let cycles = uut.get_address(AddressingMode::Absolute);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
-
+            let tasks = uut.get_address(AddressingMode::Absolute);
+            run_tasks(&mut uut, tasks);
             assert_eq!(uut.address_output, 0xCBFF);
         }
 
@@ -575,9 +573,8 @@ mod get_address {
             let mut uut = CPU::new_nmos(memory);
             uut.program_counter = 0x01;
 
-            let cycles = uut.get_address(AddressingMode::Absolute);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Absolute);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -589,9 +586,8 @@ mod get_address {
             uut.program_counter = 0x01;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::Absolute);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Absolute);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 2);
         }
@@ -602,7 +598,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_return_address_offset_by_index_register_x_from_next_word_in_memory_relative_to_program_counter(
@@ -613,9 +609,8 @@ mod get_address {
             uut.index_register_x = 0x01;
             uut.address_output = 0x0;
 
-            let cycles = uut.get_address(AddressingMode::AbsoluteX);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::AbsoluteX);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.address_output, 0x52CC);
         }
@@ -627,9 +622,8 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.index_register_x = 0x01;
 
-            let cycles = uut.get_address(AddressingMode::AbsoluteX);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::AbsoluteX);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0x04);
         }
@@ -643,9 +637,8 @@ mod get_address {
             uut.index_register_x = 0x01;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::AbsoluteX);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::AbsoluteX);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 3);
         }
@@ -659,9 +652,8 @@ mod get_address {
             uut.index_register_x = 0xFF;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::AbsoluteX);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::AbsoluteX);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 4);
         }
@@ -672,7 +664,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_return_address_offset_by_index_register_y_from_next_word_in_memory_relative_to_program_counter(
@@ -683,9 +675,8 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.address_output = 0x0;
 
-            let cycles = uut.get_address(AddressingMode::AbsoluteY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::AbsoluteY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.address_output, 0x52CC);
         }
@@ -697,9 +688,8 @@ mod get_address {
             uut.index_register_y = 0x01;
             uut.program_counter = 0x02;
 
-            let cycles = uut.get_address(AddressingMode::AbsoluteY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::AbsoluteY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0x04);
         }
@@ -713,9 +703,8 @@ mod get_address {
             uut.index_register_y = 0x01;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::AbsoluteY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::AbsoluteY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 3);
         }
@@ -729,9 +718,8 @@ mod get_address {
             uut.index_register_y = 0xFF;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::AbsoluteY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::AbsoluteY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 4);
         }
@@ -742,7 +730,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_return_program_counter_address() {
@@ -751,9 +739,8 @@ mod get_address {
             uut.address_output = 0x0;
             uut.program_counter = 0xCB;
 
-            let cycles = uut.get_address(AddressingMode::Immediate);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Immediate);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.address_output, 0xCB);
         }
@@ -764,9 +751,8 @@ mod get_address {
             let mut uut = CPU::new_nmos(memory);
             uut.program_counter = 0xCB;
 
-            let cycles = uut.get_address(AddressingMode::Immediate);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Immediate);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0xCC);
         }
@@ -778,9 +764,8 @@ mod get_address {
             uut.program_counter = 0xCB;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::Immediate);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Immediate);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 0);
         }
@@ -791,7 +776,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_return_address_stored_in_place_pointed_by_zero_page_address_in_next_byte_relative_to_program_counter_summed_with_index_register_x(
@@ -802,9 +787,8 @@ mod get_address {
             uut.program_counter = 0x00;
             uut.index_register_x = 0x01;
 
-            let cycles = uut.get_address(AddressingMode::IndexIndirectX);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::IndexIndirectX);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.address_output, 0xDD03);
         }
@@ -816,9 +800,8 @@ mod get_address {
             uut.program_counter = 0x00;
             uut.index_register_x = 0x01;
 
-            let cycles = uut.get_address(AddressingMode::IndexIndirectX);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::IndexIndirectX);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0x01);
         }
@@ -831,9 +814,8 @@ mod get_address {
             uut.index_register_x = 0x01;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::IndexIndirectX);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::IndexIndirectX);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 4);
         }
@@ -844,7 +826,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_return_address_offset_by_index_register_y_which_is_stored_at_zero_page_address() {
@@ -854,9 +836,8 @@ mod get_address {
             uut.index_register_y = 0x02;
             uut.program_counter = 0x00;
 
-            let cycles = uut.get_address(AddressingMode::IndirectIndexY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::IndirectIndexY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.address_output, 0xDD05);
         }
@@ -868,9 +849,8 @@ mod get_address {
             uut.index_register_y = 0x02;
             uut.program_counter = 0x00;
 
-            let cycles = uut.get_address(AddressingMode::IndirectIndexY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::IndirectIndexY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0x01);
         }
@@ -884,9 +864,8 @@ mod get_address {
             uut.program_counter = 0x00;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::IndirectIndexY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::IndirectIndexY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 4);
         }
@@ -900,9 +879,8 @@ mod get_address {
             uut.program_counter = 0x00;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::IndirectIndexY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::IndirectIndexY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 5);
         }
@@ -913,7 +891,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter()
@@ -923,9 +901,8 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.address_output = 0x0;
 
-            let cycles = uut.get_address(AddressingMode::ZeroPage);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::ZeroPage);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.address_output, 0x00CB);
         }
@@ -936,9 +913,8 @@ mod get_address {
             let mut uut = CPU::new_nmos(memory);
             uut.program_counter = 0x02;
 
-            let cycles = uut.get_address(AddressingMode::ZeroPage);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::ZeroPage);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -950,9 +926,8 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::ZeroPage);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::ZeroPage);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 1);
         }
@@ -963,7 +938,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter_summed_with_index_register_x(
@@ -974,9 +949,8 @@ mod get_address {
             uut.index_register_x = 0x03;
             uut.address_output = 0x0;
 
-            let cycles = uut.get_address(AddressingMode::ZeroPageX);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::ZeroPageX);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.address_output, 0x00CE);
         }
@@ -988,9 +962,8 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.index_register_x = 0x03;
 
-            let cycles = uut.get_address(AddressingMode::ZeroPageX);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::ZeroPageX);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -1003,9 +976,8 @@ mod get_address {
             uut.index_register_x = 0x03;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::ZeroPageX);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::ZeroPageX);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 2);
         }
@@ -1016,7 +988,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter_summed_with_index_register_y(
@@ -1027,9 +999,8 @@ mod get_address {
             uut.index_register_y = 0x03;
             uut.address_output = 0x0;
 
-            let cycles = uut.get_address(AddressingMode::ZeroPageY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::ZeroPageY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.address_output, 0x0055);
         }
@@ -1041,9 +1012,8 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.index_register_y = 0x03;
 
-            let cycles = uut.get_address(AddressingMode::ZeroPageY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::ZeroPageY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -1056,9 +1026,8 @@ mod get_address {
             uut.index_register_y = 0x03;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::ZeroPageY);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::ZeroPageY);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 2);
         }
@@ -1070,7 +1039,10 @@ mod get_address {
         mod common {
             use std::cell::RefCell;
 
-            use crate::cpu::{tests::MemoryMock, AddressingMode, CPU};
+            use crate::cpu::{
+                tests::{run_tasks, MemoryMock},
+                AddressingMode, CPU,
+            };
 
             #[test]
             fn should_return_address_from_place_in_memory_stored_in_next_word_relative_to_program_counter(
@@ -1080,9 +1052,8 @@ mod get_address {
                 uut.program_counter = 0x00;
                 uut.address_output = 0x0;
 
-                let cycles = uut.get_address(AddressingMode::Indirect);
-                uut.schedule_instruction(cycles);
-                uut.execute_next_instruction();
+                let tasks = uut.get_address(AddressingMode::Indirect);
+                run_tasks(&mut uut, tasks);
 
                 assert_eq!(uut.address_output, 0x0001);
             }
@@ -1093,9 +1064,8 @@ mod get_address {
                 let mut uut = CPU::new_nmos(&memory);
                 uut.program_counter = 0x00;
 
-                let cycles = uut.get_address(AddressingMode::Indirect);
-                uut.schedule_instruction(cycles);
-                uut.execute_next_instruction();
+                let tasks = uut.get_address(AddressingMode::Indirect);
+                run_tasks(&mut uut, tasks);
 
                 assert_eq!(uut.program_counter, 0x02);
             }
@@ -1107,7 +1077,10 @@ mod get_address {
 
             use crate::{
                 consts::Byte,
-                cpu::{tests::MemoryMock, AddressingMode, CPU},
+                cpu::{
+                    tests::{run_tasks, MemoryMock},
+                    AddressingMode, CPU,
+                },
             };
 
             #[test]
@@ -1117,9 +1090,8 @@ mod get_address {
                 uut.program_counter = 0x02;
                 uut.cycle = 0;
 
-                let cycles = uut.get_address(AddressingMode::Indirect);
-                uut.schedule_instruction(cycles);
-                uut.execute_next_instruction();
+                let tasks = uut.get_address(AddressingMode::Indirect);
+                run_tasks(&mut uut, tasks);
 
                 assert_eq!(uut.cycle, 4);
             }
@@ -1146,9 +1118,8 @@ mod get_address {
                 uut.address_output = 0x0;
                 uut.cycle = 0;
 
-                let cycles = uut.get_address(AddressingMode::Indirect);
-                uut.schedule_instruction(cycles);
-                uut.execute_next_instruction();
+                let tasks = uut.get_address(AddressingMode::Indirect);
+                run_tasks(&mut uut, tasks);
 
                 assert_eq!(uut.address_output, 0x09A5);
             }
@@ -1160,7 +1131,10 @@ mod get_address {
 
             use crate::{
                 consts::Byte,
-                cpu::{tests::MemoryMock, AddressingMode, CPU},
+                cpu::{
+                    tests::{run_tasks, MemoryMock},
+                    AddressingMode, CPU,
+                },
             };
 
             #[test]
@@ -1170,9 +1144,8 @@ mod get_address {
                 uut.program_counter = 0x02;
                 uut.cycle = 0;
 
-                let cycles = uut.get_address(AddressingMode::Indirect);
-                uut.schedule_instruction(cycles);
-                uut.execute_next_instruction();
+                let tasks = uut.get_address(AddressingMode::Indirect);
+                run_tasks(&mut uut, tasks);
 
                 assert_eq!(uut.cycle, 5);
             }
@@ -1197,9 +1170,8 @@ mod get_address {
                 uut.address_output = 0x0;
                 uut.cycle = 0;
 
-                let cycles = uut.get_address(AddressingMode::Indirect);
-                uut.schedule_instruction(cycles);
-                uut.execute_next_instruction();
+                let tasks = uut.get_address(AddressingMode::Indirect);
+                run_tasks(&mut uut, tasks);
 
                 assert_eq!(uut.address_output, 0xCCA5);
             }
@@ -1211,7 +1183,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_not_change_address_output() {
@@ -1220,9 +1192,8 @@ mod get_address {
             uut.address_output = 0x0;
             uut.program_counter = 0x00;
 
-            let cycles = uut.get_address(AddressingMode::Implicit);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Implicit);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.address_output, 0x0);
         }
@@ -1233,9 +1204,8 @@ mod get_address {
             let mut uut = CPU::new_nmos(&memory);
             uut.program_counter = 0x00;
 
-            let cycles = uut.get_address(AddressingMode::Implicit);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Implicit);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0x00);
         }
@@ -1247,9 +1217,8 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::Implicit);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Implicit);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 0);
         }
@@ -1260,7 +1229,7 @@ mod get_address {
         use std::cell::RefCell;
 
         use super::super::MemoryMock;
-        use crate::cpu::{AddressingMode, CPU};
+        use crate::cpu::{tests::run_tasks, AddressingMode, CPU};
 
         #[test]
         fn should_not_change_address_output() {
@@ -1269,9 +1238,8 @@ mod get_address {
             uut.program_counter = 0x00;
             uut.address_output = 0x0;
 
-            let cycles = uut.get_address(AddressingMode::Relative);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Relative);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.address_output, 0x0);
         }
@@ -1282,9 +1250,8 @@ mod get_address {
             let mut uut = CPU::new_nmos(&memory);
             uut.program_counter = 0x00;
 
-            let cycles = uut.get_address(AddressingMode::Relative);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Relative);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.program_counter, 0x00);
         }
@@ -1296,9 +1263,8 @@ mod get_address {
             uut.program_counter = 0x02;
             uut.cycle = 0;
 
-            let cycles = uut.get_address(AddressingMode::Relative);
-            uut.schedule_instruction(cycles);
-            uut.execute_next_instruction();
+            let tasks = uut.get_address(AddressingMode::Relative);
+            run_tasks(&mut uut, tasks);
 
             assert_eq!(uut.cycle, 0);
         }
@@ -1339,4 +1305,15 @@ mod sync {
 
         assert_eq!(uut.sync(), false);
     }
+}
+
+#[cfg(test)]
+pub fn run_tasks(cpu: &mut super::CPU, tasks: super::Tasks) {
+    cpu.current_instruction = Some(super::InstructionExecution {
+        opcode: 0x00,
+        ctx: Some(0),
+        starting_cycle: 0,
+        tasks_queue: tasks.into(),
+    });
+    cpu.execute_next_instruction();
 }
