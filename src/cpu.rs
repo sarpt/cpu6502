@@ -66,7 +66,6 @@ struct InstructionExecution {
 
 pub struct CPU<'a> {
     chip_variant: ChipVariant,
-    current_opcode: Option<Byte>,
     current_instruction: Option<InstructionExecution>,
     cycle: u64,
     program_counter: Word,
@@ -85,7 +84,6 @@ impl<'a> CPU<'a> {
     fn new(memory: &'a RefCell<dyn Memory>, chip_variant: ChipVariant) -> Self {
         return CPU {
             chip_variant: chip_variant,
-            current_opcode: None,
             current_instruction: None,
             cycle: 0,
             program_counter: RESET_VECTOR,
