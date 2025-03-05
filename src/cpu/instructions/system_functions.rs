@@ -6,7 +6,7 @@ use crate::{
 };
 
 pub fn nop(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu: &mut CPU| {
         cpu.increment_program_counter();
 
@@ -17,7 +17,7 @@ pub fn nop(_cpu: &mut CPU) -> Tasks {
 }
 
 pub fn brk(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu: &mut CPU| {
         cpu.access_memory(cpu.program_counter); // fetch and discard
         cpu.increment_program_counter();
@@ -66,7 +66,7 @@ pub fn brk(_cpu: &mut CPU) -> Tasks {
 }
 
 pub fn rti(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu: &mut CPU| {
         cpu.dummy_fetch();
 

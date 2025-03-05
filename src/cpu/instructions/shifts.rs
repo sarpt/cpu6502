@@ -46,7 +46,7 @@ fn op_acc(
     op: Box<dyn Fn(bool) -> Box<dyn Fn(&u8) -> u8>>,
     dir: Directions,
 ) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
 
     tasks.push(Rc::new(move |cpu| {
         let previous_value: Byte;
@@ -78,10 +78,10 @@ fn op_mem(
     op: Box<dyn Fn(bool) -> Box<dyn Fn(&u8) -> u8>>,
     dir: Directions,
 ) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
 
-    let mut addr_cycles = cpu.get_address(addr_mode);
-    tasks.append(&mut addr_cycles);
+    let addr_cycles = cpu.get_address(addr_mode);
+    tasks.append(addr_cycles);
 
     tasks.push(Rc::new(|cpu| {
         let value = cpu.access_memory(cpu.address_output);

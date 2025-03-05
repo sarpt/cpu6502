@@ -29,7 +29,7 @@ pub fn jsr_a(cpu: &mut CPU) -> Tasks {
 }
 
 pub fn rts(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.dummy_fetch();
 
