@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::cpu::{AddressingMode, Registers, ScheduledTask, TaskCycleVariant, Tasks, CPU};
+use crate::cpu::{AddressingMode, Registers, TaskCycleVariant, Tasks, CPU};
 
 fn decrement_cb(value: &u8) -> u8 {
     return value.wrapping_sub(1);
@@ -17,11 +17,13 @@ fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
 fn decrement_register(_cpu: &mut CPU, register: Registers) -> Tasks {
     match register {
         Registers::IndexX | Registers::IndexY => {
-            return Vec::from([Rc::new(move |cpu: &mut CPU| {
+            let mut tasks = Tasks::new();
+            tasks.push(Rc::new(move |cpu: &mut CPU| {
                 cpu.decrement_register(register);
 
                 return TaskCycleVariant::Full;
-            }) as ScheduledTask]);
+            }));
+            return tasks;
         }
         _ => panic!("decrement_register used with incorrect register"),
     }
@@ -58,11 +60,13 @@ fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
 fn increment_register(_cpu: &mut CPU, register: Registers) -> Tasks {
     match register {
         Registers::IndexX | Registers::IndexY => {
-            return Vec::from([Rc::new(move |cpu: &mut CPU| {
+            let mut tasks = Tasks::new();
+            tasks.push(Rc::new(move |cpu: &mut CPU| {
                 cpu.increment_register(register);
 
                 return TaskCycleVariant::Full;
-            }) as ScheduledTask]);
+            }));
+            return tasks;
         }
         _ => panic!("increment_register used with incorrect register"),
     }

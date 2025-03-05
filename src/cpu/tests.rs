@@ -1313,7 +1313,7 @@ pub fn run_tasks(cpu: &mut super::CPU, tasks: super::Tasks) {
         opcode: 0x00,
         ctx: Some(0),
         starting_cycle: 0,
-        tasks_queue: tasks.into(),
+        tasks: tasks.into(),
     });
     cpu.execute_next_instruction();
 }

@@ -3,7 +3,7 @@ use std::rc::Rc;
 use crate::cpu::{Registers, TaskCycleVariant, Tasks, CPU};
 
 pub fn tax(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::Accumulator, Registers::IndexX);
 
@@ -14,7 +14,7 @@ pub fn tax(_cpu: &mut CPU) -> Tasks {
 }
 
 pub fn txa(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::IndexX, Registers::Accumulator);
 
@@ -25,7 +25,7 @@ pub fn txa(_cpu: &mut CPU) -> Tasks {
 }
 
 pub fn tay(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::Accumulator, Registers::IndexY);
 
@@ -36,7 +36,7 @@ pub fn tay(_cpu: &mut CPU) -> Tasks {
 }
 
 pub fn tya(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::IndexY, Registers::Accumulator);
 

@@ -3,7 +3,7 @@ use std::rc::Rc;
 use crate::cpu::{processor_status::Flags, TaskCycleVariant, Tasks, CPU};
 
 fn change_flag_value(_cpu: &mut CPU, flag: Flags, value: bool) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(move |cpu: &mut CPU| {
         cpu.processor_status.change_flag(flag, value);
 

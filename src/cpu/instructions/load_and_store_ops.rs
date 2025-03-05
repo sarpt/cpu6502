@@ -86,9 +86,9 @@ pub fn ldx_ay(cpu: &mut CPU) -> Tasks {
 }
 
 pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
 
-    let addr_cycles = &mut cpu.get_address(addr_mode);
+    let addr_cycles = cpu.get_address(addr_mode);
     tasks.append(addr_cycles);
 
     tasks.push(Rc::new(move |cpu| {

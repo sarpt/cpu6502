@@ -6,7 +6,7 @@ use crate::{
 };
 
 fn branch(_cpu: &mut CPU, condition: fn(&CPU) -> bool) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(move |cpu: &mut CPU| {
         let operand = cpu.access_memory(cpu.program_counter);
         cpu.increment_program_counter();
@@ -19,8 +19,8 @@ fn branch(_cpu: &mut CPU, condition: fn(&CPU) -> bool) -> Tasks {
         return TaskCycleVariant::Full;
     }));
 
-    let mut offset_cycles = offset_program_counter();
-    tasks.append(&mut offset_cycles);
+    let offset_cycles = offset_program_counter();
+    tasks.append(offset_cycles);
 
     return tasks;
 }
@@ -74,7 +74,7 @@ pub fn bvc(cpu: &mut CPU) -> Tasks {
 }
 
 fn offset_program_counter() -> Tasks {
-    let mut cycles: Tasks = Vec::new();
+    let mut cycles: Tasks = Tasks::new();
 
     cycles.push(Rc::new(|cpu: &mut CPU| {
         let [offset, condition_met] = match cpu.get_current_instruction_ctx() {

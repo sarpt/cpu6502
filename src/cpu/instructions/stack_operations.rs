@@ -3,7 +3,7 @@ use std::rc::Rc;
 use crate::cpu::{Registers, TaskCycleVariant, Tasks, CPU};
 
 fn push_register(_cpu: &mut CPU, register: Registers) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.dummy_fetch();
 
@@ -29,7 +29,7 @@ pub fn php(cpu: &mut CPU) -> Tasks {
 }
 
 fn pull_register(_cpu: &mut CPU, register: Registers) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.dummy_fetch();
 
@@ -60,7 +60,7 @@ pub fn plp(cpu: &mut CPU) -> Tasks {
 }
 
 pub fn tsx(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::StackPointer, Registers::IndexX);
 
@@ -71,7 +71,7 @@ pub fn tsx(_cpu: &mut CPU) -> Tasks {
 }
 
 pub fn txs(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Vec::new();
+    let mut tasks: Tasks = Tasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::IndexX, Registers::StackPointer);
 

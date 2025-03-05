@@ -1,6 +1,8 @@
 use std::cell::RefCell;
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 use std::rc::Rc;
+
+use tasks::{TaskCycleVariant, Tasks};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
@@ -9,6 +11,7 @@ use crate::{consts::STACK_PAGE_HI, memory::Memory};
 mod instructions;
 mod opcodes;
 mod processor_status;
+mod tasks;
 
 type Instruction = Byte;
 
@@ -45,29 +48,20 @@ enum Registers {
     IndexY,
 }
 
-#[derive(Copy, Clone, PartialEq)]
-enum TaskCycleVariant {
-    Aborted,
-    Partial,
-    Full,
-}
-
-type Tasks = Vec<ScheduledTask>;
 type OpcodeHandler = fn(&mut CPU) -> Tasks;
-type ScheduledTask = Rc<dyn Fn(&mut CPU) -> TaskCycleVariant>;
 
 type InstructionCtx = Option<Word>;
 struct InstructionExecution {
     opcode: Byte,
     ctx: InstructionCtx,
-    starting_cycle: u64,
-    tasks_queue: VecDeque<ScheduledTask>,
+    starting_cycle: usize,
+    tasks: Tasks,
 }
 
 pub struct CPU<'a> {
     chip_variant: ChipVariant,
     current_instruction: Option<InstructionExecution>,
-    cycle: u64,
+    cycle: usize,
     program_counter: Word,
     stack_pointer: Byte,
     accumulator: Byte,
@@ -134,7 +128,7 @@ impl<'a> CPU<'a> {
         }
     }
 
-    pub fn execute_until_break(&mut self) -> u64 {
+    pub fn execute_until_break(&mut self) -> usize {
         while !self.processor_status.get_break_flag() {
             self.execute_next_instruction();
         }
@@ -143,42 +137,33 @@ impl<'a> CPU<'a> {
     }
 
     pub fn tick(&mut self) {
-        let tasks = match &self.current_instruction {
-            Some(current) => {
+        match &mut self.current_instruction {
+            Some(current_instruction) => {
                 self.sync = false;
-                current.tasks_queue.clone()
+                let mut tasks = std::mem::take(&mut current_instruction.tasks);
+                let (took_cycles, tasks_done) = tasks.tick(self);
+                if took_cycles {
+                    self.cycle += 1;
+                }
+                if tasks_done {
+                    self.current_instruction = None;
+                    return;
+                }
+
+                let current_instruction_after_running_task = self
+                    .current_instruction
+                    .as_mut()
+                    .expect("non-instruction fetching tick encountered current_instruction as none after running task");
+                std::mem::swap(
+                    &mut current_instruction_after_running_task.tasks,
+                    &mut tasks,
+                );
             }
             None => {
                 self.sync = true;
                 let opcode = self.fetch_opcode();
-                self.schedule_instruction(opcode);
-
-                return;
+                self.current_instruction = Some(self.schedule_instruction(opcode));
             }
-        };
-
-        if tasks.len() == 0 {
-            self.current_instruction = None;
-            return;
-        }
-
-        let mut ran_tasks_count: usize = 0;
-        for task_runner in tasks {
-            ran_tasks_count += 1;
-            let task_cycle_variant = task_runner(self);
-            if task_cycle_variant == TaskCycleVariant::Full {
-                self.cycle += 1;
-                break;
-            };
-        }
-
-        let tasks_queue = &mut self.current_instruction.as_mut().unwrap().tasks_queue;
-        for idx in (0..=ran_tasks_count - 1).rev() {
-            tasks_queue.remove(idx);
-        }
-
-        if tasks_queue.len() <= 0 {
-            self.current_instruction = None;
         }
     }
 
@@ -232,8 +217,7 @@ impl<'a> CPU<'a> {
     }
 
     fn offset_address_output(&mut self, offset: Byte) -> Tasks {
-        let mut tasks: Tasks = Vec::new();
-
+        let mut tasks = Tasks::new();
         tasks.push(Rc::new(move |cpu| {
             let [lo, hi] = cpu.address_output.to_le_bytes();
             let (new_lo, carry) = lo.overflowing_add(offset);
@@ -429,23 +413,23 @@ impl<'a> CPU<'a> {
         self.access_memory(self.program_counter); // fetch and discard
     }
 
-    fn schedule_instruction(&mut self, opcode: Byte) {
+    fn schedule_instruction(&mut self, opcode: Byte) -> InstructionExecution {
         let handler = self.opcode_handlers.get(&opcode);
         let tasks = match handler {
             Some(cb) => cb(self),
             None => panic!("illegal opcode found: {:#04x}", opcode),
         };
 
-        self.current_instruction = Some(InstructionExecution {
+        return InstructionExecution {
             ctx: None,
-            tasks_queue: tasks.into(),
+            tasks: tasks,
             opcode: opcode,
             starting_cycle: self.cycle,
-        });
+        };
     }
 
     fn get_address(&mut self, addr_mode: AddressingMode) -> Tasks {
-        let mut tasks: Tasks = Vec::new();
+        let mut tasks: Tasks = Tasks::new();
         match addr_mode {
             AddressingMode::ZeroPage => {
                 tasks.push(Rc::new(|cpu| {
@@ -524,8 +508,8 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                let mut offset_tasks = self.offset_address_output(self.index_register_x);
-                tasks.append(&mut offset_tasks);
+                let offset_tasks = self.offset_address_output(self.index_register_x);
+                tasks.append(offset_tasks);
             }
             AddressingMode::AbsoluteY => {
                 tasks.push(Rc::new(|cpu| {
@@ -544,8 +528,8 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                let mut offset_tasks = self.offset_address_output(self.index_register_y);
-                tasks.append(&mut offset_tasks);
+                let offset_tasks = self.offset_address_output(self.index_register_y);
+                tasks.append(offset_tasks);
             }
             AddressingMode::Indirect => {
                 tasks.push(Rc::new(|cpu| {
@@ -690,8 +674,8 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                let mut offset_tasks = self.offset_address_output(self.index_register_y);
-                tasks.append(&mut offset_tasks);
+                let offset_tasks = self.offset_address_output(self.index_register_y);
+                tasks.append(offset_tasks);
             }
             AddressingMode::Immediate => {
                 tasks.push(Rc::new(|cpu| {
