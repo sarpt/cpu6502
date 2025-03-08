@@ -20,7 +20,7 @@ fn branch(_cpu: &mut CPU, condition: fn(&CPU) -> bool) -> Box<dyn Tasks> {
     }));
 
     let mut offset_cycles = offset_program_counter();
-    tasks.append(offset_cycles.as_mut());
+    tasks.transfer_queue(offset_cycles.as_mut());
 
     return Box::new(tasks);
 }

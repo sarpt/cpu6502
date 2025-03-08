@@ -28,7 +28,7 @@ impl GenericTasks {
         };
     }
 
-    pub fn append(&mut self, other: &mut dyn Tasks) -> () {
+    pub fn transfer_queue(&mut self, other: &mut dyn Tasks) -> () {
         self.tasks_queue.append(&mut other.collect());
     }
 }
