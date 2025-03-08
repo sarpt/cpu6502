@@ -55,19 +55,13 @@ impl Tasks for GenericTasks {
             return (false, true);
         }
 
-        let mut ran_tasks_count: usize = 0;
         let mut took_cycles: bool = false;
-        for task_runner in &self.tasks_queue {
-            ran_tasks_count += 1;
+        while let Some(task_runner) = self.next() {
             let task_cycle_variant = task_runner(cpu);
             if task_cycle_variant == TaskCycleVariant::Full {
                 took_cycles = true;
                 break;
             };
-        }
-
-        for idx in (0..=ran_tasks_count - 1).rev() {
-            self.tasks_queue.remove(idx);
         }
 
         return (took_cycles, self.done());
