@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
-use crate::cpu::{AddressingMode, TaskCycleVariant, Tasks, CPU};
+use crate::cpu::{tasks::GenericTasks, AddressingMode, TaskCycleVariant, Tasks, CPU};
 
-pub fn jsr_a(cpu: &mut CPU) -> Tasks {
+pub fn jsr_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     let mut tasks = cpu.get_address(AddressingMode::Absolute);
 
     tasks.push(Rc::new(|cpu: &mut CPU| {
@@ -28,8 +28,8 @@ pub fn jsr_a(cpu: &mut CPU) -> Tasks {
     return tasks;
 }
 
-pub fn rts(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+pub fn rts(_cpu: &mut CPU) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.dummy_fetch();
 
@@ -61,10 +61,10 @@ pub fn rts(_cpu: &mut CPU) -> Tasks {
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
-fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
+fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
     let mut tasks = cpu.get_address(addr_mode);
     tasks.push(Rc::new(|cpu| {
         cpu.program_counter = cpu.address_output;
@@ -75,11 +75,11 @@ fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
     return tasks;
 }
 
-pub fn jmp_a(cpu: &mut CPU) -> Tasks {
+pub fn jmp_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return jmp(cpu, AddressingMode::Absolute);
 }
 
-pub fn jmp_in(cpu: &mut CPU) -> Tasks {
+pub fn jmp_in(cpu: &mut CPU) -> Box<dyn Tasks> {
     return jmp(cpu, AddressingMode::Indirect);
 }
 

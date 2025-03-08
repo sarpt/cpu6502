@@ -2,22 +2,22 @@ use std::rc::Rc;
 
 use crate::{
     consts::BRK_INTERRUPT_VECTOR,
-    cpu::{ChipVariant, TaskCycleVariant, Tasks, CPU},
+    cpu::{tasks::GenericTasks, ChipVariant, TaskCycleVariant, Tasks, CPU},
 };
 
-pub fn nop(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+pub fn nop(_cpu: &mut CPU) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
     tasks.push(Rc::new(|cpu: &mut CPU| {
         cpu.increment_program_counter();
 
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
-pub fn brk(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+pub fn brk(_cpu: &mut CPU) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
     tasks.push(Rc::new(|cpu: &mut CPU| {
         cpu.access_memory(cpu.program_counter); // fetch and discard
         cpu.increment_program_counter();
@@ -62,11 +62,11 @@ pub fn brk(_cpu: &mut CPU) -> Tasks {
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
-pub fn rti(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+pub fn rti(_cpu: &mut CPU) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
     tasks.push(Rc::new(|cpu: &mut CPU| {
         cpu.dummy_fetch();
 
@@ -98,7 +98,7 @@ pub fn rti(_cpu: &mut CPU) -> Tasks {
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
 #[cfg(test)]

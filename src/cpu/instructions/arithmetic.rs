@@ -3,7 +3,7 @@ use crate::{
     cpu::{AddressingMode, Registers, Tasks, CPU},
 };
 
-fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Tasks {
+fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Box<dyn Tasks> {
     let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(move |cpu, value| {
         cpu.set_cmp_status(register, value);
     });
@@ -11,59 +11,59 @@ fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Tas
     return cpu.read_memory(addr_mode, Some(cb));
 }
 
-pub fn cmp_im(cpu: &mut CPU) -> Tasks {
+pub fn cmp_im(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::Immediate, Registers::Accumulator);
 }
 
-pub fn cmp_zp(cpu: &mut CPU) -> Tasks {
+pub fn cmp_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::ZeroPage, Registers::Accumulator);
 }
 
-pub fn cmp_zpx(cpu: &mut CPU) -> Tasks {
+pub fn cmp_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::ZeroPageX, Registers::Accumulator);
 }
 
-pub fn cmp_a(cpu: &mut CPU) -> Tasks {
+pub fn cmp_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::Absolute, Registers::Accumulator);
 }
 
-pub fn cmp_ax(cpu: &mut CPU) -> Tasks {
+pub fn cmp_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::AbsoluteX, Registers::Accumulator);
 }
 
-pub fn cmp_ay(cpu: &mut CPU) -> Tasks {
+pub fn cmp_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::AbsoluteY, Registers::Accumulator);
 }
 
-pub fn cmp_inx(cpu: &mut CPU) -> Tasks {
+pub fn cmp_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::IndexIndirectX, Registers::Accumulator);
 }
 
-pub fn cmp_iny(cpu: &mut CPU) -> Tasks {
+pub fn cmp_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::IndirectIndexY, Registers::Accumulator);
 }
 
-pub fn cpx_im(cpu: &mut CPU) -> Tasks {
+pub fn cpx_im(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::Immediate, Registers::IndexX);
 }
 
-pub fn cpx_zp(cpu: &mut CPU) -> Tasks {
+pub fn cpx_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::ZeroPage, Registers::IndexX);
 }
 
-pub fn cpx_a(cpu: &mut CPU) -> Tasks {
+pub fn cpx_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::Absolute, Registers::IndexX);
 }
 
-pub fn cpy_im(cpu: &mut CPU) -> Tasks {
+pub fn cpy_im(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::Immediate, Registers::IndexY);
 }
 
-pub fn cpy_zp(cpu: &mut CPU) -> Tasks {
+pub fn cpy_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::ZeroPage, Registers::IndexY);
 }
 
-pub fn cpy_a(cpu: &mut CPU) -> Tasks {
+pub fn cpy_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return compare(cpu, AddressingMode::Absolute, Registers::IndexY);
 }
 
@@ -115,7 +115,7 @@ pub fn operations_with_carry(
     cpu: &mut CPU,
     addr_mode: AddressingMode,
     op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
-) -> Tasks {
+) -> Box<dyn Tasks> {
     let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(move |cpu, value| {
         let accumulator = cpu.get_register(Registers::Accumulator);
         let (value, carry, overflow) =
@@ -135,67 +135,67 @@ pub fn operations_with_carry(
     return cpu.read_memory(addr_mode, Some(cb));
 }
 
-pub fn adc_im(cpu: &mut CPU) -> Tasks {
+pub fn adc_im(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::Immediate, adc);
 }
 
-pub fn adc_zp(cpu: &mut CPU) -> Tasks {
+pub fn adc_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::ZeroPage, adc);
 }
 
-pub fn adc_zpx(cpu: &mut CPU) -> Tasks {
+pub fn adc_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::ZeroPageX, adc);
 }
 
-pub fn adc_a(cpu: &mut CPU) -> Tasks {
+pub fn adc_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::Absolute, adc);
 }
 
-pub fn adc_ax(cpu: &mut CPU) -> Tasks {
+pub fn adc_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::AbsoluteX, adc);
 }
 
-pub fn adc_ay(cpu: &mut CPU) -> Tasks {
+pub fn adc_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::AbsoluteY, adc);
 }
 
-pub fn adc_inx(cpu: &mut CPU) -> Tasks {
+pub fn adc_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::IndexIndirectX, adc);
 }
 
-pub fn adc_iny(cpu: &mut CPU) -> Tasks {
+pub fn adc_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::IndirectIndexY, adc);
 }
 
-pub fn sbc_im(cpu: &mut CPU) -> Tasks {
+pub fn sbc_im(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::Immediate, sbc);
 }
 
-pub fn sbc_zp(cpu: &mut CPU) -> Tasks {
+pub fn sbc_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::ZeroPage, sbc);
 }
 
-pub fn sbc_zpx(cpu: &mut CPU) -> Tasks {
+pub fn sbc_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::ZeroPageX, sbc);
 }
 
-pub fn sbc_a(cpu: &mut CPU) -> Tasks {
+pub fn sbc_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::Absolute, sbc);
 }
 
-pub fn sbc_ax(cpu: &mut CPU) -> Tasks {
+pub fn sbc_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::AbsoluteX, sbc);
 }
 
-pub fn sbc_ay(cpu: &mut CPU) -> Tasks {
+pub fn sbc_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::AbsoluteY, sbc);
 }
 
-pub fn sbc_inx(cpu: &mut CPU) -> Tasks {
+pub fn sbc_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::IndexIndirectX, sbc);
 }
 
-pub fn sbc_iny(cpu: &mut CPU) -> Tasks {
+pub fn sbc_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
     return operations_with_carry(cpu, AddressingMode::IndirectIndexY, sbc);
 }
 
