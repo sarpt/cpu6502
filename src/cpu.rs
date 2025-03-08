@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use tasks::{TaskCycleVariant, Tasks};
+use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
@@ -48,14 +48,14 @@ enum Registers {
     IndexY,
 }
 
-type OpcodeHandler = fn(&mut CPU) -> Tasks;
+type OpcodeHandler = fn(&mut CPU) -> Box<dyn Tasks>;
 
 type InstructionCtx = Option<Word>;
 struct InstructionExecution {
     opcode: Byte,
     ctx: InstructionCtx,
     starting_cycle: usize,
-    tasks: Tasks,
+    tasks: Box<dyn Tasks>,
 }
 
 pub struct CPU<'a> {
@@ -140,7 +140,10 @@ impl<'a> CPU<'a> {
         match &mut self.current_instruction {
             Some(current_instruction) => {
                 self.sync = false;
-                let mut tasks = std::mem::take(&mut current_instruction.tasks);
+                let mut tasks = std::mem::replace(
+                    &mut current_instruction.tasks,
+                    Box::new(GenericTasks::new()),
+                );
                 let (took_cycles, tasks_done) = tasks.tick(self);
                 if took_cycles {
                     self.cycle += 1;
@@ -216,8 +219,8 @@ impl<'a> CPU<'a> {
         };
     }
 
-    fn offset_address_output(&mut self, offset: Byte) -> Tasks {
-        let mut tasks = Tasks::new();
+    fn offset_address_output(&mut self, offset: Byte) -> Box<dyn Tasks> {
+        let mut tasks = GenericTasks::new();
         tasks.push(Rc::new(move |cpu| {
             let [lo, hi] = cpu.address_output.to_le_bytes();
             let (new_lo, carry) = lo.overflowing_add(offset);
@@ -249,7 +252,7 @@ impl<'a> CPU<'a> {
             return TaskCycleVariant::Full;
         }));
 
-        return tasks;
+        return Box::new(tasks);
     }
 
     fn fetch_opcode(&mut self) -> Instruction {
@@ -367,7 +370,7 @@ impl<'a> CPU<'a> {
         &mut self,
         addr_mode: AddressingMode,
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
-    ) -> Tasks {
+    ) -> Box<dyn Tasks> {
         let mut tasks = self.get_address(addr_mode);
 
         tasks.push(Rc::new(move |cpu: &mut CPU| {
@@ -428,8 +431,8 @@ impl<'a> CPU<'a> {
         };
     }
 
-    fn get_address(&mut self, addr_mode: AddressingMode) -> Tasks {
-        let mut tasks: Tasks = Tasks::new();
+    fn get_address(&mut self, addr_mode: AddressingMode) -> Box<dyn Tasks> {
+        let mut tasks = GenericTasks::new();
         match addr_mode {
             AddressingMode::ZeroPage => {
                 tasks.push(Rc::new(|cpu| {
@@ -508,8 +511,8 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                let offset_tasks = self.offset_address_output(self.index_register_x);
-                tasks.append(offset_tasks);
+                let mut offset_tasks = self.offset_address_output(self.index_register_x);
+                tasks.append(offset_tasks.as_mut());
             }
             AddressingMode::AbsoluteY => {
                 tasks.push(Rc::new(|cpu| {
@@ -528,8 +531,8 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                let offset_tasks = self.offset_address_output(self.index_register_y);
-                tasks.append(offset_tasks);
+                let mut offset_tasks = self.offset_address_output(self.index_register_y);
+                tasks.append(offset_tasks.as_mut());
             }
             AddressingMode::Indirect => {
                 tasks.push(Rc::new(|cpu| {
@@ -572,7 +575,7 @@ impl<'a> CPU<'a> {
 
                         return TaskCycleVariant::Full;
                     }));
-                    return tasks;
+                    return Box::new(tasks);
                 }
 
                 tasks.push(Rc::new(|cpu| {
@@ -674,8 +677,8 @@ impl<'a> CPU<'a> {
                     return TaskCycleVariant::Full;
                 }));
 
-                let offset_tasks = self.offset_address_output(self.index_register_y);
-                tasks.append(offset_tasks);
+                let mut offset_tasks = self.offset_address_output(self.index_register_y);
+                tasks.append(offset_tasks.as_mut());
             }
             AddressingMode::Immediate => {
                 tasks.push(Rc::new(|cpu| {
@@ -692,7 +695,7 @@ impl<'a> CPU<'a> {
             }
         }
 
-        return tasks;
+        return Box::new(tasks);
     }
 }
 

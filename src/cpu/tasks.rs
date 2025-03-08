@@ -11,30 +11,46 @@ pub enum TaskCycleVariant {
 
 type ScheduledTask = Rc<dyn Fn(&mut CPU) -> TaskCycleVariant>;
 
-pub struct Tasks {
+pub trait Tasks: Iterator<Item = ScheduledTask> {
+    fn push(&mut self, task: ScheduledTask) -> ();
+    fn done(&self) -> bool;
+    fn tick(&mut self, cpu: &mut CPU) -> (bool, bool);
+}
+
+pub struct GenericTasks {
     tasks_queue: VecDeque<ScheduledTask>,
 }
 
-impl Tasks {
+impl GenericTasks {
     pub fn new() -> Self {
-        return Tasks {
+        return GenericTasks {
             tasks_queue: VecDeque::new(),
         };
     }
 
-    pub fn push(&mut self, task: ScheduledTask) {
-        self.tasks_queue.push_back(task);
+    pub fn append(&mut self, other: &mut dyn Tasks) -> () {
+        self.tasks_queue.append(&mut other.collect());
     }
+}
 
-    pub fn append(&mut self, mut other: Tasks) {
-        self.tasks_queue.append(&mut other.tasks_queue);
+impl Iterator for GenericTasks {
+    type Item = ScheduledTask;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        return self.tasks_queue.pop_front();
+    }
+}
+
+impl Tasks for GenericTasks {
+    fn push(&mut self, task: ScheduledTask) -> () {
+        self.tasks_queue.push_back(task);
     }
 
     fn done(&self) -> bool {
         return self.tasks_queue.len() == 0;
     }
 
-    pub fn tick(&mut self, cpu: &mut CPU) -> (bool, bool) {
+    fn tick(&mut self, cpu: &mut CPU) -> (bool, bool) {
         if self.done() {
             return (false, true);
         }
@@ -58,7 +74,7 @@ impl Tasks {
     }
 }
 
-impl Default for Tasks {
+impl Default for GenericTasks {
     fn default() -> Self {
         Self {
             tasks_queue: Default::default(),

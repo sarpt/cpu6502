@@ -2,11 +2,11 @@ use std::rc::Rc;
 
 use crate::{
     consts::{Byte, Word},
-    cpu::{TaskCycleVariant, Tasks, CPU},
+    cpu::{tasks::GenericTasks, TaskCycleVariant, Tasks, CPU},
 };
 
-fn branch(_cpu: &mut CPU, condition: fn(&CPU) -> bool) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+fn branch(_cpu: &mut CPU, condition: fn(&CPU) -> bool) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
     tasks.push(Rc::new(move |cpu: &mut CPU| {
         let operand = cpu.access_memory(cpu.program_counter);
         cpu.increment_program_counter();
@@ -19,64 +19,64 @@ fn branch(_cpu: &mut CPU, condition: fn(&CPU) -> bool) -> Tasks {
         return TaskCycleVariant::Full;
     }));
 
-    let offset_cycles = offset_program_counter();
-    tasks.append(offset_cycles);
+    let mut offset_cycles = offset_program_counter();
+    tasks.append(offset_cycles.as_mut());
 
-    return tasks;
+    return Box::new(tasks);
 }
 
-pub fn bcc(cpu: &mut CPU) -> Tasks {
+pub fn bcc(cpu: &mut CPU) -> Box<dyn Tasks> {
     return branch(cpu, |cpu: &CPU| -> bool {
         return !cpu.processor_status.get_carry_flag();
     });
 }
 
-pub fn bcs(cpu: &mut CPU) -> Tasks {
+pub fn bcs(cpu: &mut CPU) -> Box<dyn Tasks> {
     return branch(cpu, |cpu: &CPU| -> bool {
         return cpu.processor_status.get_carry_flag();
     });
 }
 
-pub fn beq(cpu: &mut CPU) -> Tasks {
+pub fn beq(cpu: &mut CPU) -> Box<dyn Tasks> {
     return branch(cpu, |cpu: &CPU| -> bool {
         return cpu.processor_status.get_zero_flag();
     });
 }
 
-pub fn bmi(cpu: &mut CPU) -> Tasks {
+pub fn bmi(cpu: &mut CPU) -> Box<dyn Tasks> {
     return branch(cpu, |cpu: &CPU| -> bool {
         return cpu.processor_status.get_negative_flag();
     });
 }
 
-pub fn bne(cpu: &mut CPU) -> Tasks {
+pub fn bne(cpu: &mut CPU) -> Box<dyn Tasks> {
     return branch(cpu, |cpu: &CPU| -> bool {
         return !cpu.processor_status.get_zero_flag();
     });
 }
 
-pub fn bpl(cpu: &mut CPU) -> Tasks {
+pub fn bpl(cpu: &mut CPU) -> Box<dyn Tasks> {
     return branch(cpu, |cpu: &CPU| -> bool {
         return !cpu.processor_status.get_negative_flag();
     });
 }
 
-pub fn bvs(cpu: &mut CPU) -> Tasks {
+pub fn bvs(cpu: &mut CPU) -> Box<dyn Tasks> {
     return branch(cpu, |cpu: &CPU| -> bool {
         return cpu.processor_status.get_overflow_flag();
     });
 }
 
-pub fn bvc(cpu: &mut CPU) -> Tasks {
+pub fn bvc(cpu: &mut CPU) -> Box<dyn Tasks> {
     return branch(cpu, |cpu: &CPU| -> bool {
         return !cpu.processor_status.get_overflow_flag();
     });
 }
 
-fn offset_program_counter() -> Tasks {
-    let mut cycles: Tasks = Tasks::new();
+fn offset_program_counter() -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
 
-    cycles.push(Rc::new(|cpu: &mut CPU| {
+    tasks.push(Rc::new(|cpu: &mut CPU| {
         let [offset, condition_met] = match cpu.get_current_instruction_ctx() {
             Some(val) => val.to_le_bytes(),
             None => panic!("context for offseting program counter is unexpectedly not set after previous cycle"),
@@ -110,7 +110,7 @@ fn offset_program_counter() -> Tasks {
         return TaskCycleVariant::Full;
     }));
 
-    cycles.push(Rc::new(|cpu: &mut CPU| {
+    tasks.push(Rc::new(|cpu: &mut CPU| {
         let [offset, carry] = match cpu.get_current_instruction_ctx() {
             Some(val) => val.to_le_bytes(),
             None => panic!("context for offseting program counter is unexpectedly not set after previous cycle"),
@@ -134,7 +134,7 @@ fn offset_program_counter() -> Tasks {
         return TaskCycleVariant::Full;
     }));
 
-    return cycles;
+    return Box::new(tasks);
 }
 
 #[cfg(test)]

@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
-use crate::cpu::{Registers, TaskCycleVariant, Tasks, CPU};
+use crate::cpu::{tasks::GenericTasks, Registers, TaskCycleVariant, Tasks, CPU};
 
-fn push_register(_cpu: &mut CPU, register: Registers) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+fn push_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.dummy_fetch();
 
@@ -17,19 +17,19 @@ fn push_register(_cpu: &mut CPU, register: Registers) -> Tasks {
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
-pub fn pha(cpu: &mut CPU) -> Tasks {
+pub fn pha(cpu: &mut CPU) -> Box<dyn Tasks> {
     return push_register(cpu, Registers::Accumulator);
 }
 
-pub fn php(cpu: &mut CPU) -> Tasks {
+pub fn php(cpu: &mut CPU) -> Box<dyn Tasks> {
     return push_register(cpu, Registers::ProcessorStatus);
 }
 
-fn pull_register(_cpu: &mut CPU, register: Registers) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+fn pull_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.dummy_fetch();
 
@@ -48,37 +48,37 @@ fn pull_register(_cpu: &mut CPU, register: Registers) -> Tasks {
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
-pub fn pla(cpu: &mut CPU) -> Tasks {
+pub fn pla(cpu: &mut CPU) -> Box<dyn Tasks> {
     return pull_register(cpu, Registers::Accumulator);
 }
 
-pub fn plp(cpu: &mut CPU) -> Tasks {
+pub fn plp(cpu: &mut CPU) -> Box<dyn Tasks> {
     return pull_register(cpu, Registers::ProcessorStatus);
 }
 
-pub fn tsx(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+pub fn tsx(_cpu: &mut CPU) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::StackPointer, Registers::IndexX);
 
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
-pub fn txs(_cpu: &mut CPU) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+pub fn txs(_cpu: &mut CPU) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
     tasks.push(Rc::new(|cpu| {
         cpu.transfer_registers(Registers::IndexX, Registers::StackPointer);
 
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
 #[cfg(test)]

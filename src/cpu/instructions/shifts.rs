@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::{
     consts::Byte,
-    cpu::{AddressingMode, Registers, TaskCycleVariant, Tasks, CPU},
+    cpu::{tasks::GenericTasks, AddressingMode, Registers, TaskCycleVariant, Tasks, CPU},
 };
 
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -45,8 +45,8 @@ fn op_acc(
     _cpu: &mut CPU,
     op: Box<dyn Fn(bool) -> Box<dyn Fn(&u8) -> u8>>,
     dir: Directions,
-) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
 
     tasks.push(Rc::new(move |cpu| {
         let previous_value: Byte;
@@ -69,7 +69,7 @@ fn op_acc(
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
 fn op_mem(
@@ -77,11 +77,11 @@ fn op_mem(
     addr_mode: AddressingMode,
     op: Box<dyn Fn(bool) -> Box<dyn Fn(&u8) -> u8>>,
     dir: Directions,
-) -> Tasks {
-    let mut tasks: Tasks = Tasks::new();
+) -> Box<dyn Tasks> {
+    let mut tasks = GenericTasks::new();
 
-    let addr_cycles = cpu.get_address(addr_mode);
-    tasks.append(addr_cycles);
+    let mut addr_cycles = cpu.get_address(addr_mode);
+    tasks.append(addr_cycles.as_mut());
 
     tasks.push(Rc::new(|cpu| {
         let value = cpu.access_memory(cpu.address_output);
@@ -121,10 +121,10 @@ fn op_mem(
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
-fn asl(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
+fn asl(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
     return op_mem(
         cpu,
         addr_mode,
@@ -133,27 +133,27 @@ fn asl(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
     );
 }
 
-pub fn asl_acc(cpu: &mut CPU) -> Tasks {
+pub fn asl_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
     return op_acc(cpu, Box::new(|_| Box::new(shift_left_cb)), Directions::Left);
 }
 
-pub fn asl_zp(cpu: &mut CPU) -> Tasks {
+pub fn asl_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
     return asl(cpu, AddressingMode::ZeroPage);
 }
 
-pub fn asl_zpx(cpu: &mut CPU) -> Tasks {
+pub fn asl_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
     return asl(cpu, AddressingMode::ZeroPageX);
 }
 
-pub fn asl_a(cpu: &mut CPU) -> Tasks {
+pub fn asl_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return asl(cpu, AddressingMode::Absolute);
 }
 
-pub fn asl_ax(cpu: &mut CPU) -> Tasks {
+pub fn asl_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
     return asl(cpu, AddressingMode::AbsoluteX);
 }
 
-fn lsr(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
+fn lsr(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
     return op_mem(
         cpu,
         addr_mode,
@@ -162,7 +162,7 @@ fn lsr(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
     );
 }
 
-pub fn lsr_acc(cpu: &mut CPU) -> Tasks {
+pub fn lsr_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
     return op_acc(
         cpu,
         Box::new(|_| Box::new(shift_right_cb)),
@@ -170,23 +170,23 @@ pub fn lsr_acc(cpu: &mut CPU) -> Tasks {
     );
 }
 
-pub fn lsr_zp(cpu: &mut CPU) -> Tasks {
+pub fn lsr_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
     return lsr(cpu, AddressingMode::ZeroPage);
 }
 
-pub fn lsr_zpx(cpu: &mut CPU) -> Tasks {
+pub fn lsr_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
     return lsr(cpu, AddressingMode::ZeroPageX);
 }
 
-pub fn lsr_a(cpu: &mut CPU) -> Tasks {
+pub fn lsr_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return lsr(cpu, AddressingMode::Absolute);
 }
 
-pub fn lsr_ax(cpu: &mut CPU) -> Tasks {
+pub fn lsr_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
     return lsr(cpu, AddressingMode::AbsoluteX);
 }
 
-fn rol(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
+fn rol(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
     return op_mem(
         cpu,
         addr_mode,
@@ -195,27 +195,27 @@ fn rol(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
     );
 }
 
-pub fn rol_acc(cpu: &mut CPU) -> Tasks {
+pub fn rol_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
     return op_acc(cpu, Box::new(get_rotate_left_cb), Directions::Left);
 }
 
-pub fn rol_zp(cpu: &mut CPU) -> Tasks {
+pub fn rol_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
     return rol(cpu, AddressingMode::ZeroPage);
 }
 
-pub fn rol_zpx(cpu: &mut CPU) -> Tasks {
+pub fn rol_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
     return rol(cpu, AddressingMode::ZeroPageX);
 }
 
-pub fn rol_a(cpu: &mut CPU) -> Tasks {
+pub fn rol_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return rol(cpu, AddressingMode::Absolute);
 }
 
-pub fn rol_ax(cpu: &mut CPU) -> Tasks {
+pub fn rol_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
     return rol(cpu, AddressingMode::AbsoluteX);
 }
 
-fn ror(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
+fn ror(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
     return op_mem(
         cpu,
         addr_mode,
@@ -224,23 +224,23 @@ fn ror(cpu: &mut CPU, addr_mode: AddressingMode) -> Tasks {
     );
 }
 
-pub fn ror_acc(cpu: &mut CPU) -> Tasks {
+pub fn ror_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
     return op_acc(cpu, Box::new(get_rotate_right_cb), Directions::Right);
 }
 
-pub fn ror_zp(cpu: &mut CPU) -> Tasks {
+pub fn ror_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
     return ror(cpu, AddressingMode::ZeroPage);
 }
 
-pub fn ror_zpx(cpu: &mut CPU) -> Tasks {
+pub fn ror_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
     return ror(cpu, AddressingMode::ZeroPageX);
 }
 
-pub fn ror_a(cpu: &mut CPU) -> Tasks {
+pub fn ror_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return ror(cpu, AddressingMode::Absolute);
 }
 
-pub fn ror_ax(cpu: &mut CPU) -> Tasks {
+pub fn ror_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
     return ror(cpu, AddressingMode::AbsoluteX);
 }
 

@@ -1308,12 +1308,12 @@ mod sync {
 }
 
 #[cfg(test)]
-pub fn run_tasks(cpu: &mut super::CPU, tasks: super::Tasks) {
+pub fn run_tasks(cpu: &mut super::CPU, tasks: Box<dyn super::Tasks>) {
     cpu.current_instruction = Some(super::InstructionExecution {
         opcode: 0x00,
         ctx: Some(0),
         starting_cycle: 0,
-        tasks: tasks.into(),
+        tasks: tasks,
     });
     cpu.execute_next_instruction();
 }
