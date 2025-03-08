@@ -89,7 +89,7 @@ pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> B
     let mut tasks = GenericTasks::new();
 
     let mut addr_cycles = cpu.get_address(addr_mode);
-    tasks.append(addr_cycles.as_mut());
+    tasks.transfer_queue(addr_cycles.as_mut());
 
     tasks.push(Rc::new(move |cpu| {
         let value = cpu.get_register(register);

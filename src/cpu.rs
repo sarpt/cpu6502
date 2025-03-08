@@ -512,7 +512,7 @@ impl<'a> CPU<'a> {
                 }));
 
                 let mut offset_tasks = self.offset_address_output(self.index_register_x);
-                tasks.append(offset_tasks.as_mut());
+                tasks.transfer_queue(offset_tasks.as_mut());
             }
             AddressingMode::AbsoluteY => {
                 tasks.push(Rc::new(|cpu| {
@@ -532,7 +532,7 @@ impl<'a> CPU<'a> {
                 }));
 
                 let mut offset_tasks = self.offset_address_output(self.index_register_y);
-                tasks.append(offset_tasks.as_mut());
+                tasks.transfer_queue(offset_tasks.as_mut());
             }
             AddressingMode::Indirect => {
                 tasks.push(Rc::new(|cpu| {
@@ -678,7 +678,7 @@ impl<'a> CPU<'a> {
                 }));
 
                 let mut offset_tasks = self.offset_address_output(self.index_register_y);
-                tasks.append(offset_tasks.as_mut());
+                tasks.transfer_queue(offset_tasks.as_mut());
             }
             AddressingMode::Immediate => {
                 tasks.push(Rc::new(|cpu| {
