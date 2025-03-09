@@ -101,16 +101,16 @@ fn modify_memory(
     addr_mode: AddressingMode,
     cb: Box<dyn Fn(&u8) -> u8>,
 ) -> Box<dyn Tasks> {
-    let mut cycles = cpu.get_address(addr_mode);
+    let mut tasks = cpu.get_address(addr_mode);
 
-    cycles.push(Rc::new(|cpu| {
+    tasks.push(Rc::new(|cpu| {
         let value = cpu.access_memory(cpu.address_output);
         cpu.set_ctx_lo(value);
 
         return TaskCycleVariant::Full;
     }));
 
-    cycles.push(Rc::new(move |cpu| {
+    tasks.push(Rc::new(move |cpu| {
         let value = match cpu.get_current_instruction_ctx() {
             Some(ctx) => ctx.to_le_bytes()[0],
             None => panic!("unexpected lack of value in instruction context to modify"),
@@ -122,7 +122,7 @@ fn modify_memory(
         return TaskCycleVariant::Full;
     }));
 
-    cycles.push(Rc::new(|cpu| {
+    tasks.push(Rc::new(|cpu| {
         let modified_value = match cpu.get_current_instruction_ctx() {
             Some(ctx) => ctx.to_le_bytes()[1],
             None => panic!("unexpected lack of value in instruction context to modify"),
@@ -133,7 +133,7 @@ fn modify_memory(
         return TaskCycleVariant::Full;
     }));
 
-    return cycles;
+    return Box::new(tasks);
 }
 
 #[cfg(test)]

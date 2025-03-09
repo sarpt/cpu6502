@@ -19,8 +19,8 @@ fn branch(_cpu: &mut CPU, condition: fn(&CPU) -> bool) -> Box<dyn Tasks> {
         return TaskCycleVariant::Full;
     }));
 
-    let mut offset_cycles = offset_program_counter();
-    tasks.transfer_queue(offset_cycles.as_mut());
+    let offset_cycles = offset_program_counter();
+    tasks.transfer_queue(offset_cycles);
 
     return Box::new(tasks);
 }
@@ -73,7 +73,7 @@ pub fn bvc(cpu: &mut CPU) -> Box<dyn Tasks> {
     });
 }
 
-fn offset_program_counter() -> Box<dyn Tasks> {
+fn offset_program_counter() -> GenericTasks {
     let mut tasks = GenericTasks::new();
 
     tasks.push(Rc::new(|cpu: &mut CPU| {
@@ -134,7 +134,7 @@ fn offset_program_counter() -> Box<dyn Tasks> {
         return TaskCycleVariant::Full;
     }));
 
-    return Box::new(tasks);
+    return tasks;
 }
 
 #[cfg(test)]

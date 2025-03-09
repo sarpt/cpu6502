@@ -563,7 +563,7 @@ mod get_address {
             uut.address_output = 0x0;
 
             let tasks = uut.get_address(AddressingMode::Absolute);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
             assert_eq!(uut.address_output, 0xCBFF);
         }
 
@@ -574,7 +574,7 @@ mod get_address {
             uut.program_counter = 0x01;
 
             let tasks = uut.get_address(AddressingMode::Absolute);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -587,7 +587,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::Absolute);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 2);
         }
@@ -610,7 +610,7 @@ mod get_address {
             uut.address_output = 0x0;
 
             let tasks = uut.get_address(AddressingMode::AbsoluteX);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.address_output, 0x52CC);
         }
@@ -623,7 +623,7 @@ mod get_address {
             uut.index_register_x = 0x01;
 
             let tasks = uut.get_address(AddressingMode::AbsoluteX);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0x04);
         }
@@ -638,7 +638,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::AbsoluteX);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 3);
         }
@@ -653,7 +653,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::AbsoluteX);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 4);
         }
@@ -676,7 +676,7 @@ mod get_address {
             uut.address_output = 0x0;
 
             let tasks = uut.get_address(AddressingMode::AbsoluteY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.address_output, 0x52CC);
         }
@@ -689,7 +689,7 @@ mod get_address {
             uut.program_counter = 0x02;
 
             let tasks = uut.get_address(AddressingMode::AbsoluteY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0x04);
         }
@@ -704,7 +704,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::AbsoluteY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 3);
         }
@@ -719,7 +719,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::AbsoluteY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 4);
         }
@@ -740,7 +740,7 @@ mod get_address {
             uut.program_counter = 0xCB;
 
             let tasks = uut.get_address(AddressingMode::Immediate);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.address_output, 0xCB);
         }
@@ -752,7 +752,7 @@ mod get_address {
             uut.program_counter = 0xCB;
 
             let tasks = uut.get_address(AddressingMode::Immediate);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0xCC);
         }
@@ -765,7 +765,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::Immediate);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 0);
         }
@@ -788,7 +788,7 @@ mod get_address {
             uut.index_register_x = 0x01;
 
             let tasks = uut.get_address(AddressingMode::IndexIndirectX);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.address_output, 0xDD03);
         }
@@ -801,7 +801,7 @@ mod get_address {
             uut.index_register_x = 0x01;
 
             let tasks = uut.get_address(AddressingMode::IndexIndirectX);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0x01);
         }
@@ -815,7 +815,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::IndexIndirectX);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 4);
         }
@@ -837,7 +837,7 @@ mod get_address {
             uut.program_counter = 0x00;
 
             let tasks = uut.get_address(AddressingMode::IndirectIndexY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.address_output, 0xDD05);
         }
@@ -850,7 +850,7 @@ mod get_address {
             uut.program_counter = 0x00;
 
             let tasks = uut.get_address(AddressingMode::IndirectIndexY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0x01);
         }
@@ -865,7 +865,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::IndirectIndexY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 4);
         }
@@ -880,7 +880,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::IndirectIndexY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 5);
         }
@@ -902,7 +902,7 @@ mod get_address {
             uut.address_output = 0x0;
 
             let tasks = uut.get_address(AddressingMode::ZeroPage);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.address_output, 0x00CB);
         }
@@ -914,7 +914,7 @@ mod get_address {
             uut.program_counter = 0x02;
 
             let tasks = uut.get_address(AddressingMode::ZeroPage);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -927,7 +927,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::ZeroPage);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 1);
         }
@@ -950,7 +950,7 @@ mod get_address {
             uut.address_output = 0x0;
 
             let tasks = uut.get_address(AddressingMode::ZeroPageX);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.address_output, 0x00CE);
         }
@@ -963,7 +963,7 @@ mod get_address {
             uut.index_register_x = 0x03;
 
             let tasks = uut.get_address(AddressingMode::ZeroPageX);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -977,7 +977,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::ZeroPageX);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 2);
         }
@@ -1000,7 +1000,7 @@ mod get_address {
             uut.address_output = 0x0;
 
             let tasks = uut.get_address(AddressingMode::ZeroPageY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.address_output, 0x0055);
         }
@@ -1013,7 +1013,7 @@ mod get_address {
             uut.index_register_y = 0x03;
 
             let tasks = uut.get_address(AddressingMode::ZeroPageY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0x03);
         }
@@ -1027,7 +1027,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::ZeroPageY);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 2);
         }
@@ -1053,7 +1053,7 @@ mod get_address {
                 uut.address_output = 0x0;
 
                 let tasks = uut.get_address(AddressingMode::Indirect);
-                run_tasks(&mut uut, tasks);
+                run_tasks(&mut uut, Box::new(tasks));
 
                 assert_eq!(uut.address_output, 0x0001);
             }
@@ -1065,7 +1065,7 @@ mod get_address {
                 uut.program_counter = 0x00;
 
                 let tasks = uut.get_address(AddressingMode::Indirect);
-                run_tasks(&mut uut, tasks);
+                run_tasks(&mut uut, Box::new(tasks));
 
                 assert_eq!(uut.program_counter, 0x02);
             }
@@ -1091,7 +1091,7 @@ mod get_address {
                 uut.cycle = 0;
 
                 let tasks = uut.get_address(AddressingMode::Indirect);
-                run_tasks(&mut uut, tasks);
+                run_tasks(&mut uut, Box::new(tasks));
 
                 assert_eq!(uut.cycle, 4);
             }
@@ -1119,7 +1119,7 @@ mod get_address {
                 uut.cycle = 0;
 
                 let tasks = uut.get_address(AddressingMode::Indirect);
-                run_tasks(&mut uut, tasks);
+                run_tasks(&mut uut, Box::new(tasks));
 
                 assert_eq!(uut.address_output, 0x09A5);
             }
@@ -1145,7 +1145,7 @@ mod get_address {
                 uut.cycle = 0;
 
                 let tasks = uut.get_address(AddressingMode::Indirect);
-                run_tasks(&mut uut, tasks);
+                run_tasks(&mut uut, Box::new(tasks));
 
                 assert_eq!(uut.cycle, 5);
             }
@@ -1171,7 +1171,7 @@ mod get_address {
                 uut.cycle = 0;
 
                 let tasks = uut.get_address(AddressingMode::Indirect);
-                run_tasks(&mut uut, tasks);
+                run_tasks(&mut uut, Box::new(tasks));
 
                 assert_eq!(uut.address_output, 0xCCA5);
             }
@@ -1193,7 +1193,7 @@ mod get_address {
             uut.program_counter = 0x00;
 
             let tasks = uut.get_address(AddressingMode::Implicit);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.address_output, 0x0);
         }
@@ -1205,7 +1205,7 @@ mod get_address {
             uut.program_counter = 0x00;
 
             let tasks = uut.get_address(AddressingMode::Implicit);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0x00);
         }
@@ -1218,7 +1218,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::Implicit);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 0);
         }
@@ -1239,7 +1239,7 @@ mod get_address {
             uut.address_output = 0x0;
 
             let tasks = uut.get_address(AddressingMode::Relative);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.address_output, 0x0);
         }
@@ -1251,7 +1251,7 @@ mod get_address {
             uut.program_counter = 0x00;
 
             let tasks = uut.get_address(AddressingMode::Relative);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.program_counter, 0x00);
         }
@@ -1264,7 +1264,7 @@ mod get_address {
             uut.cycle = 0;
 
             let tasks = uut.get_address(AddressingMode::Relative);
-            run_tasks(&mut uut, tasks);
+            run_tasks(&mut uut, Box::new(tasks));
 
             assert_eq!(uut.cycle, 0);
         }
