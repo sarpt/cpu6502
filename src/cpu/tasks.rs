@@ -11,8 +11,7 @@ pub enum TaskCycleVariant {
 
 type ScheduledTask = Rc<dyn Fn(&mut CPU) -> TaskCycleVariant>;
 
-pub trait Tasks: Iterator<Item = ScheduledTask> {
-    fn push(&mut self, task: ScheduledTask) -> ();
+pub trait Tasks {
     fn done(&self) -> bool;
     fn tick(&mut self, cpu: &mut CPU) -> (bool, bool);
 }
@@ -28,7 +27,11 @@ impl GenericTasks {
         };
     }
 
-    pub fn transfer_queue(&mut self, other: &mut dyn Tasks) -> () {
+    pub fn push(&mut self, task: ScheduledTask) -> () {
+        self.tasks_queue.push_back(task);
+    }
+
+    pub fn transfer_queue(&mut self, other: GenericTasks) -> () {
         self.tasks_queue.append(&mut other.collect());
     }
 }
@@ -42,10 +45,6 @@ impl Iterator for GenericTasks {
 }
 
 impl Tasks for GenericTasks {
-    fn push(&mut self, task: ScheduledTask) -> () {
-        self.tasks_queue.push_back(task);
-    }
-
     fn done(&self) -> bool {
         return self.tasks_queue.len() == 0;
     }

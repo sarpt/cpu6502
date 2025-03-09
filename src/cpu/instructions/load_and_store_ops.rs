@@ -88,8 +88,8 @@ pub fn ldx_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
 pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Box<dyn Tasks> {
     let mut tasks = GenericTasks::new();
 
-    let mut addr_cycles = cpu.get_address(addr_mode);
-    tasks.transfer_queue(addr_cycles.as_mut());
+    let addr_cycles = cpu.get_address(addr_mode);
+    tasks.transfer_queue(addr_cycles);
 
     tasks.push(Rc::new(move |cpu| {
         let value = cpu.get_register(register);

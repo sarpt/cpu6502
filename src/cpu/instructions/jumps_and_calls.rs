@@ -25,7 +25,7 @@ pub fn jsr_a(cpu: &mut CPU) -> Box<dyn Tasks> {
         return TaskCycleVariant::Full;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
 pub fn rts(_cpu: &mut CPU) -> Box<dyn Tasks> {
@@ -72,7 +72,7 @@ fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
         return TaskCycleVariant::Partial;
     }));
 
-    return tasks;
+    return Box::new(tasks);
 }
 
 pub fn jmp_a(cpu: &mut CPU) -> Box<dyn Tasks> {
