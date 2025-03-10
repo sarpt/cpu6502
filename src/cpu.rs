@@ -224,42 +224,6 @@ impl<'a> CPU<'a> {
         };
     }
 
-    fn offset_address_output(&mut self, offset: Byte) -> GenericTasks {
-        let mut tasks = GenericTasks::new();
-        tasks.push(Rc::new(move |cpu| {
-            let [lo, hi] = cpu.address_output.to_le_bytes();
-            let (new_lo, carry) = lo.overflowing_add(offset);
-            cpu.address_output = Word::from_le_bytes([new_lo, hi]);
-
-            if carry {
-                cpu.set_ctx_hi(0x1);
-            } else {
-                cpu.set_ctx_hi(0x0);
-            }
-
-            return TaskCycleVariant::Full;
-        }));
-
-        tasks.push(Rc::new(|cpu| {
-            let carry = match cpu.get_current_instruction_ctx() {
-                Some(val) => val.to_le_bytes()[1],
-                None => panic!("unexpected lack of instruction ctx for offset address output"),
-            };
-
-            if carry == 0 {
-                return TaskCycleVariant::Aborted;
-            }
-
-            let [lo, hi] = cpu.address_output.to_le_bytes();
-            let new_hi = hi.wrapping_add(1);
-            cpu.address_output = Word::from_le_bytes([lo, new_hi]);
-
-            return TaskCycleVariant::Full;
-        }));
-
-        return tasks;
-    }
-
     fn fetch_opcode(&mut self) -> Instruction {
         let opcode = self.access_memory(self.program_counter);
         self.increment_program_counter();
