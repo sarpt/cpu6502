@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use addessing::{ImmediateAddressingTasks, ZeroPageAddressingTasks};
+use addessing::{AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks, ZeroPageAddressingTasks};
 use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
 use super::consts::{Byte, Word};
@@ -492,44 +492,10 @@ impl<'a> CPU<'a> {
                 }));
             }
             AddressingMode::AbsoluteX => {
-                tasks.push(Rc::new(|cpu| {
-                    let addr_lo = cpu.access_memory(cpu.program_counter);
-                    cpu.set_address_output_lo(addr_lo);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let addr_hi = cpu.access_memory(cpu.program_counter);
-                    cpu.set_address_output_hi(addr_hi);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                let offset_tasks = self.offset_address_output(self.index_register_x);
-                tasks.transfer_queue(offset_tasks);
+                return Box::new(AbsoluteOffsetAddressingTasks::new_offset_by_x());
             }
             AddressingMode::AbsoluteY => {
-                tasks.push(Rc::new(|cpu| {
-                    let addr_lo = cpu.access_memory(cpu.program_counter);
-                    cpu.set_address_output_lo(addr_lo);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let addr_hi = cpu.access_memory(cpu.program_counter);
-                    cpu.set_address_output_hi(addr_hi);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                let offset_tasks = self.offset_address_output(self.index_register_y);
-                tasks.transfer_queue(offset_tasks);
+                return Box::new(AbsoluteOffsetAddressingTasks::new_offset_by_y());
             }
             AddressingMode::Indirect => {
                 tasks.push(Rc::new(|cpu| {
