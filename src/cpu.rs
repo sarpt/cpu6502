@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use addessing::ZeroPageAddressingTasks;
+use addessing::{ImmediateAddressingTasks, ZeroPageAddressingTasks};
 use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
 use super::consts::{Byte, Word};
@@ -678,13 +678,7 @@ impl<'a> CPU<'a> {
                 tasks.transfer_queue(offset_tasks);
             }
             AddressingMode::Immediate => {
-                tasks.push(Rc::new(|cpu| {
-                    let addr = cpu.program_counter;
-                    cpu.set_address_output(addr);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Partial;
-                }));
+                return Box::new(ImmediateAddressingTasks::new());
             }
             AddressingMode::Implicit | AddressingMode::Relative => {}
             _ => {
