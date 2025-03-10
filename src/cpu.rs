@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use addressing::{
     AbsoluteAddressingTasks, AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks,
-    ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks,
+    IndirectIndexYAddressingTasks, ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks,
 };
 use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
@@ -570,39 +570,7 @@ impl<'a> CPU<'a> {
                 }));
             }
             AddressingMode::IndirectIndexY => {
-                tasks.push(Rc::new(|cpu| {
-                    let addr: Byte = cpu.access_memory(cpu.program_counter);
-                    cpu.set_ctx(addr.into());
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let tgt_addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => addr,
-                        None => panic!("could not retrieve address from ctx"),
-                    };
-
-                    let addr_lo = cpu.access_memory(tgt_addr);
-                    cpu.set_address_output_lo(addr_lo);
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let tgt_addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => addr,
-                        None => panic!("could not retrieve address from ctx"),
-                    };
-                    let addr_hi = cpu.access_memory(tgt_addr.wrapping_add(1));
-                    cpu.set_address_output_hi(addr_hi);
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                let offset_tasks = self.offset_address_output(self.index_register_y);
-                tasks.transfer_queue(offset_tasks);
+                return Box::new(IndirectIndexYAddressingTasks::new());
             }
             AddressingMode::Immediate => {
                 return Box::new(ImmediateAddressingTasks::new());
