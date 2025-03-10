@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use addressing::{
-    AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks, ZeroPageAddressingTasks,
-    ZeroPageOffsetAddressingTasks,
+    AbsoluteAddressingTasks, AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks,
+    ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks,
 };
 use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
@@ -450,21 +450,7 @@ impl<'a> CPU<'a> {
                 return Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_y());
             }
             AddressingMode::Absolute => {
-                tasks.push(Rc::new(|cpu| {
-                    let addr_lo = cpu.access_memory(cpu.program_counter);
-                    cpu.set_address_output_lo(addr_lo);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let addr_hi = cpu.access_memory(cpu.program_counter);
-                    cpu.set_address_output_hi(addr_hi);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
+                return Box::new(AbsoluteAddressingTasks::new());
             }
             AddressingMode::AbsoluteX => {
                 return Box::new(AbsoluteOffsetAddressingTasks::new_offset_by_x());
