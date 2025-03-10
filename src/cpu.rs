@@ -2,14 +2,14 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use addessing::{AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks, ZeroPageAddressingTasks};
+use addressing::{AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks, ZeroPageAddressingTasks};
 use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
 use crate::{consts::STACK_PAGE_HI, memory::Memory};
 
-mod addessing;
+mod addressing;
 mod instructions;
 mod opcodes;
 mod processor_status;
