@@ -213,3 +213,53 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
         }
     }
 }
+
+enum AbsoluteStep {
+    MemoryLo,
+    MemoryHi,
+}
+
+pub struct AbsoluteAddressingTasks {
+    done: bool,
+    step: AbsoluteStep,
+}
+
+impl AbsoluteAddressingTasks {
+    pub fn new() -> Self {
+        return AbsoluteAddressingTasks {
+            done: false,
+            step: AbsoluteStep::MemoryLo,
+        };
+    }
+}
+
+impl Tasks for AbsoluteAddressingTasks {
+    fn done(&self) -> bool {
+        return self.done;
+    }
+
+    fn tick(&mut self, cpu: &mut super::CPU) -> (bool, bool) {
+        if self.done {
+            return (false, self.done);
+        }
+
+        match self.step {
+            AbsoluteStep::MemoryLo => {
+                let addr_lo = cpu.access_memory(cpu.program_counter);
+                cpu.set_address_output_lo(addr_lo);
+                cpu.increment_program_counter();
+                self.step = AbsoluteStep::MemoryHi;
+
+                return (true, false);
+            }
+            AbsoluteStep::MemoryHi => {
+                let addr_hi = cpu.access_memory(cpu.program_counter);
+                cpu.set_address_output_hi(addr_hi);
+                cpu.increment_program_counter();
+
+                self.done = true;
+                return (true, self.done);
+            }
+        }
+    }
+}
