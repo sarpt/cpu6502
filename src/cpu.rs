@@ -2,7 +2,10 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use addressing::{AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks, ZeroPageAddressingTasks};
+use addressing::{
+    AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks, ZeroPageAddressingTasks,
+    ZeroPageOffsetAddressingTasks,
+};
 use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
 use super::consts::{Byte, Word};
@@ -440,39 +443,11 @@ impl<'a> CPU<'a> {
             AddressingMode::ZeroPage => {
                 return Box::new(ZeroPageAddressingTasks::new());
             }
-            AddressingMode::ZeroPageY => {
-                tasks.push(Rc::new(|cpu| {
-                    let addr: Byte = cpu.access_memory(cpu.program_counter);
-                    cpu.set_address_output(addr);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let addr_output = cpu.address_output as Byte;
-                    let final_address = addr_output.wrapping_add(cpu.index_register_y.into());
-                    cpu.set_address_output(final_address);
-
-                    return TaskCycleVariant::Full;
-                }));
-            }
             AddressingMode::ZeroPageX => {
-                tasks.push(Rc::new(|cpu| {
-                    let addr: Byte = cpu.access_memory(cpu.program_counter);
-                    cpu.set_address_output(addr);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let addr_output = cpu.address_output as Byte;
-                    let final_address = addr_output.wrapping_add(cpu.index_register_x.into());
-                    cpu.set_address_output(final_address);
-
-                    return TaskCycleVariant::Full;
-                }));
+                return Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x());
+            }
+            AddressingMode::ZeroPageY => {
+                return Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_y());
             }
             AddressingMode::Absolute => {
                 tasks.push(Rc::new(|cpu| {
