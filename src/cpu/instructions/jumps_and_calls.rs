@@ -3,7 +3,8 @@ use std::rc::Rc;
 use crate::cpu::{tasks::GenericTasks, AddressingMode, TaskCycleVariant, Tasks, CPU};
 
 pub fn jsr_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    let mut tasks = cpu.get_address(AddressingMode::Absolute);
+    let addr_tasks = cpu.get_address(AddressingMode::Absolute);
+    let mut tasks = GenericTasks::new_dependent(Box::new(addr_tasks));
 
     tasks.push(Rc::new(|cpu: &mut CPU| {
         let [_, ret_program_counter_hi] = cpu.program_counter.clone().wrapping_sub(1).to_le_bytes();
@@ -65,7 +66,9 @@ pub fn rts(_cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    let mut tasks = cpu.get_address(addr_mode);
+    let addr_tasks = cpu.get_address(addr_mode);
+    let mut tasks = GenericTasks::new_dependent(Box::new(addr_tasks));
+
     tasks.push(Rc::new(|cpu| {
         cpu.program_counter = cpu.address_output;
 
