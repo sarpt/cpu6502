@@ -2,12 +2,14 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use addessing::ZeroPageAddressingTasks;
 use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
 use crate::{consts::STACK_PAGE_HI, memory::Memory};
 
+mod addessing;
 mod instructions;
 mod opcodes;
 mod processor_status;
@@ -372,7 +374,7 @@ impl<'a> CPU<'a> {
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
     ) -> Box<dyn Tasks> {
         let addr_tasks = self.get_address(addr_mode);
-        let mut tasks = GenericTasks::new_dependent(Box::new(addr_tasks));
+        let mut tasks = GenericTasks::new_dependent(addr_tasks);
 
         tasks.push(Rc::new(move |cpu: &mut CPU| {
             let value = cpu.access_memory(cpu.address_output);
@@ -432,17 +434,11 @@ impl<'a> CPU<'a> {
         };
     }
 
-    fn get_address(&mut self, addr_mode: AddressingMode) -> GenericTasks {
+    fn get_address(&mut self, addr_mode: AddressingMode) -> Box<dyn Tasks> {
         let mut tasks = GenericTasks::new();
         match addr_mode {
             AddressingMode::ZeroPage => {
-                tasks.push(Rc::new(|cpu| {
-                    let addr: Byte = cpu.access_memory(cpu.program_counter);
-                    cpu.set_address_output(addr);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
+                return Box::new(ZeroPageAddressingTasks::new());
             }
             AddressingMode::ZeroPageY => {
                 tasks.push(Rc::new(|cpu| {
@@ -576,7 +572,7 @@ impl<'a> CPU<'a> {
 
                         return TaskCycleVariant::Full;
                     }));
-                    return tasks;
+                    return Box::new(tasks);
                 }
 
                 tasks.push(Rc::new(|cpu| {
@@ -696,7 +692,7 @@ impl<'a> CPU<'a> {
             }
         }
 
-        return tasks;
+        return Box::new(tasks);
     }
 }
 

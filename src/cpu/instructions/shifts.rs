@@ -79,7 +79,7 @@ fn op_mem(
     dir: Directions,
 ) -> Box<dyn Tasks> {
     let addr_tasks = cpu.get_address(addr_mode);
-    let mut tasks = GenericTasks::new_dependent(Box::new(addr_tasks));
+    let mut tasks = GenericTasks::new_dependent(addr_tasks);
 
     tasks.push(Rc::new(|cpu| {
         let value = cpu.access_memory(cpu.address_output);
