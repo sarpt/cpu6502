@@ -17,12 +17,21 @@ pub trait Tasks {
 }
 
 pub struct GenericTasks {
+    dependency: Option<Box<dyn Tasks>>,
     tasks_queue: VecDeque<ScheduledTask>,
 }
 
 impl GenericTasks {
     pub fn new() -> Self {
         return GenericTasks {
+            dependency: None,
+            tasks_queue: VecDeque::new(),
+        };
+    }
+
+    pub fn new_dependent(dependency: Box<dyn Tasks>) -> Self {
+        return GenericTasks {
+            dependency: Some(dependency),
             tasks_queue: VecDeque::new(),
         };
     }
@@ -50,6 +59,13 @@ impl Tasks for GenericTasks {
     }
 
     fn tick(&mut self, cpu: &mut CPU) -> (bool, bool) {
+        if let Some(dependency) = &mut self.dependency {
+            if !dependency.done() {
+                let (took_cycles, _) = dependency.as_mut().tick(cpu);
+                return (took_cycles, false);
+            }
+        }
+
         if self.done() {
             return (false, true);
         }
@@ -70,6 +86,7 @@ impl Tasks for GenericTasks {
 impl Default for GenericTasks {
     fn default() -> Self {
         Self {
+            dependency: None,
             tasks_queue: Default::default(),
         }
     }

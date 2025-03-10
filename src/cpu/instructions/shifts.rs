@@ -78,10 +78,8 @@ fn op_mem(
     op: Box<dyn Fn(bool) -> Box<dyn Fn(&u8) -> u8>>,
     dir: Directions,
 ) -> Box<dyn Tasks> {
-    let mut tasks = GenericTasks::new();
-
-    let addr_cycles = cpu.get_address(addr_mode);
-    tasks.transfer_queue(addr_cycles);
+    let addr_tasks = cpu.get_address(addr_mode);
+    let mut tasks = GenericTasks::new_dependent(Box::new(addr_tasks));
 
     tasks.push(Rc::new(|cpu| {
         let value = cpu.access_memory(cpu.address_output);

@@ -371,7 +371,8 @@ impl<'a> CPU<'a> {
         addr_mode: AddressingMode,
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
     ) -> Box<dyn Tasks> {
-        let mut tasks = self.get_address(addr_mode);
+        let addr_tasks = self.get_address(addr_mode);
+        let mut tasks = GenericTasks::new_dependent(Box::new(addr_tasks));
 
         tasks.push(Rc::new(move |cpu: &mut CPU| {
             let value = cpu.access_memory(cpu.address_output);
