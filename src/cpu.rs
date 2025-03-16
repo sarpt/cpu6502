@@ -4,8 +4,8 @@ use std::rc::Rc;
 
 use addressing::{
     AbsoluteAddressingTasks, AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks,
-    IndexIndirectXAddressingTasks, IndirectIndexYAddressingTasks, ZeroPageAddressingTasks,
-    ZeroPageOffsetAddressingTasks,
+    IndexIndirectXAddressingTasks, IndirectAddressingTasks, IndirectIndexYAddressingTasks,
+    ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks,
 };
 use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
@@ -321,13 +321,6 @@ impl<'a> CPU<'a> {
         };
     }
 
-    fn set_ctx(&mut self, val: Word) {
-        return match &mut self.current_instruction {
-            Some(current_instruciton) => current_instruciton.ctx = Some(val),
-            None => panic!("cannot set ctx for non-exisiting instruction"),
-        };
-    }
-
     fn set_ctx_lo(&mut self, lo: Byte) {
         self.set_current_instruction_ctx((Some(lo), None));
     }
@@ -403,7 +396,6 @@ impl<'a> CPU<'a> {
     }
 
     fn get_address(&mut self, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-        let mut tasks = GenericTasks::new();
         match addr_mode {
             AddressingMode::ZeroPage => {
                 return Box::new(ZeroPageAddressingTasks::new());
@@ -424,75 +416,11 @@ impl<'a> CPU<'a> {
                 return Box::new(AbsoluteOffsetAddressingTasks::new_offset_by_y());
             }
             AddressingMode::Indirect => {
-                tasks.push(Rc::new(|cpu| {
-                    let addr_lo = cpu.access_memory(cpu.program_counter);
-                    cpu.set_ctx_lo(addr_lo);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let addr_hi = cpu.access_memory(cpu.program_counter);
-                    cpu.set_ctx_hi(addr_hi);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                if self.chip_variant != ChipVariant::NMOS {
-                    tasks.push(Rc::new(|_| TaskCycleVariant::Full)); // dummy tick used for fixing incorrect address
-
-                    tasks.push(Rc::new(|cpu| {
-                        let addr = match cpu.get_current_instruction_ctx() {
-                            Some(addr) => addr,
-                            None => panic!("could not retrieve address from ctx"),
-                        };
-                        let addr_lo = cpu.access_memory(addr);
-                        cpu.set_address_output_lo(addr_lo);
-
-                        return TaskCycleVariant::Full;
-                    }));
-
-                    tasks.push(Rc::new(|cpu| {
-                        let addr = match cpu.get_current_instruction_ctx() {
-                            Some(addr) => addr,
-                            None => panic!("could not retrieve address from ctx"),
-                        };
-                        let addr_hi = cpu.access_memory(addr + 1);
-                        cpu.set_address_output_hi(addr_hi);
-
-                        return TaskCycleVariant::Full;
-                    }));
-                    return Box::new(tasks);
+                if self.chip_variant == ChipVariant::NMOS {
+                    return Box::new(IndirectAddressingTasks::new_incorrect_addressing());
+                } else {
+                    return Box::new(IndirectAddressingTasks::new_fixed_addressing());
                 }
-
-                tasks.push(Rc::new(|cpu| {
-                    let addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => addr,
-                        None => panic!("could not retrieve address from ctx"),
-                    };
-                    let addr_lo = cpu.access_memory(addr);
-                    cpu.set_address_output_lo(addr_lo);
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => addr,
-                        None => panic!("could not retrieve address from ctx"),
-                    };
-                    let should_incorrectly_jump = addr & 0x00FF == 0x00FF;
-                    let mut target_addr = addr + 1;
-                    if should_incorrectly_jump {
-                        target_addr = addr & 0xFF00;
-                    };
-                    let addr_hi = cpu.access_memory(target_addr);
-                    cpu.set_address_output_hi(addr_hi);
-
-                    return TaskCycleVariant::Full;
-                }));
             }
             AddressingMode::IndexIndirectX => {
                 return Box::new(IndexIndirectXAddressingTasks::new());
@@ -503,13 +431,10 @@ impl<'a> CPU<'a> {
             AddressingMode::Immediate => {
                 return Box::new(ImmediateAddressingTasks::new());
             }
-            AddressingMode::Implicit | AddressingMode::Relative => {}
             _ => {
-                panic!("incorrect or unimplemented addressing used for queued fetch address");
+                return Box::new(GenericTasks::new());
             }
         }
-
-        return Box::new(tasks);
     }
 }
 
