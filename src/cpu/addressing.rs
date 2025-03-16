@@ -343,3 +343,69 @@ impl Tasks for IndirectIndexYAddressingTasks {
         }
     }
 }
+
+enum IndexIndirectXStep {
+    IndirectAccess,
+    SumWithX,
+    MemoryAccessLo,
+    MemoryAccessHi,
+}
+pub struct IndexIndirectXAddressingTasks {
+    done: bool,
+    step: IndexIndirectXStep,
+    tgt_addr: Word,
+}
+
+impl IndexIndirectXAddressingTasks {
+    pub fn new() -> Self {
+        return IndexIndirectXAddressingTasks {
+            done: false,
+            step: IndexIndirectXStep::IndirectAccess,
+            tgt_addr: Word::default(),
+        };
+    }
+}
+
+impl Tasks for IndexIndirectXAddressingTasks {
+    fn done(&self) -> bool {
+        return self.done;
+    }
+
+    fn tick(&mut self, cpu: &mut super::CPU) -> (bool, bool) {
+        if self.done {
+            return (false, self.done);
+        }
+
+        match self.step {
+            IndexIndirectXStep::IndirectAccess => {
+                let addr: Byte = cpu.access_memory(cpu.program_counter);
+                cpu.set_address_output(addr);
+                cpu.increment_program_counter();
+                self.step = IndexIndirectXStep::SumWithX;
+
+                return (true, false);
+            }
+            IndexIndirectXStep::SumWithX => {
+                let addr_output = cpu.address_output;
+                self.tgt_addr = addr_output.wrapping_add(cpu.index_register_x.into());
+                self.step = IndexIndirectXStep::MemoryAccessLo;
+
+                return (true, false);
+            }
+            IndexIndirectXStep::MemoryAccessLo => {
+                let addr_lo = cpu.access_memory(self.tgt_addr);
+                cpu.set_address_output_lo(addr_lo);
+                self.step = IndexIndirectXStep::MemoryAccessHi;
+
+                return (true, false);
+            }
+            IndexIndirectXStep::MemoryAccessHi => {
+                let addr_hi = cpu.access_memory(self.tgt_addr.wrapping_add(1));
+                cpu.set_address_output_hi(addr_hi);
+
+                self.done = true;
+                return (true, self.done);
+            }
+        }
+    }
+}

@@ -4,7 +4,8 @@ use std::rc::Rc;
 
 use addressing::{
     AbsoluteAddressingTasks, AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks,
-    IndirectIndexYAddressingTasks, ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks,
+    IndexIndirectXAddressingTasks, IndirectIndexYAddressingTasks, ZeroPageAddressingTasks,
+    ZeroPageOffsetAddressingTasks,
 };
 use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
@@ -494,44 +495,7 @@ impl<'a> CPU<'a> {
                 }));
             }
             AddressingMode::IndexIndirectX => {
-                tasks.push(Rc::new(|cpu| {
-                    let addr: Byte = cpu.access_memory(cpu.program_counter);
-                    cpu.set_address_output(addr);
-                    cpu.increment_program_counter();
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let addr_output = cpu.address_output;
-                    let target_address = addr_output.wrapping_add(cpu.index_register_x.into());
-                    cpu.set_ctx(target_address);
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let tgt_addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => addr,
-                        None => panic!("could not retrieve address from ctx"),
-                    };
-
-                    let addr_lo = cpu.access_memory(tgt_addr);
-                    cpu.set_address_output_lo(addr_lo);
-
-                    return TaskCycleVariant::Full;
-                }));
-
-                tasks.push(Rc::new(|cpu| {
-                    let tgt_addr = match cpu.get_current_instruction_ctx() {
-                        Some(addr) => addr,
-                        None => panic!("could not retrieve address from ctx"),
-                    };
-                    let addr_hi = cpu.access_memory(tgt_addr.wrapping_add(1));
-                    cpu.set_address_output_hi(addr_hi);
-
-                    return TaskCycleVariant::Full;
-                }));
+                return Box::new(IndexIndirectXAddressingTasks::new());
             }
             AddressingMode::IndirectIndexY => {
                 return Box::new(IndirectIndexYAddressingTasks::new());
