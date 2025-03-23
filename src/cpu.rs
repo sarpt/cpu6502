@@ -1,9 +1,8 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::Rc;
 
 use addressing::get_addressing_tasks;
-use tasks::{GenericTasks, TaskCycleVariant, Tasks};
+use tasks::{GenericTasks, ReadMemoryTasks, TaskCycleVariant, Tasks};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
@@ -326,29 +325,22 @@ impl<'a> CPU<'a> {
     }
 
     fn read_memory(
-        &mut self,
+        &self,
         addr_mode: AddressingMode,
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
     ) -> Box<dyn Tasks> {
-        let addr_tasks = get_addressing_tasks(&self, addr_mode);
-        let mut tasks = GenericTasks::new_dependent(addr_tasks);
-
-        tasks.push(Rc::new(move |cpu: &mut CPU| {
-            let value = cpu.access_memory(cpu.address_output);
-            cpu.set_ctx_lo(value);
-
-            if let Some(vr) = &value_reader {
-                vr(cpu, value)
-            }
-
-            if access_cycle_has_been_done_during_address_fixing(addr_mode) {
-                return TaskCycleVariant::Partial;
-            }
-
-            return TaskCycleVariant::Full;
-        }));
-
-        return Box::new(tasks);
+        let addressing_tasks = get_addressing_tasks(self, addr_mode);
+        if access_cycle_has_been_done_during_address_fixing(addr_mode) {
+            return Box::new(ReadMemoryTasks::new_with_address_fixing(
+                addressing_tasks,
+                value_reader,
+            ));
+        } else {
+            return Box::new(ReadMemoryTasks::new_without_address_fixing(
+                addressing_tasks,
+                value_reader,
+            ));
+        }
     }
 
     fn get_program_counter_lo(&self) -> Byte {
