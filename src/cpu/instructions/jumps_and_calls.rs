@@ -68,17 +68,40 @@ pub fn rts(_cpu: &mut CPU) -> Box<dyn Tasks> {
     return Box::new(tasks);
 }
 
+pub struct JmpTasks {
+    addressing_tasks: Box<dyn Tasks>,
+}
+
+impl JmpTasks {
+    fn new(addressing_tasks: Box<dyn Tasks>) -> Self {
+        return JmpTasks { addressing_tasks };
+    }
+}
+
+impl Tasks for JmpTasks {
+    fn done(&self) -> bool {
+        self.addressing_tasks.done()
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> (bool, bool) {
+        if self.addressing_tasks.done() {
+            return (false, true);
+        }
+
+        let (took_cycles, done) = self.addressing_tasks.tick(cpu);
+
+        if done {
+            cpu.program_counter = cpu.address_output;
+        }
+
+        return (took_cycles, done);
+    }
+}
+
 fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
     let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
-    let mut tasks = GenericTasks::new_dependent(addr_tasks);
 
-    tasks.push(Rc::new(|cpu| {
-        cpu.program_counter = cpu.address_output;
-
-        return TaskCycleVariant::Partial;
-    }));
-
-    return Box::new(tasks);
+    return Box::new(JmpTasks::new(addr_tasks));
 }
 
 pub fn jmp_a(cpu: &mut CPU) -> Box<dyn Tasks> {
