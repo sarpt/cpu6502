@@ -1,11 +1,12 @@
 use std::{collections::VecDeque, rc::Rc};
 
+use crate::consts::Byte;
+
 use super::CPU;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum TaskCycleVariant {
     Aborted,
-    Partial,
     Full,
 }
 
@@ -88,6 +89,95 @@ impl Default for GenericTasks {
         Self {
             dependency: None,
             tasks_queue: Default::default(),
+        }
+    }
+}
+
+#[derive(PartialEq, PartialOrd)]
+enum ReadMemoryStep {
+    AddressCalculation,
+    SeparateMemoryAccess,
+    Done,
+}
+
+pub struct ReadMemoryTasks {
+    addressing_tasks: Box<dyn Tasks>,
+    address_fixing: bool,
+    step: ReadMemoryStep,
+    value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
+}
+
+impl ReadMemoryTasks {
+    pub fn new_with_address_fixing(
+        addressing_tasks: Box<dyn Tasks>,
+        value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
+    ) -> Self {
+        return ReadMemoryTasks {
+            addressing_tasks,
+            address_fixing: true,
+            step: ReadMemoryStep::AddressCalculation,
+            value_reader,
+        };
+    }
+
+    pub fn new_without_address_fixing(
+        addressing_tasks: Box<dyn Tasks>,
+        value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
+    ) -> Self {
+        return ReadMemoryTasks {
+            addressing_tasks,
+            address_fixing: false,
+            step: ReadMemoryStep::AddressCalculation,
+            value_reader,
+        };
+    }
+
+    fn access_memory(&self, cpu: &mut CPU) -> () {
+        let value = cpu.access_memory(cpu.address_output);
+        cpu.set_ctx_lo(value);
+
+        if let Some(vr) = &self.value_reader {
+            vr(cpu, value)
+        }
+    }
+}
+
+impl Tasks for ReadMemoryTasks {
+    fn done(&self) -> bool {
+        self.step == ReadMemoryStep::Done
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> (bool, bool) {
+        match self.step {
+            ReadMemoryStep::AddressCalculation => {
+                let (mut addressing_took_cycle, mut addressing_done) = (false, false);
+                if !self.addressing_tasks.done() {
+                    (addressing_took_cycle, addressing_done) = self.addressing_tasks.tick(cpu);
+                }
+
+                if !addressing_done {
+                    return (addressing_took_cycle, addressing_done);
+                }
+
+                if !self.address_fixing {
+                    self.step = ReadMemoryStep::SeparateMemoryAccess;
+                    return (addressing_took_cycle, false);
+                }
+
+                self.access_memory(cpu);
+                self.step = ReadMemoryStep::Done;
+
+                return (addressing_took_cycle, addressing_done);
+            }
+            ReadMemoryStep::SeparateMemoryAccess => {
+                self.access_memory(cpu);
+                self.step = ReadMemoryStep::Done;
+
+                return (true, true);
+            }
+            ReadMemoryStep::Done => {
+                return (false, true);
+            }
         }
     }
 }
