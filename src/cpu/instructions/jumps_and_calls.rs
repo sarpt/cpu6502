@@ -1,9 +1,12 @@
 use std::rc::Rc;
 
-use crate::cpu::{tasks::GenericTasks, AddressingMode, TaskCycleVariant, Tasks, CPU};
+use crate::cpu::{
+    addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, TaskCycleVariant, Tasks,
+    CPU,
+};
 
 pub fn jsr_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    let addr_tasks = cpu.get_address(AddressingMode::Absolute);
+    let addr_tasks = get_addressing_tasks(&cpu, AddressingMode::Absolute);
     let mut tasks = GenericTasks::new_dependent(addr_tasks);
 
     tasks.push(Rc::new(|cpu: &mut CPU| {
@@ -66,7 +69,7 @@ pub fn rts(_cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    let addr_tasks = cpu.get_address(addr_mode);
+    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
     let mut tasks = GenericTasks::new_dependent(addr_tasks);
 
     tasks.push(Rc::new(|cpu| {

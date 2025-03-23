@@ -2,7 +2,10 @@ use std::rc::Rc;
 
 use crate::{
     consts::Byte,
-    cpu::{tasks::GenericTasks, AddressingMode, Registers, TaskCycleVariant, Tasks, CPU},
+    cpu::{
+        addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers,
+        TaskCycleVariant, Tasks, CPU,
+    },
 };
 
 fn ld(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Box<dyn Tasks> {
@@ -86,7 +89,7 @@ pub fn ldx_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Box<dyn Tasks> {
-    let addr_tasks = cpu.get_address(addr_mode);
+    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
     let mut tasks = GenericTasks::new_dependent(addr_tasks);
 
     tasks.push(Rc::new(move |cpu| {

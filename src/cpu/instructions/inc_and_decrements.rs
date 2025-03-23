@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use crate::cpu::{tasks::GenericTasks, AddressingMode, Registers, TaskCycleVariant, Tasks, CPU};
+use crate::cpu::{
+    addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers,
+    TaskCycleVariant, Tasks, CPU,
+};
 
 fn decrement_cb(value: &u8) -> u8 {
     return value.wrapping_sub(1);
@@ -101,7 +104,7 @@ fn modify_memory(
     addr_mode: AddressingMode,
     cb: Box<dyn Fn(&u8) -> u8>,
 ) -> Box<dyn Tasks> {
-    let addr_tasks = cpu.get_address(addr_mode);
+    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
     let mut tasks = GenericTasks::new_dependent(addr_tasks);
 
     tasks.push(Rc::new(|cpu| {

@@ -2,7 +2,10 @@ use std::rc::Rc;
 
 use crate::{
     consts::Byte,
-    cpu::{tasks::GenericTasks, AddressingMode, Registers, TaskCycleVariant, Tasks, CPU},
+    cpu::{
+        addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers,
+        TaskCycleVariant, Tasks, CPU,
+    },
 };
 
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -78,7 +81,7 @@ fn op_mem(
     op: Box<dyn Fn(bool) -> Box<dyn Fn(&u8) -> u8>>,
     dir: Directions,
 ) -> Box<dyn Tasks> {
-    let addr_tasks = cpu.get_address(addr_mode);
+    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
     let mut tasks = GenericTasks::new_dependent(addr_tasks);
 
     tasks.push(Rc::new(|cpu| {

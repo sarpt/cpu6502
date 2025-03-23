@@ -2,11 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use addressing::{
-    AbsoluteAddressingTasks, AbsoluteOffsetAddressingTasks, ImmediateAddressingTasks,
-    IndexIndirectXAddressingTasks, IndirectAddressingTasks, IndirectIndexYAddressingTasks,
-    ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks,
-};
+use addressing::get_addressing_tasks;
 use tasks::{GenericTasks, TaskCycleVariant, Tasks};
 
 use super::consts::{Byte, Word};
@@ -334,7 +330,7 @@ impl<'a> CPU<'a> {
         addr_mode: AddressingMode,
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
     ) -> Box<dyn Tasks> {
-        let addr_tasks = self.get_address(addr_mode);
+        let addr_tasks = get_addressing_tasks(&self, addr_mode);
         let mut tasks = GenericTasks::new_dependent(addr_tasks);
 
         tasks.push(Rc::new(move |cpu: &mut CPU| {
@@ -393,48 +389,6 @@ impl<'a> CPU<'a> {
             opcode: opcode,
             starting_cycle: self.cycle,
         };
-    }
-
-    fn get_address(&mut self, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-        match addr_mode {
-            AddressingMode::ZeroPage => {
-                return Box::new(ZeroPageAddressingTasks::new());
-            }
-            AddressingMode::ZeroPageX => {
-                return Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x());
-            }
-            AddressingMode::ZeroPageY => {
-                return Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_y());
-            }
-            AddressingMode::Absolute => {
-                return Box::new(AbsoluteAddressingTasks::new());
-            }
-            AddressingMode::AbsoluteX => {
-                return Box::new(AbsoluteOffsetAddressingTasks::new_offset_by_x());
-            }
-            AddressingMode::AbsoluteY => {
-                return Box::new(AbsoluteOffsetAddressingTasks::new_offset_by_y());
-            }
-            AddressingMode::Indirect => {
-                if self.chip_variant == ChipVariant::NMOS {
-                    return Box::new(IndirectAddressingTasks::new_incorrect_addressing());
-                } else {
-                    return Box::new(IndirectAddressingTasks::new_fixed_addressing());
-                }
-            }
-            AddressingMode::IndexIndirectX => {
-                return Box::new(IndexIndirectXAddressingTasks::new());
-            }
-            AddressingMode::IndirectIndexY => {
-                return Box::new(IndirectIndexYAddressingTasks::new());
-            }
-            AddressingMode::Immediate => {
-                return Box::new(ImmediateAddressingTasks::new());
-            }
-            _ => {
-                return Box::new(GenericTasks::new());
-            }
-        }
     }
 }
 
