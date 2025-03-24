@@ -38,9 +38,9 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
         return self.done;
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> (bool, bool) {
+    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
         if self.done {
-            return (false, self.done);
+            return self.done;
         }
 
         match self.step {
@@ -50,7 +50,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
                 cpu.increment_program_counter();
                 self.step = AbsoluteOffsetStep::MemoryAccessHi;
 
-                return (true, false);
+                return false;
             }
             AbsoluteOffsetStep::MemoryAccessHi => {
                 let addr_hi = cpu.access_memory(cpu.program_counter);
@@ -58,7 +58,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
                 cpu.increment_program_counter();
                 self.step = AbsoluteOffsetStep::OffsetLo;
 
-                return (true, false);
+                return false;
             }
             AbsoluteOffsetStep::OffsetLo => {
                 let offset = match self.variant {
@@ -73,7 +73,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
                 if !carry {
                     self.done = true;
                 }
-                return (true, self.done);
+                return self.done;
             }
             AbsoluteOffsetStep::OffsetHi => {
                 let [lo, hi] = cpu.address_output.to_le_bytes();
@@ -81,7 +81,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
                 cpu.address_output = Word::from_le_bytes([lo, new_hi]);
 
                 self.done = true;
-                return (true, self.done);
+                return self.done;
             }
         }
     }
@@ -111,9 +111,9 @@ impl Tasks for AbsoluteAddressingTasks {
         return self.done;
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> (bool, bool) {
+    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
         if self.done {
-            return (false, self.done);
+            return self.done;
         }
 
         match self.step {
@@ -123,7 +123,7 @@ impl Tasks for AbsoluteAddressingTasks {
                 cpu.increment_program_counter();
                 self.step = AbsoluteStep::MemoryHi;
 
-                return (true, false);
+                return false;
             }
             AbsoluteStep::MemoryHi => {
                 let addr_hi = cpu.access_memory(cpu.program_counter);
@@ -131,7 +131,7 @@ impl Tasks for AbsoluteAddressingTasks {
                 cpu.increment_program_counter();
 
                 self.done = true;
-                return (true, self.done);
+                return self.done;
             }
         }
     }

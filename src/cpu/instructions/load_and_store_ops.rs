@@ -3,8 +3,8 @@ use std::rc::Rc;
 use crate::{
     consts::Byte,
     cpu::{
-        addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers,
-        TaskCycleVariant, Tasks, CPU,
+        addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers, Tasks,
+        CPU,
     },
 };
 
@@ -95,8 +95,6 @@ pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> B
     tasks.push(Rc::new(move |cpu| {
         let value = cpu.get_register(register);
         cpu.put_into_memory(cpu.address_output, value);
-
-        return TaskCycleVariant::Full;
     }));
 
     return Box::new(tasks);

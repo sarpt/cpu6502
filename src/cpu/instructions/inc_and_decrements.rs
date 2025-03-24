@@ -1,8 +1,7 @@
 use std::rc::Rc;
 
 use crate::cpu::{
-    addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers,
-    TaskCycleVariant, Tasks, CPU,
+    addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers, Tasks, CPU,
 };
 
 fn decrement_cb(value: &u8) -> u8 {
@@ -23,8 +22,6 @@ fn decrement_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
             let mut tasks = GenericTasks::new();
             tasks.push(Rc::new(move |cpu: &mut CPU| {
                 cpu.decrement_register(register);
-
-                return TaskCycleVariant::Full;
             }));
             return Box::new(tasks);
         }
@@ -66,8 +63,6 @@ fn increment_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
             let mut tasks = GenericTasks::new();
             tasks.push(Rc::new(move |cpu: &mut CPU| {
                 cpu.increment_register(register);
-
-                return TaskCycleVariant::Full;
             }));
             return Box::new(tasks);
         }
@@ -110,8 +105,6 @@ fn modify_memory(
     tasks.push(Rc::new(|cpu| {
         let value = cpu.access_memory(cpu.address_output);
         cpu.set_ctx_lo(value);
-
-        return TaskCycleVariant::Full;
     }));
 
     tasks.push(Rc::new(move |cpu| {
@@ -122,8 +115,6 @@ fn modify_memory(
 
         let modified_value = cb(&value);
         cpu.set_ctx_hi(modified_value);
-
-        return TaskCycleVariant::Full;
     }));
 
     tasks.push(Rc::new(|cpu| {
@@ -133,8 +124,6 @@ fn modify_memory(
         };
         cpu.put_into_memory(cpu.address_output, modified_value);
         cpu.set_status_of_value(modified_value);
-
-        return TaskCycleVariant::Full;
     }));
 
     return Box::new(tasks);

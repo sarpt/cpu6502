@@ -17,9 +17,9 @@ impl Tasks for ZeroPageAddressingTasks {
         return self.done;
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> (bool, bool) {
+    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
         if self.done {
-            return (false, self.done);
+            return self.done;
         }
 
         let addr: Byte = cpu.access_memory(cpu.program_counter);
@@ -27,7 +27,7 @@ impl Tasks for ZeroPageAddressingTasks {
         cpu.increment_program_counter();
         self.done = true;
 
-        return (true, self.done);
+        return self.done;
     }
 }
 
@@ -65,9 +65,9 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
         return self.done;
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> (bool, bool) {
+    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
         if self.done {
-            return (false, self.done);
+            return self.done;
         }
 
         match self.step {
@@ -77,7 +77,7 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
                 cpu.increment_program_counter();
                 self.step = ZeroPageOffsetStep::Offset;
 
-                return (true, false);
+                return false;
             }
             ZeroPageOffsetStep::Offset => {
                 let offset: Byte = match self.variant {
@@ -89,7 +89,7 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
                 cpu.set_address_output(final_address);
 
                 self.done = true;
-                return (true, self.done);
+                return self.done;
             }
         }
     }

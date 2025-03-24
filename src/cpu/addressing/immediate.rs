@@ -15,9 +15,9 @@ impl Tasks for ImmediateAddressingTasks {
         return self.done;
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> (bool, bool) {
+    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
         if self.done {
-            return (false, self.done);
+            return self.done;
         }
 
         let addr = cpu.program_counter;
@@ -25,6 +25,6 @@ impl Tasks for ImmediateAddressingTasks {
         cpu.increment_program_counter();
         self.done = true;
 
-        return (false, self.done);
+        return self.done;
     }
 }
