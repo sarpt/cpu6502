@@ -145,6 +145,15 @@ impl<'a> CPU<'a> {
                     Box::new(GenericTasks::new()),
                 );
 
+                // TODO: during a regular execution of tasks there will never be a task taking zero cycles by themselves
+                // however addressing tests use regular instruction execution to check their state imapct on cpu
+                // This can be removed when behavior of relative, implicit and other 0-cycles addressing tests are rewritten
+                // Preferably with addressing tasks not setting address_output on cpu but returning a value and throwing on extra ticks
+                if tasks.done() {
+                    self.current_instruction = None;
+                    return;
+                }
+
                 self.sync = false;
                 let tasks_done = tasks.tick(self);
                 self.cycle += 1;
@@ -333,6 +342,10 @@ impl<'a> CPU<'a> {
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
     ) -> Box<dyn Tasks> {
         let addressing_tasks = get_addressing_tasks(self, addr_mode);
+        if addr_mode == AddressingMode::Immediate {
+            return Box::new(ReadMemoryTasks::new_with_immediate_addressing(value_reader));
+        }
+
         if access_cycle_has_been_done_during_addressing(addr_mode) {
             return Box::new(ReadMemoryTasks::new_with_access_during_addressing(
                 addressing_tasks,
@@ -390,11 +403,7 @@ impl<'a> CPU<'a> {
 fn access_cycle_has_been_done_during_addressing(addr_mode: AddressingMode) -> bool {
     return addr_mode == AddressingMode::AbsoluteX
         || addr_mode == AddressingMode::AbsoluteY
-        || addr_mode == AddressingMode::IndirectIndexY
-        || addr_mode == AddressingMode::Immediate
-        || addr_mode == AddressingMode::Implicit
-        || addr_mode == AddressingMode::Relative
-        || addr_mode == AddressingMode::Accumulator;
+        || addr_mode == AddressingMode::IndirectIndexY;
 }
 
 #[cfg(test)]
