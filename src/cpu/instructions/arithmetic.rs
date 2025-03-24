@@ -8,11 +8,51 @@ fn compare(
     addr_mode: Option<AddressingMode>,
     register: Registers,
 ) -> Box<dyn Tasks> {
-    let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(move |cpu, value| {
-        cpu.set_cmp_status(register, value);
-    });
+    let read_memory_tasks = cpu.read_memory(addr_mode, None);
+    return Box::new(CompareTasks::new(read_memory_tasks, register));
+}
 
-    return cpu.read_memory(addr_mode, Some(cb));
+struct CompareTasks {
+    done: bool,
+    read_memory_tasks: Box<dyn Tasks>,
+    register: Registers,
+}
+
+impl CompareTasks {
+    pub fn new(read_memory_tasks: Box<dyn Tasks>, register: Registers) -> Self {
+        return CompareTasks {
+            read_memory_tasks,
+            done: false,
+            register,
+        };
+    }
+}
+
+impl Tasks for CompareTasks {
+    fn done(&self) -> bool {
+        return self.done;
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
+        if self.done {
+            panic!("tick should not be called when done")
+        }
+
+        if !self.read_memory_tasks.done() {
+            if !self.read_memory_tasks.tick(cpu) {
+                return false;
+            }
+        }
+
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(ctx) => ctx.to_le_bytes()[0],
+            None => panic!("unexpected lack of value in instruction context after memory read"),
+        };
+        cpu.set_cmp_status(self.register, value);
+        self.done = true;
+
+        return true;
+    }
 }
 
 pub fn cmp_im(cpu: &mut CPU) -> Box<dyn Tasks> {
