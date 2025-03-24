@@ -6,7 +6,6 @@ use super::CPU;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum TaskCycleVariant {
-    Aborted,
     Full,
 }
 
@@ -39,10 +38,6 @@ impl GenericTasks {
 
     pub fn push(&mut self, task: ScheduledTask) -> () {
         self.tasks_queue.push_back(task);
-    }
-
-    pub fn transfer_queue(&mut self, other: GenericTasks) -> () {
-        self.tasks_queue.append(&mut other.collect());
     }
 }
 
