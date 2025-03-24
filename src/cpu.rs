@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use addressing::get_addressing_tasks;
-use tasks::{GenericTasks, ReadMemoryTasks, TaskCycleVariant, Tasks};
+use tasks::{GenericTasks, ReadMemoryTasks, Tasks};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
@@ -140,15 +140,14 @@ impl<'a> CPU<'a> {
     pub fn tick(&mut self) {
         match &mut self.current_instruction {
             Some(current_instruction) => {
-                self.sync = false;
                 let mut tasks = std::mem::replace(
                     &mut current_instruction.tasks,
                     Box::new(GenericTasks::new()),
                 );
-                let (took_cycles, tasks_done) = tasks.tick(self);
-                if took_cycles {
-                    self.cycle += 1;
-                }
+
+                self.sync = false;
+                let tasks_done = tasks.tick(self);
+                self.cycle += 1;
                 if tasks_done {
                     self.current_instruction = None;
                     return;
@@ -164,11 +163,15 @@ impl<'a> CPU<'a> {
                 );
             }
             None => {
-                self.sync = true;
-                let opcode = self.fetch_opcode();
-                self.current_instruction = Some(self.schedule_instruction(opcode));
+                self.fetch_instruction();
             }
         }
+    }
+
+    fn fetch_instruction(&mut self) {
+        self.sync = true;
+        let opcode = self.fetch_opcode();
+        self.current_instruction = Some(self.schedule_instruction(opcode));
     }
 
     pub fn sync(&mut self) -> bool {
@@ -330,13 +333,13 @@ impl<'a> CPU<'a> {
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
     ) -> Box<dyn Tasks> {
         let addressing_tasks = get_addressing_tasks(self, addr_mode);
-        if access_cycle_has_been_done_during_address_fixing(addr_mode) {
-            return Box::new(ReadMemoryTasks::new_with_address_fixing(
+        if access_cycle_has_been_done_during_addressing(addr_mode) {
+            return Box::new(ReadMemoryTasks::new_with_access_during_addressing(
                 addressing_tasks,
                 value_reader,
             ));
         } else {
-            return Box::new(ReadMemoryTasks::new_without_address_fixing(
+            return Box::new(ReadMemoryTasks::new_with_access_in_separate_cycle(
                 addressing_tasks,
                 value_reader,
             ));
@@ -384,10 +387,14 @@ impl<'a> CPU<'a> {
     }
 }
 
-fn access_cycle_has_been_done_during_address_fixing(addr_mode: AddressingMode) -> bool {
+fn access_cycle_has_been_done_during_addressing(addr_mode: AddressingMode) -> bool {
     return addr_mode == AddressingMode::AbsoluteX
         || addr_mode == AddressingMode::AbsoluteY
-        || addr_mode == AddressingMode::IndirectIndexY;
+        || addr_mode == AddressingMode::IndirectIndexY
+        || addr_mode == AddressingMode::Immediate
+        || addr_mode == AddressingMode::Implicit
+        || addr_mode == AddressingMode::Relative
+        || addr_mode == AddressingMode::Accumulator;
 }
 
 #[cfg(test)]

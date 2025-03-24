@@ -4,16 +4,11 @@ use crate::consts::Byte;
 
 use super::CPU;
 
-#[derive(Copy, Clone, PartialEq)]
-pub enum TaskCycleVariant {
-    Full,
-}
-
-type ScheduledTask = Rc<dyn Fn(&mut CPU) -> TaskCycleVariant>;
+type ScheduledTask = Rc<dyn Fn(&mut CPU) -> ()>;
 
 pub trait Tasks {
     fn done(&self) -> bool;
-    fn tick(&mut self, cpu: &mut CPU) -> (bool, bool);
+    fn tick(&mut self, cpu: &mut CPU) -> bool;
 }
 
 pub struct GenericTasks {
@@ -54,28 +49,23 @@ impl Tasks for GenericTasks {
         return self.tasks_queue.len() == 0;
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> (bool, bool) {
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
         if let Some(dependency) = &mut self.dependency {
             if !dependency.done() {
-                let (took_cycles, _) = dependency.as_mut().tick(cpu);
-                return (took_cycles, false);
+                dependency.as_mut().tick(cpu);
+                return false;
             }
         }
 
         if self.done() {
-            return (false, true);
+            return true;
         }
 
-        let mut took_cycles: bool = false;
-        while let Some(task_runner) = self.next() {
-            let task_cycle_variant = task_runner(cpu);
-            if task_cycle_variant == TaskCycleVariant::Full {
-                took_cycles = true;
-                break;
-            };
+        if let Some(task_runner) = self.next() {
+            task_runner(cpu);
         }
 
-        return (took_cycles, self.done());
+        return self.done();
     }
 }
 
@@ -97,31 +87,31 @@ enum ReadMemoryStep {
 
 pub struct ReadMemoryTasks {
     addressing_tasks: Box<dyn Tasks>,
-    address_fixing: bool,
+    access_during_addressing: bool,
     step: ReadMemoryStep,
     value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
 }
 
 impl ReadMemoryTasks {
-    pub fn new_with_address_fixing(
+    pub fn new_with_access_during_addressing(
         addressing_tasks: Box<dyn Tasks>,
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
     ) -> Self {
         return ReadMemoryTasks {
             addressing_tasks,
-            address_fixing: true,
+            access_during_addressing: true,
             step: ReadMemoryStep::AddressCalculation,
             value_reader,
         };
     }
 
-    pub fn new_without_address_fixing(
+    pub fn new_with_access_in_separate_cycle(
         addressing_tasks: Box<dyn Tasks>,
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
     ) -> Self {
         return ReadMemoryTasks {
             addressing_tasks,
-            address_fixing: false,
+            access_during_addressing: false,
             step: ReadMemoryStep::AddressCalculation,
             value_reader,
         };
@@ -142,36 +132,36 @@ impl Tasks for ReadMemoryTasks {
         self.step == ReadMemoryStep::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> (bool, bool) {
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
         match self.step {
             ReadMemoryStep::AddressCalculation => {
-                let (mut addressing_took_cycle, mut addressing_done) = (false, false);
+                let mut addressing_done = false;
                 if !self.addressing_tasks.done() {
-                    (addressing_took_cycle, addressing_done) = self.addressing_tasks.tick(cpu);
+                    addressing_done = self.addressing_tasks.tick(cpu);
                 }
 
                 if !addressing_done {
-                    return (addressing_took_cycle, addressing_done);
+                    return addressing_done;
                 }
 
-                if !self.address_fixing {
+                if !self.access_during_addressing {
                     self.step = ReadMemoryStep::SeparateMemoryAccess;
-                    return (addressing_took_cycle, false);
+                    return false;
                 }
 
                 self.access_memory(cpu);
                 self.step = ReadMemoryStep::Done;
 
-                return (addressing_took_cycle, addressing_done);
+                return addressing_done;
             }
             ReadMemoryStep::SeparateMemoryAccess => {
                 self.access_memory(cpu);
                 self.step = ReadMemoryStep::Done;
 
-                return (true, true);
+                return true;
             }
             ReadMemoryStep::Done => {
-                return (false, true);
+                return true;
             }
         }
     }

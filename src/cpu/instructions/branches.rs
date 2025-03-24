@@ -32,7 +32,7 @@ impl Tasks for BranchTasks {
         self.step == BranchStep::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> (bool, bool) {
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
         match self.step {
             BranchStep::ConditionExecution => {
                 self.offset = cpu.access_memory(cpu.program_counter);
@@ -40,11 +40,11 @@ impl Tasks for BranchTasks {
 
                 if (self.condition)(cpu) {
                     self.step = BranchStep::OffsetProgramCounterLo;
-                    return (true, false);
+                    return false;
                 }
 
                 self.step = BranchStep::Done;
-                return (true, true);
+                return true;
             }
             BranchStep::OffsetProgramCounterLo => {
                 let [program_counter_lo, program_counter_hi] = cpu.program_counter.to_le_bytes();
@@ -70,11 +70,11 @@ impl Tasks for BranchTasks {
 
                 if !carry {
                     self.step = BranchStep::Done;
-                    return (true, true);
+                    return true;
                 }
 
                 self.step = BranchStep::OffsetProgramCounterHi;
-                return (true, false);
+                return false;
             }
             BranchStep::OffsetProgramCounterHi => {
                 let negative_offset_direction = 0b10000000 & self.offset > 0;
@@ -89,9 +89,9 @@ impl Tasks for BranchTasks {
                     Word::from_le_bytes([program_counter_lo, offset_program_counter_hi]);
 
                 self.step = BranchStep::Done;
-                return (true, true);
+                return true;
             }
-            BranchStep::Done => return (false, true),
+            BranchStep::Done => return true,
         }
     }
 }

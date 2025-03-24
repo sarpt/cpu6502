@@ -1,13 +1,11 @@
 use std::rc::Rc;
 
-use crate::cpu::{processor_status::Flags, tasks::GenericTasks, TaskCycleVariant, Tasks, CPU};
+use crate::cpu::{processor_status::Flags, tasks::GenericTasks, Tasks, CPU};
 
 fn change_flag_value(_cpu: &mut CPU, flag: Flags, value: bool) -> Box<dyn Tasks> {
     let mut tasks = GenericTasks::new();
     tasks.push(Rc::new(move |cpu: &mut CPU| {
         cpu.processor_status.change_flag(flag, value);
-
-        return TaskCycleVariant::Full;
     }));
 
     return Box::new(tasks);

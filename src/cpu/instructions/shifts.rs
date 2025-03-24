@@ -3,8 +3,8 @@ use std::rc::Rc;
 use crate::{
     consts::Byte,
     cpu::{
-        addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers,
-        TaskCycleVariant, Tasks, CPU,
+        addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers, Tasks,
+        CPU,
     },
 };
 
@@ -68,8 +68,6 @@ fn op_acc(
         };
         cpu.processor_status.change_carry_flag(new_carry);
         cpu.set_status_of_value(modified_value);
-
-        return TaskCycleVariant::Full;
     }));
 
     return Box::new(tasks);
@@ -87,8 +85,6 @@ fn op_mem(
     tasks.push(Rc::new(|cpu| {
         let value = cpu.access_memory(cpu.address_output);
         cpu.set_ctx_lo(value);
-
-        return TaskCycleVariant::Full;
     }));
 
     tasks.push(Rc::new(move |cpu| {
@@ -101,8 +97,6 @@ fn op_mem(
 
         let modified_value = cb(&value);
         cpu.set_ctx_hi(modified_value);
-
-        return TaskCycleVariant::Full;
     }));
 
     tasks.push(Rc::new(move |cpu| {
@@ -118,8 +112,6 @@ fn op_mem(
             Directions::Right => previous_value & 0b00000001 > 0,
         };
         cpu.processor_status.change_carry_flag(new_carry);
-
-        return TaskCycleVariant::Full;
     }));
 
     return Box::new(tasks);
