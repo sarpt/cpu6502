@@ -8,10 +8,20 @@ use indirect::{
 };
 use zero_page::{ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks};
 
-use super::{
-    tasks::{GenericTasks, Tasks},
-    AddressingMode, ChipVariant, CPU,
-};
+use super::{tasks::Tasks, ChipVariant, CPU};
+
+#[derive(Copy, Clone, PartialEq)]
+pub enum AddressingMode {
+    Indirect,
+    ZeroPage,
+    ZeroPageX,
+    ZeroPageY,
+    Absolute,
+    AbsoluteX,
+    AbsoluteY,
+    IndexIndirectX,
+    IndirectIndexY,
+}
 
 enum OffsetVariant {
     X,
@@ -51,9 +61,6 @@ pub fn get_addressing_tasks(cpu: &CPU, addr_mode: AddressingMode) -> Box<dyn Tas
         AddressingMode::IndirectIndexY => {
             return Box::new(IndirectIndexYAddressingTasks::new());
         }
-        _ => {
-            return Box::new(GenericTasks::new());
-        }
     }
 }
 
@@ -64,9 +71,9 @@ mod get_addressing_tasks {
         use std::cell::RefCell;
 
         use crate::cpu::{
-            addressing::get_addressing_tasks,
+            addressing::{get_addressing_tasks, AddressingMode},
             tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
+            CPU,
         };
 
         #[test]
@@ -112,9 +119,9 @@ mod get_addressing_tasks {
         use std::cell::RefCell;
 
         use crate::cpu::{
-            addressing::get_addressing_tasks,
+            addressing::{get_addressing_tasks, AddressingMode},
             tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
+            CPU,
         };
 
         #[test]
@@ -181,9 +188,9 @@ mod get_addressing_tasks {
         use std::cell::RefCell;
 
         use crate::cpu::{
-            addressing::get_addressing_tasks,
+            addressing::{get_addressing_tasks, AddressingMode},
             tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
+            CPU,
         };
 
         #[test]
@@ -250,9 +257,9 @@ mod get_addressing_tasks {
         use std::cell::RefCell;
 
         use crate::cpu::{
-            addressing::get_addressing_tasks,
+            addressing::{get_addressing_tasks, AddressingMode},
             tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
+            CPU,
         };
 
         #[test]
@@ -303,9 +310,9 @@ mod get_addressing_tasks {
         use std::cell::RefCell;
 
         use crate::cpu::{
-            addressing::get_addressing_tasks,
+            addressing::{get_addressing_tasks, AddressingMode},
             tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
+            CPU,
         };
 
         #[test]
@@ -371,9 +378,9 @@ mod get_addressing_tasks {
         use std::cell::RefCell;
 
         use crate::cpu::{
-            addressing::get_addressing_tasks,
+            addressing::{get_addressing_tasks, AddressingMode},
             tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
+            CPU,
         };
 
         #[test]
@@ -421,9 +428,9 @@ mod get_addressing_tasks {
         use std::cell::RefCell;
 
         use crate::cpu::{
-            addressing::get_addressing_tasks,
+            addressing::{get_addressing_tasks, AddressingMode},
             tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
+            CPU,
         };
 
         #[test]
@@ -474,9 +481,9 @@ mod get_addressing_tasks {
         use std::cell::RefCell;
 
         use crate::cpu::{
-            addressing::get_addressing_tasks,
+            addressing::{get_addressing_tasks, AddressingMode},
             tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
+            CPU,
         };
 
         #[test]
@@ -529,9 +536,9 @@ mod get_addressing_tasks {
             use std::cell::RefCell;
 
             use crate::cpu::{
-                addressing::get_addressing_tasks,
+                addressing::{get_addressing_tasks, AddressingMode},
                 tests::{run_tasks, MemoryMock},
-                AddressingMode, CPU,
+                CPU,
             };
 
             #[test]
@@ -568,9 +575,9 @@ mod get_addressing_tasks {
             use crate::{
                 consts::Byte,
                 cpu::{
-                    addressing::get_addressing_tasks,
+                    addressing::{get_addressing_tasks, AddressingMode},
                     tests::{run_tasks, MemoryMock},
-                    AddressingMode, CPU,
+                    CPU,
                 },
             };
 
@@ -623,9 +630,9 @@ mod get_addressing_tasks {
             use crate::{
                 consts::Byte,
                 cpu::{
-                    addressing::get_addressing_tasks,
+                    addressing::{get_addressing_tasks, AddressingMode},
                     tests::{run_tasks, MemoryMock},
-                    AddressingMode, CPU,
+                    CPU,
                 },
             };
 
@@ -667,104 +674,6 @@ mod get_addressing_tasks {
 
                 assert_eq!(cpu.address_output, 0xCCA5);
             }
-        }
-    }
-
-    #[cfg(test)]
-    mod implicit_addressing {
-        use std::cell::RefCell;
-
-        use crate::cpu::{
-            addressing::get_addressing_tasks,
-            tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
-        };
-
-        #[test]
-        fn should_not_change_address_output() {
-            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
-            let mut cpu = CPU::new_nmos(&memory);
-            cpu.address_output = 0x0;
-            cpu.program_counter = 0x00;
-
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Implicit);
-            run_tasks(&mut cpu, tasks);
-
-            assert_eq!(cpu.address_output, 0x0);
-        }
-
-        #[test]
-        fn should_not_advance_program_counter() {
-            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
-            let mut cpu = CPU::new_nmos(&memory);
-            cpu.program_counter = 0x00;
-
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Implicit);
-            run_tasks(&mut cpu, tasks);
-
-            assert_eq!(cpu.program_counter, 0x00);
-        }
-
-        #[test]
-        fn should_take_zero_cycles() {
-            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
-            let mut cpu = CPU::new_nmos(&memory);
-            cpu.program_counter = 0x02;
-            cpu.cycle = 0;
-
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Implicit);
-            run_tasks(&mut cpu, tasks);
-
-            assert_eq!(cpu.cycle, 0);
-        }
-    }
-
-    #[cfg(test)]
-    mod relative_addressing {
-        use std::cell::RefCell;
-
-        use crate::cpu::{
-            addressing::get_addressing_tasks,
-            tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
-        };
-
-        #[test]
-        fn should_not_change_address_output() {
-            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
-            let mut cpu = CPU::new_nmos(&memory);
-            cpu.program_counter = 0x00;
-            cpu.address_output = 0x0;
-
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Relative);
-            run_tasks(&mut cpu, tasks);
-
-            assert_eq!(cpu.address_output, 0x0);
-        }
-
-        #[test]
-        fn should_not_advance_program_counter() {
-            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
-            let mut cpu = CPU::new_nmos(&memory);
-            cpu.program_counter = 0x00;
-
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Relative);
-            run_tasks(&mut cpu, tasks);
-
-            assert_eq!(cpu.program_counter, 0x00);
-        }
-
-        #[test]
-        fn should_take_zero_cycles() {
-            let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
-            let mut cpu = CPU::new_nmos(&memory);
-            cpu.program_counter = 0x02;
-            cpu.cycle = 0;
-
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Relative);
-            run_tasks(&mut cpu, tasks);
-
-            assert_eq!(cpu.cycle, 0);
         }
     }
 }

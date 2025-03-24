@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-use addressing::get_addressing_tasks;
+use addressing::{get_addressing_tasks, AddressingMode};
 use tasks::{GenericTasks, ReadMemoryTasks, Tasks};
 
 use super::consts::{Byte, Word};
@@ -15,23 +15,6 @@ mod processor_status;
 mod tasks;
 
 type Instruction = Byte;
-
-#[derive(Copy, Clone, PartialEq)]
-enum AddressingMode {
-    Accumulator,
-    Immediate,
-    Indirect,
-    Implicit,
-    Relative,
-    ZeroPage,
-    ZeroPageX,
-    ZeroPageY,
-    Absolute,
-    AbsoluteX,
-    AbsoluteY,
-    IndexIndirectX,
-    IndirectIndexY,
-}
 
 #[derive(Copy, Clone, PartialEq)]
 enum ChipVariant {
@@ -144,15 +127,6 @@ impl<'a> CPU<'a> {
                     &mut current_instruction.tasks,
                     Box::new(GenericTasks::new()),
                 );
-
-                // TODO: during a regular execution of tasks there will never be a task taking zero cycles by themselves
-                // however addressing tests use regular instruction execution to check their state imapct on cpu
-                // This can be removed when behavior of relative, implicit and other 0-cycles addressing tests are rewritten
-                // Preferably with addressing tasks not setting address_output on cpu but returning a value and throwing on extra ticks
-                if tasks.done() {
-                    self.current_instruction = None;
-                    return;
-                }
 
                 self.sync = false;
                 let tasks_done = tasks.tick(self);
@@ -338,24 +312,27 @@ impl<'a> CPU<'a> {
 
     fn read_memory(
         &self,
-        addr_mode: AddressingMode,
+        addr_mode: Option<AddressingMode>,
         value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
     ) -> Box<dyn Tasks> {
-        let addressing_tasks = get_addressing_tasks(self, addr_mode);
-        if addr_mode == AddressingMode::Immediate {
-            return Box::new(ReadMemoryTasks::new_with_immediate_addressing(value_reader));
-        }
-
-        if access_cycle_has_been_done_during_addressing(addr_mode) {
-            return Box::new(ReadMemoryTasks::new_with_access_during_addressing(
-                addressing_tasks,
-                value_reader,
-            ));
-        } else {
-            return Box::new(ReadMemoryTasks::new_with_access_in_separate_cycle(
-                addressing_tasks,
-                value_reader,
-            ));
+        match addr_mode {
+            Some(mode) => {
+                let addressing_tasks = get_addressing_tasks(self, mode);
+                if access_cycle_has_been_done_during_addressing(mode) {
+                    return Box::new(ReadMemoryTasks::new_with_access_during_addressing(
+                        addressing_tasks,
+                        value_reader,
+                    ));
+                } else {
+                    return Box::new(ReadMemoryTasks::new_with_access_in_separate_cycle(
+                        addressing_tasks,
+                        value_reader,
+                    ));
+                }
+            }
+            None => {
+                return Box::new(ReadMemoryTasks::new_with_immediate_addressing(value_reader));
+            }
         }
     }
 
