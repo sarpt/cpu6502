@@ -80,6 +80,7 @@ impl Default for GenericTasks {
 
 #[derive(PartialEq, PartialOrd)]
 enum ReadMemoryStep {
+    ImmediateAccess,
     AddressCalculation,
     SeparateMemoryAccess,
     Done,
@@ -117,6 +118,17 @@ impl ReadMemoryTasks {
         };
     }
 
+    pub fn new_with_immediate_addressing(
+        value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
+    ) -> Self {
+        return ReadMemoryTasks {
+            addressing_tasks: Box::new(GenericTasks::new()),
+            access_during_addressing: false,
+            step: ReadMemoryStep::ImmediateAccess,
+            value_reader,
+        };
+    }
+
     fn access_memory(&self, cpu: &mut CPU) -> () {
         let value = cpu.access_memory(cpu.address_output);
         cpu.set_ctx_lo(value);
@@ -134,6 +146,14 @@ impl Tasks for ReadMemoryTasks {
 
     fn tick(&mut self, cpu: &mut CPU) -> bool {
         match self.step {
+            ReadMemoryStep::ImmediateAccess => {
+                cpu.address_output = cpu.program_counter;
+                cpu.increment_program_counter();
+                self.access_memory(cpu);
+                self.step = ReadMemoryStep::Done;
+
+                return true;
+            }
             ReadMemoryStep::AddressCalculation => {
                 let mut addressing_done = false;
                 if !self.addressing_tasks.done() {
@@ -163,6 +183,58 @@ impl Tasks for ReadMemoryTasks {
             ReadMemoryStep::Done => {
                 return true;
             }
+        }
+    }
+}
+
+#[cfg(test)]
+mod read_memory_tasks {
+    #[cfg(test)]
+    mod immediate_addressing {
+        use std::cell::RefCell;
+
+        use crate::cpu::{
+            tasks::ReadMemoryTasks,
+            tests::{run_tasks, MemoryMock},
+            CPU,
+        };
+
+        #[test]
+        fn should_set_program_counter_as_address_output() {
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut cpu = CPU::new_nmos(memory);
+            cpu.address_output = 0x0;
+            cpu.program_counter = 0xCB;
+
+            let tasks = Box::new(ReadMemoryTasks::new_with_immediate_addressing(None));
+            run_tasks(&mut cpu, tasks);
+
+            assert_eq!(cpu.address_output, 0xCB);
+        }
+
+        #[test]
+        fn should_advance_program_counter() {
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut cpu = CPU::new_nmos(memory);
+            cpu.program_counter = 0xCB;
+
+            let tasks = Box::new(ReadMemoryTasks::new_with_immediate_addressing(None));
+            run_tasks(&mut cpu, tasks);
+
+            assert_eq!(cpu.program_counter, 0xCC);
+        }
+
+        #[test]
+        fn should_not_take_one_cycle() {
+            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
+            let mut cpu = CPU::new_nmos(memory);
+            cpu.program_counter = 0xCB;
+            cpu.cycle = 0;
+
+            let tasks = Box::new(ReadMemoryTasks::new_with_immediate_addressing(None));
+            run_tasks(&mut cpu, tasks);
+
+            assert_eq!(cpu.cycle, 1);
         }
     }
 }

@@ -1,10 +1,8 @@
 mod absolute;
-mod immediate;
 mod indirect;
 mod zero_page;
 
 use absolute::{AbsoluteAddressingTasks, AbsoluteOffsetAddressingTasks};
-use immediate::ImmediateAddressingTasks;
 use indirect::{
     IndexIndirectXAddressingTasks, IndirectAddressingTasks, IndirectIndexYAddressingTasks,
 };
@@ -52,9 +50,6 @@ pub fn get_addressing_tasks(cpu: &CPU, addr_mode: AddressingMode) -> Box<dyn Tas
         }
         AddressingMode::IndirectIndexY => {
             return Box::new(IndirectIndexYAddressingTasks::new());
-        }
-        AddressingMode::Immediate => {
-            return Box::new(ImmediateAddressingTasks::new());
         }
         _ => {
             return Box::new(GenericTasks::new());
@@ -247,55 +242,6 @@ mod get_addressing_tasks {
             run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 4);
-        }
-    }
-
-    #[cfg(test)]
-    mod immediate_addressing {
-        use std::cell::RefCell;
-
-        use crate::cpu::{
-            addressing::get_addressing_tasks,
-            tests::{run_tasks, MemoryMock},
-            AddressingMode, CPU,
-        };
-
-        #[test]
-        fn should_return_program_counter_address() {
-            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
-            let mut cpu = CPU::new_nmos(memory);
-            cpu.address_output = 0x0;
-            cpu.program_counter = 0xCB;
-
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Immediate);
-            run_tasks(&mut cpu, tasks);
-
-            assert_eq!(cpu.address_output, 0xCB);
-        }
-
-        #[test]
-        fn should_advance_program_counter() {
-            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
-            let mut cpu = CPU::new_nmos(memory);
-            cpu.program_counter = 0xCB;
-
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Immediate);
-            run_tasks(&mut cpu, tasks);
-
-            assert_eq!(cpu.program_counter, 0xCC);
-        }
-
-        #[test]
-        fn should_not_take_any_cycles() {
-            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
-            let mut cpu = CPU::new_nmos(memory);
-            cpu.program_counter = 0xCB;
-            cpu.cycle = 0;
-
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Immediate);
-            run_tasks(&mut cpu, tasks);
-
-            assert_eq!(cpu.cycle, 0);
         }
     }
 
