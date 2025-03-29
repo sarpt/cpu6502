@@ -27,7 +27,7 @@ impl Tasks for LoadTasks {
 
     fn tick(&mut self, cpu: &mut CPU) -> bool {
         if self.done {
-            panic!("tick should be called when tasks done")
+            panic!("tick mustn't be called when done")
         }
 
         if !self.read_memory_tasks.done() {
