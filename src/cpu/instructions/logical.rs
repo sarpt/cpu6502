@@ -95,7 +95,7 @@ impl Tasks for LogicalTasks {
 }
 
 pub fn and(cpu: &mut CPU, addr_mode: Option<AddressingMode>) -> Box<dyn Tasks> {
-    let read_memory_tasks = cpu.read_memory(addr_mode, None);
+    let read_memory_tasks = cpu.read_memory(addr_mode);
     return Box::new(LogicalTasks::new_and(read_memory_tasks));
 }
 
@@ -132,7 +132,7 @@ pub fn and_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 pub fn eor(cpu: &mut CPU, addr_mode: Option<AddressingMode>) -> Box<dyn Tasks> {
-    let read_memory_tasks = cpu.read_memory(addr_mode, None);
+    let read_memory_tasks = cpu.read_memory(addr_mode);
     return Box::new(LogicalTasks::new_eor(read_memory_tasks));
 }
 
@@ -169,7 +169,7 @@ pub fn eor_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 pub fn ora(cpu: &mut CPU, addr_mode: Option<AddressingMode>) -> Box<dyn Tasks> {
-    let read_memory_tasks = cpu.read_memory(addr_mode, None);
+    let read_memory_tasks = cpu.read_memory(addr_mode);
     return Box::new(LogicalTasks::new_ora(read_memory_tasks));
 }
 
@@ -206,7 +206,7 @@ pub fn ora_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 pub fn bit(cpu: &mut CPU, addr_mode: Option<AddressingMode>) -> Box<dyn Tasks> {
-    let read_memory_tasks = cpu.read_memory(addr_mode, None);
+    let read_memory_tasks = cpu.read_memory(addr_mode);
     return Box::new(LogicalTasks::new_bit(read_memory_tasks));
 }
 

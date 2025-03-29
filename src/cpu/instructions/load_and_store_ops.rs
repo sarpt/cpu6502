@@ -48,7 +48,7 @@ impl Tasks for LoadTasks {
 }
 
 fn ld(cpu: &mut CPU, addr_mode: Option<AddressingMode>, register: Registers) -> Box<dyn Tasks> {
-    let read_memory_tasks = cpu.read_memory(addr_mode, None);
+    let read_memory_tasks = cpu.read_memory(addr_mode);
     return Box::new(LoadTasks::new(read_memory_tasks, register));
 }
 
