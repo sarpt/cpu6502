@@ -163,15 +163,48 @@ fn sbc(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp) {
     return (result, carry_op, overflow_op);
 }
 
-pub fn operations_with_carry(
-    cpu: &mut CPU,
-    addr_mode: Option<AddressingMode>,
+struct OperationsWithCarryTasks {
+    done: bool,
+    read_memory_tasks: Box<dyn Tasks>,
     op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
-) -> Box<dyn Tasks> {
-    let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(move |cpu, value| {
+}
+
+impl OperationsWithCarryTasks {
+    pub fn new(
+        read_memory_tasks: Box<dyn Tasks>,
+        op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
+    ) -> Self {
+        return OperationsWithCarryTasks {
+            done: false,
+            read_memory_tasks,
+            op,
+        };
+    }
+}
+
+impl Tasks for OperationsWithCarryTasks {
+    fn done(&self) -> bool {
+        return self.done;
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
+        if self.done {
+            panic!("tick should be called when tasks done")
+        }
+
+        if !self.read_memory_tasks.done() {
+            if !self.read_memory_tasks.tick(cpu) {
+                return false;
+            }
+        }
+
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(ctx) => ctx.to_le_bytes()[0],
+            None => panic!("unexpected lack of value in instruction context after memory read"),
+        };
         let accumulator = cpu.get_register(Registers::Accumulator);
         let (value, carry, overflow) =
-            op(value, accumulator, cpu.processor_status.get_carry_flag());
+            (self.op)(value, accumulator, cpu.processor_status.get_carry_flag());
 
         cpu.set_register(Registers::Accumulator, value);
 
@@ -182,9 +215,19 @@ pub fn operations_with_carry(
             cpu.processor_status
                 .change_overflow_flag(overflow == FlagOp::Set)
         }
-    });
+        self.done = true;
 
-    return cpu.read_memory(addr_mode, Some(cb));
+        return self.done;
+    }
+}
+
+pub fn operations_with_carry(
+    cpu: &mut CPU,
+    addr_mode: Option<AddressingMode>,
+    op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
+) -> Box<dyn Tasks> {
+    let read_memory_tasks = cpu.read_memory(addr_mode, None);
+    return Box::new(OperationsWithCarryTasks::new(read_memory_tasks, op));
 }
 
 pub fn adc_im(cpu: &mut CPU) -> Box<dyn Tasks> {
