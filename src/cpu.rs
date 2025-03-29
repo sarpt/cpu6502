@@ -161,7 +161,7 @@ impl<'a> CPU<'a> {
         return self.sync;
     }
 
-    fn access_memory(&mut self, addr: Word) -> Byte {
+    fn access_memory(&self, addr: Word) -> Byte {
         return self.memory.borrow()[addr];
     }
 
@@ -310,7 +310,7 @@ impl<'a> CPU<'a> {
         self.set_current_instruction_ctx((None, Some(hi)));
     }
 
-    fn read_memory(&self, addr_mode: Option<AddressingMode>) -> Box<dyn Tasks> {
+    fn read_memory(&self, addr_mode: Option<AddressingMode>) -> Box<ReadMemoryTasks> {
         match addr_mode {
             Some(mode) => {
                 let addressing_tasks = get_addressing_tasks(self, mode);

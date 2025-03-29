@@ -90,6 +90,7 @@ pub struct ReadMemoryTasks {
     addressing_tasks: Box<dyn Tasks>,
     access_during_addressing: bool,
     step: ReadMemoryStep,
+    value: Option<Byte>,
 }
 
 impl ReadMemoryTasks {
@@ -98,6 +99,7 @@ impl ReadMemoryTasks {
             addressing_tasks,
             access_during_addressing: true,
             step: ReadMemoryStep::AddressCalculation,
+            value: None,
         };
     }
 
@@ -106,6 +108,7 @@ impl ReadMemoryTasks {
             addressing_tasks,
             access_during_addressing: false,
             step: ReadMemoryStep::AddressCalculation,
+            value: None,
         };
     }
 
@@ -114,12 +117,16 @@ impl ReadMemoryTasks {
             addressing_tasks: Box::new(GenericTasks::new()),
             access_during_addressing: false,
             step: ReadMemoryStep::ImmediateAccess,
+            value: None,
         };
     }
 
-    fn access_memory(&self, cpu: &mut CPU) -> () {
-        let value = cpu.access_memory(cpu.address_output);
-        cpu.set_ctx_lo(value);
+    fn access_memory(&mut self, cpu: &CPU) -> () {
+        self.value = Some(cpu.access_memory(cpu.address_output));
+    }
+
+    pub fn value(&self) -> Option<Byte> {
+        return self.value;
     }
 }
 

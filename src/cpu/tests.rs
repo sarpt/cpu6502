@@ -114,7 +114,7 @@ mod access_memory {
     #[test]
     fn should_return_a_byte() {
         let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let uut = CPU::new_nmos(memory);
 
         let result = uut.access_memory(ADDR);
 

@@ -1,17 +1,19 @@
 use std::rc::Rc;
 
 use crate::cpu::{
-    addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers, Tasks, CPU,
+    addressing::get_addressing_tasks,
+    tasks::{GenericTasks, ReadMemoryTasks},
+    AddressingMode, Registers, Tasks, CPU,
 };
 
 struct LoadTasks {
     done: bool,
-    read_memory_tasks: Box<dyn Tasks>,
+    read_memory_tasks: Box<ReadMemoryTasks>,
     register: Registers,
 }
 
 impl LoadTasks {
-    pub fn new(read_memory_tasks: Box<dyn Tasks>, register: Registers) -> Self {
+    pub fn new(read_memory_tasks: Box<ReadMemoryTasks>, register: Registers) -> Self {
         return LoadTasks {
             done: false,
             read_memory_tasks,
@@ -36,9 +38,9 @@ impl Tasks for LoadTasks {
             }
         }
 
-        let value = match cpu.get_current_instruction_ctx() {
+        let value = match self.read_memory_tasks.value() {
             Some(ctx) => ctx.to_le_bytes()[0],
-            None => panic!("unexpected lack of value in instruction context after memory read"),
+            None => panic!("unexpected lack of value after memory read"),
         };
         cpu.set_register(self.register, value);
         self.done = true;

@@ -1,4 +1,4 @@
-use crate::cpu::{AddressingMode, Registers, Tasks, CPU};
+use crate::cpu::{tasks::ReadMemoryTasks, AddressingMode, Registers, Tasks, CPU};
 
 enum Variant {
     And,
@@ -9,12 +9,12 @@ enum Variant {
 
 struct LogicalTasks {
     done: bool,
-    read_memory_tasks: Box<dyn Tasks>,
+    read_memory_tasks: Box<ReadMemoryTasks>,
     variant: Variant,
 }
 
 impl LogicalTasks {
-    pub fn new_and(read_memory_tasks: Box<dyn Tasks>) -> Self {
+    pub fn new_and(read_memory_tasks: Box<ReadMemoryTasks>) -> Self {
         return LogicalTasks {
             done: false,
             read_memory_tasks,
@@ -22,7 +22,7 @@ impl LogicalTasks {
         };
     }
 
-    pub fn new_eor(read_memory_tasks: Box<dyn Tasks>) -> Self {
+    pub fn new_eor(read_memory_tasks: Box<ReadMemoryTasks>) -> Self {
         return LogicalTasks {
             done: false,
             read_memory_tasks,
@@ -30,7 +30,7 @@ impl LogicalTasks {
         };
     }
 
-    pub fn new_ora(read_memory_tasks: Box<dyn Tasks>) -> Self {
+    pub fn new_ora(read_memory_tasks: Box<ReadMemoryTasks>) -> Self {
         return LogicalTasks {
             done: false,
             read_memory_tasks,
@@ -38,7 +38,7 @@ impl LogicalTasks {
         };
     }
 
-    pub fn new_bit(read_memory_tasks: Box<dyn Tasks>) -> Self {
+    pub fn new_bit(read_memory_tasks: Box<ReadMemoryTasks>) -> Self {
         return LogicalTasks {
             done: false,
             read_memory_tasks,
@@ -63,9 +63,9 @@ impl Tasks for LogicalTasks {
             }
         }
 
-        let value = match cpu.get_current_instruction_ctx() {
+        let value = match self.read_memory_tasks.value() {
             Some(ctx) => ctx.to_le_bytes()[0],
-            None => panic!("unexpected lack of value in instruction context after memory read"),
+            None => panic!("unexpected lack of value after memory read"),
         };
 
         match self.variant {
