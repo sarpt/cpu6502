@@ -1,19 +1,55 @@
 use std::rc::Rc;
 
-use crate::{
-    consts::Byte,
-    cpu::{
-        addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers, Tasks,
-        CPU,
-    },
+use crate::cpu::{
+    addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers, Tasks, CPU,
 };
 
-fn ld(cpu: &mut CPU, addr_mode: Option<AddressingMode>, register: Registers) -> Box<dyn Tasks> {
-    let cb: Box<dyn Fn(&mut CPU, Byte) -> ()> = Box::new(move |cpu, value| {
-        cpu.set_register(register, value);
-    });
+struct LoadTasks {
+    done: bool,
+    read_memory_tasks: Box<dyn Tasks>,
+    register: Registers,
+}
 
-    return cpu.read_memory(addr_mode, Some(cb));
+impl LoadTasks {
+    pub fn new(read_memory_tasks: Box<dyn Tasks>, register: Registers) -> Self {
+        return LoadTasks {
+            done: false,
+            read_memory_tasks,
+            register,
+        };
+    }
+}
+
+impl Tasks for LoadTasks {
+    fn done(&self) -> bool {
+        return self.done;
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
+        if self.done {
+            panic!("tick should be called when tasks done")
+        }
+
+        if !self.read_memory_tasks.done() {
+            if !self.read_memory_tasks.tick(cpu) {
+                return false;
+            }
+        }
+
+        let value = match cpu.get_current_instruction_ctx() {
+            Some(ctx) => ctx.to_le_bytes()[0],
+            None => panic!("unexpected lack of value in instruction context after memory read"),
+        };
+        cpu.set_register(self.register, value);
+        self.done = true;
+
+        return self.done;
+    }
+}
+
+fn ld(cpu: &mut CPU, addr_mode: Option<AddressingMode>, register: Registers) -> Box<dyn Tasks> {
+    let read_memory_tasks = cpu.read_memory(addr_mode, None);
+    return Box::new(LoadTasks::new(read_memory_tasks, register));
 }
 
 pub fn lda_im(cpu: &mut CPU) -> Box<dyn Tasks> {
