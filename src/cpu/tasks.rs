@@ -90,52 +90,36 @@ pub struct ReadMemoryTasks {
     addressing_tasks: Box<dyn Tasks>,
     access_during_addressing: bool,
     step: ReadMemoryStep,
-    value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
 }
 
 impl ReadMemoryTasks {
-    pub fn new_with_access_during_addressing(
-        addressing_tasks: Box<dyn Tasks>,
-        value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
-    ) -> Self {
+    pub fn new_with_access_during_addressing(addressing_tasks: Box<dyn Tasks>) -> Self {
         return ReadMemoryTasks {
             addressing_tasks,
             access_during_addressing: true,
             step: ReadMemoryStep::AddressCalculation,
-            value_reader,
         };
     }
 
-    pub fn new_with_access_in_separate_cycle(
-        addressing_tasks: Box<dyn Tasks>,
-        value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
-    ) -> Self {
+    pub fn new_with_access_in_separate_cycle(addressing_tasks: Box<dyn Tasks>) -> Self {
         return ReadMemoryTasks {
             addressing_tasks,
             access_during_addressing: false,
             step: ReadMemoryStep::AddressCalculation,
-            value_reader,
         };
     }
 
-    pub fn new_with_immediate_addressing(
-        value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
-    ) -> Self {
+    pub fn new_with_immediate_addressing() -> Self {
         return ReadMemoryTasks {
             addressing_tasks: Box::new(GenericTasks::new()),
             access_during_addressing: false,
             step: ReadMemoryStep::ImmediateAccess,
-            value_reader,
         };
     }
 
     fn access_memory(&self, cpu: &mut CPU) -> () {
         let value = cpu.access_memory(cpu.address_output);
         cpu.set_ctx_lo(value);
-
-        if let Some(vr) = &self.value_reader {
-            vr(cpu, value)
-        }
     }
 }
 
@@ -206,7 +190,7 @@ mod read_memory_tasks {
             cpu.address_output = 0x0;
             cpu.program_counter = 0xCB;
 
-            let tasks = Box::new(ReadMemoryTasks::new_with_immediate_addressing(None));
+            let tasks = Box::new(ReadMemoryTasks::new_with_immediate_addressing());
             run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.address_output, 0xCB);
@@ -218,7 +202,7 @@ mod read_memory_tasks {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0xCB;
 
-            let tasks = Box::new(ReadMemoryTasks::new_with_immediate_addressing(None));
+            let tasks = Box::new(ReadMemoryTasks::new_with_immediate_addressing());
             run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.program_counter, 0xCC);
@@ -231,7 +215,7 @@ mod read_memory_tasks {
             cpu.program_counter = 0xCB;
             cpu.cycle = 0;
 
-            let tasks = Box::new(ReadMemoryTasks::new_with_immediate_addressing(None));
+            let tasks = Box::new(ReadMemoryTasks::new_with_immediate_addressing());
             run_tasks(&mut cpu, tasks);
 
             assert_eq!(cpu.cycle, 1);

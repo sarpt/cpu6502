@@ -8,7 +8,7 @@ fn compare(
     addr_mode: Option<AddressingMode>,
     register: Registers,
 ) -> Box<dyn Tasks> {
-    let read_memory_tasks = cpu.read_memory(addr_mode, None);
+    let read_memory_tasks = cpu.read_memory(addr_mode);
     return Box::new(CompareTasks::new(read_memory_tasks, register));
 }
 
@@ -226,7 +226,7 @@ pub fn operations_with_carry(
     addr_mode: Option<AddressingMode>,
     op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
 ) -> Box<dyn Tasks> {
-    let read_memory_tasks = cpu.read_memory(addr_mode, None);
+    let read_memory_tasks = cpu.read_memory(addr_mode);
     return Box::new(OperationsWithCarryTasks::new(read_memory_tasks, op));
 }
 

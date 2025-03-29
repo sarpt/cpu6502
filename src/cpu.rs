@@ -310,28 +310,22 @@ impl<'a> CPU<'a> {
         self.set_current_instruction_ctx((None, Some(hi)));
     }
 
-    fn read_memory(
-        &self,
-        addr_mode: Option<AddressingMode>,
-        value_reader: Option<Box<dyn Fn(&mut CPU, Byte) -> ()>>,
-    ) -> Box<dyn Tasks> {
+    fn read_memory(&self, addr_mode: Option<AddressingMode>) -> Box<dyn Tasks> {
         match addr_mode {
             Some(mode) => {
                 let addressing_tasks = get_addressing_tasks(self, mode);
                 if access_cycle_has_been_done_during_addressing(mode) {
                     return Box::new(ReadMemoryTasks::new_with_access_during_addressing(
                         addressing_tasks,
-                        value_reader,
                     ));
                 } else {
                     return Box::new(ReadMemoryTasks::new_with_access_in_separate_cycle(
                         addressing_tasks,
-                        value_reader,
                     ));
                 }
             }
             None => {
-                return Box::new(ReadMemoryTasks::new_with_immediate_addressing(value_reader));
+                return Box::new(ReadMemoryTasks::new_with_immediate_addressing());
             }
         }
     }
