@@ -1,6 +1,6 @@
 use crate::{
     consts::Byte,
-    cpu::{AddressingMode, Registers, Tasks, CPU},
+    cpu::{tasks::ReadMemoryTasks, AddressingMode, Registers, Tasks, CPU},
 };
 
 fn compare(
@@ -14,12 +14,12 @@ fn compare(
 
 struct CompareTasks {
     done: bool,
-    read_memory_tasks: Box<dyn Tasks>,
+    read_memory_tasks: Box<ReadMemoryTasks>,
     register: Registers,
 }
 
 impl CompareTasks {
-    pub fn new(read_memory_tasks: Box<dyn Tasks>, register: Registers) -> Self {
+    pub fn new(read_memory_tasks: Box<ReadMemoryTasks>, register: Registers) -> Self {
         return CompareTasks {
             read_memory_tasks,
             done: false,
@@ -44,9 +44,9 @@ impl Tasks for CompareTasks {
             }
         }
 
-        let value = match cpu.get_current_instruction_ctx() {
+        let value = match self.read_memory_tasks.value() {
             Some(ctx) => ctx.to_le_bytes()[0],
-            None => panic!("unexpected lack of value in instruction context after memory read"),
+            None => panic!("unexpected lack of value after memory read"),
         };
         cpu.set_cmp_status(self.register, value);
         self.done = true;
@@ -165,13 +165,13 @@ fn sbc(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp) {
 
 struct OperationsWithCarryTasks {
     done: bool,
-    read_memory_tasks: Box<dyn Tasks>,
+    read_memory_tasks: Box<ReadMemoryTasks>,
     op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
 }
 
 impl OperationsWithCarryTasks {
     pub fn new(
-        read_memory_tasks: Box<dyn Tasks>,
+        read_memory_tasks: Box<ReadMemoryTasks>,
         op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
     ) -> Self {
         return OperationsWithCarryTasks {
@@ -198,9 +198,9 @@ impl Tasks for OperationsWithCarryTasks {
             }
         }
 
-        let value = match cpu.get_current_instruction_ctx() {
+        let value = match self.read_memory_tasks.value() {
             Some(ctx) => ctx.to_le_bytes()[0],
-            None => panic!("unexpected lack of value in instruction context after memory read"),
+            None => panic!("unexpected lack of value after memory read"),
         };
         let accumulator = cpu.get_register(Registers::Accumulator);
         let (value, carry, overflow) =
