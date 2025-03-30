@@ -1,7 +1,11 @@
 use std::rc::Rc;
 
-use crate::cpu::{
-    addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers, Tasks, CPU,
+use crate::{
+    consts::Byte,
+    cpu::{
+        addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers, Tasks,
+        CPU,
+    },
 };
 
 fn decrement_cb(value: &u8) -> u8 {
@@ -13,7 +17,8 @@ fn increment_cb(value: &u8) -> u8 {
 }
 
 fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    return modify_memory(cpu, addr_mode, Box::new(decrement_cb));
+    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
+    return Box::new(ModifyMemoryTasks::new_dec(addr_tasks));
 }
 
 fn decrement_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
@@ -54,7 +59,8 @@ pub fn dey_im(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    return modify_memory(cpu, addr_mode, Box::new(increment_cb));
+    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
+    return Box::new(ModifyMemoryTasks::new_inc(addr_tasks));
 }
 
 fn increment_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
@@ -94,39 +100,89 @@ pub fn iny_im(cpu: &mut CPU) -> Box<dyn Tasks> {
     return increment_register(cpu, Registers::IndexY);
 }
 
-fn modify_memory(
-    cpu: &mut CPU,
-    addr_mode: AddressingMode,
-    cb: Box<dyn Fn(&u8) -> u8>,
-) -> Box<dyn Tasks> {
-    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
-    let mut tasks = GenericTasks::new_dependent(addr_tasks);
+enum ModificationVariant {
+    Inc,
+    Dec,
+}
 
-    tasks.push(Rc::new(|cpu| {
-        let value = cpu.access_memory(cpu.address_output);
-        cpu.set_ctx_lo(value);
-    }));
+#[derive(PartialEq, PartialOrd)]
+enum ModifyMemoryStep {
+    Addressing,
+    MemoryAccess,
+    ValueModification,
+    MemoryAndStatusWrite,
+    Done,
+}
 
-    tasks.push(Rc::new(move |cpu| {
-        let value = match cpu.get_current_instruction_ctx() {
-            Some(ctx) => ctx.to_le_bytes()[0],
-            None => panic!("unexpected lack of value in instruction context to modify"),
+struct ModifyMemoryTasks {
+    variant: ModificationVariant,
+    addr_tasks: Box<dyn Tasks>,
+    step: ModifyMemoryStep,
+    value: Byte,
+}
+
+impl ModifyMemoryTasks {
+    pub fn new_inc(addr_tasks: Box<dyn Tasks>) -> Self {
+        return ModifyMemoryTasks {
+            variant: ModificationVariant::Inc,
+            addr_tasks,
+            step: ModifyMemoryStep::Addressing,
+            value: Byte::default(),
         };
+    }
 
-        let modified_value = cb(&value);
-        cpu.set_ctx_hi(modified_value);
-    }));
-
-    tasks.push(Rc::new(|cpu| {
-        let modified_value = match cpu.get_current_instruction_ctx() {
-            Some(ctx) => ctx.to_le_bytes()[1],
-            None => panic!("unexpected lack of value in instruction context to modify"),
+    pub fn new_dec(addr_tasks: Box<dyn Tasks>) -> Self {
+        return ModifyMemoryTasks {
+            variant: ModificationVariant::Dec,
+            addr_tasks,
+            step: ModifyMemoryStep::Addressing,
+            value: Byte::default(),
         };
-        cpu.put_into_memory(cpu.address_output, modified_value);
-        cpu.set_status_of_value(modified_value);
-    }));
+    }
+}
 
-    return Box::new(tasks);
+impl Tasks for ModifyMemoryTasks {
+    fn done(&self) -> bool {
+        self.step == ModifyMemoryStep::Done
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
+        match self.step {
+            ModifyMemoryStep::Addressing => {
+                let done = self.addr_tasks.tick(cpu);
+                if done {
+                    self.step = ModifyMemoryStep::MemoryAccess
+                }
+
+                return false;
+            }
+            ModifyMemoryStep::MemoryAccess => {
+                self.value = cpu.access_memory(cpu.address_output);
+
+                self.step = ModifyMemoryStep::ValueModification;
+                return false;
+            }
+            ModifyMemoryStep::ValueModification => {
+                match self.variant {
+                    ModificationVariant::Inc => self.value = increment_cb(&self.value),
+                    ModificationVariant::Dec => self.value = decrement_cb(&self.value),
+                }
+
+                self.step = ModifyMemoryStep::MemoryAndStatusWrite;
+                return false;
+            }
+            ModifyMemoryStep::MemoryAndStatusWrite => {
+                cpu.put_into_memory(cpu.address_output, self.value);
+                cpu.set_status_of_value(self.value);
+
+                self.step = ModifyMemoryStep::Done;
+                return true;
+            }
+            ModifyMemoryStep::Done => {
+                panic!("tick mustn't be called when done")
+            }
+        }
+    }
 }
 
 #[cfg(test)]
