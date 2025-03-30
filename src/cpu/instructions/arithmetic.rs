@@ -1,6 +1,6 @@
 use crate::{
     consts::Byte,
-    cpu::{tasks::ReadMemoryTasks, AddressingMode, Registers, Tasks, CPU},
+    cpu::{tasks::read_memory::ReadMemoryTasks, AddressingMode, Registers, Tasks, CPU},
 };
 
 fn compare(

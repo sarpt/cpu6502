@@ -1,4 +1,4 @@
-use crate::cpu::{tasks::ReadMemoryTasks, AddressingMode, Registers, Tasks, CPU};
+use crate::cpu::{tasks::read_memory::ReadMemoryTasks, AddressingMode, Registers, Tasks, CPU};
 
 enum Variant {
     And,

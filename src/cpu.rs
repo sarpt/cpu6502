@@ -2,7 +2,8 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use addressing::{get_addressing_tasks, AddressingMode};
-use tasks::{GenericTasks, ReadMemoryTasks, Tasks};
+use tasks::read_memory::ReadMemoryTasks;
+use tasks::{GenericTasks, Tasks};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;

@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::cpu::{
     addressing::get_addressing_tasks,
-    tasks::{GenericTasks, ReadMemoryTasks},
+    tasks::{read_memory::ReadMemoryTasks, GenericTasks},
     AddressingMode, Registers, Tasks, CPU,
 };
 
