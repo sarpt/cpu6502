@@ -3,8 +3,9 @@ use std::rc::Rc;
 use crate::{
     consts::Byte,
     cpu::{
-        addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Registers, Tasks,
-        CPU,
+        addressing::get_addressing_tasks,
+        tasks::{modify_memory::ModifyMemoryTasks, GenericTasks},
+        AddressingMode, Registers, Tasks, CPU,
     },
 };
 
@@ -118,12 +119,8 @@ fn op_mem(
 }
 
 fn asl(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    return op_mem(
-        cpu,
-        addr_mode,
-        Box::new(|_| Box::new(shift_left_cb)),
-        Directions::Left,
-    );
+    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
+    return Box::new(ModifyMemoryTasks::new_shift_left(addr_tasks));
 }
 
 pub fn asl_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
@@ -147,12 +144,8 @@ pub fn asl_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 fn lsr(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    return op_mem(
-        cpu,
-        addr_mode,
-        Box::new(|_| Box::new(shift_right_cb)),
-        Directions::Right,
-    );
+    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
+    return Box::new(ModifyMemoryTasks::new_shift_right(addr_tasks));
 }
 
 pub fn lsr_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
