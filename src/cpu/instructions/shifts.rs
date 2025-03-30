@@ -74,50 +74,6 @@ fn op_acc(
     return Box::new(tasks);
 }
 
-fn op_mem(
-    cpu: &mut CPU,
-    addr_mode: AddressingMode,
-    op: Box<dyn Fn(bool) -> Box<dyn Fn(&u8) -> u8>>,
-    dir: Directions,
-) -> Box<dyn Tasks> {
-    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
-    let mut tasks = GenericTasks::new_dependent(addr_tasks);
-
-    tasks.push(Rc::new(|cpu| {
-        let value = cpu.access_memory(cpu.address_output);
-        cpu.set_ctx_lo(value);
-    }));
-
-    tasks.push(Rc::new(move |cpu| {
-        let current_carry = cpu.processor_status.get_carry_flag();
-        let cb = op(current_carry);
-        let value = match cpu.get_current_instruction_ctx() {
-            Some(ctx) => ctx.to_le_bytes()[0],
-            None => panic!("unexpected lack of value in instruction context to modify"),
-        };
-
-        let modified_value = cb(&value);
-        cpu.set_ctx_hi(modified_value);
-    }));
-
-    tasks.push(Rc::new(move |cpu| {
-        let [previous_value, modified_value] = match cpu.get_current_instruction_ctx() {
-            Some(ctx) => ctx.to_le_bytes(),
-            None => panic!("unexpected lack of value in instruction context to modify"),
-        };
-        cpu.put_into_memory(cpu.address_output, modified_value);
-        cpu.set_status_of_value(modified_value);
-
-        let new_carry = match dir {
-            Directions::Left => previous_value & 0b10000000 > 0,
-            Directions::Right => previous_value & 0b00000001 > 0,
-        };
-        cpu.processor_status.change_carry_flag(new_carry);
-    }));
-
-    return Box::new(tasks);
-}
-
 fn asl(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
     let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
     return Box::new(ModifyMemoryTasks::new_shift_left(addr_tasks));
@@ -173,12 +129,8 @@ pub fn lsr_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 fn rol(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    return op_mem(
-        cpu,
-        addr_mode,
-        Box::new(get_rotate_left_cb),
-        Directions::Left,
-    );
+    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
+    return Box::new(ModifyMemoryTasks::new_rotate_left(addr_tasks));
 }
 
 pub fn rol_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
@@ -202,12 +154,8 @@ pub fn rol_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 fn ror(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    return op_mem(
-        cpu,
-        addr_mode,
-        Box::new(get_rotate_right_cb),
-        Directions::Right,
-    );
+    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
+    return Box::new(ModifyMemoryTasks::new_rotate_right(addr_tasks));
 }
 
 pub fn ror_acc(cpu: &mut CPU) -> Box<dyn Tasks> {

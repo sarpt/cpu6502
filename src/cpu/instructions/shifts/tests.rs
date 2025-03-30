@@ -747,54 +747,116 @@ mod lsr {
 mod rol {
     #[cfg(test)]
     mod common {
-        use std::cell::RefCell;
+        mod acc {
+            use std::cell::RefCell;
 
-        use crate::cpu::{
-            instructions::shifts::rol_acc,
-            tests::{run_tasks, MemoryMock},
-            CPU,
-        };
+            use crate::cpu::{
+                instructions::shifts::rol_acc,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            };
 
-        #[test]
-        fn should_set_carry_when_bit_7_is_set() {
-            let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_nmos(memory);
-            cpu.accumulator = 0b10000000;
+            #[test]
+            fn should_set_carry_when_bit_7_is_set_before_rotation() {
+                let memory = &RefCell::new(MemoryMock::default());
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.accumulator = 0b10000000;
 
-            assert_eq!(cpu.processor_status.get_carry_flag(), false);
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            let tasks = rol_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+                let tasks = rol_acc(&mut cpu);
+                run_tasks(&mut cpu, tasks);
 
-            assert_eq!(cpu.processor_status.get_carry_flag(), true);
+                assert_eq!(cpu.processor_status.get_carry_flag(), true);
+            }
+
+            #[test]
+            fn should_not_change_carry_when_bit_7_is_not_set_before_rotation() {
+                let memory = &RefCell::new(MemoryMock::default());
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.accumulator = 0b01111111;
+
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
+
+                let tasks = rol_acc(&mut cpu);
+                run_tasks(&mut cpu, tasks);
+
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
+            }
+
+            #[test]
+            fn should_set_zero_when_value_after_shift_is_zero() {
+                let memory = &RefCell::new(MemoryMock::default());
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.accumulator = 0b10000000;
+
+                assert_eq!(cpu.processor_status.get_zero_flag(), false);
+
+                let tasks = rol_acc(&mut cpu);
+                run_tasks(&mut cpu, tasks);
+
+                assert_eq!(cpu.processor_status.get_zero_flag(), true);
+            }
         }
 
-        #[test]
-        fn should_not_change_carry_when_bit_7_is_not_set() {
-            let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_nmos(memory);
-            cpu.accumulator = 0b01111111;
+        mod mem {
+            use std::cell::RefCell;
 
-            assert_eq!(cpu.processor_status.get_carry_flag(), false);
+            use crate::{
+                consts::Byte,
+                cpu::{
+                    instructions::shifts::rol_zp,
+                    tests::{run_tasks, MemoryMock},
+                    CPU,
+                },
+            };
 
-            let tasks = rol_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            const ZERO_PAGE_ADDR: Byte = 0x01;
 
-            assert_eq!(cpu.processor_status.get_carry_flag(), false);
-        }
+            #[test]
+            fn should_set_carry_when_bit_7_is_set_before_rotation() {
+                const VALUE: Byte = 0b10000000;
+                let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.program_counter = 0x00;
 
-        #[test]
-        fn should_set_zero_when_value_after_shift_is_zero() {
-            let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_nmos(memory);
-            cpu.accumulator = 0b10000000;
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            assert_eq!(cpu.processor_status.get_zero_flag(), false);
+                let tasks = rol_zp(&mut cpu);
+                run_tasks(&mut cpu, tasks);
 
-            let tasks = rol_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+                assert_eq!(cpu.processor_status.get_carry_flag(), true);
+            }
 
-            assert_eq!(cpu.processor_status.get_zero_flag(), true);
+            #[test]
+            fn should_not_change_carry_when_bit_7_is_not_set_before_rotation() {
+                const VALUE: Byte = 0b01111111;
+                let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.program_counter = 0x00;
+
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
+
+                let tasks = rol_zp(&mut cpu);
+                run_tasks(&mut cpu, tasks);
+
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
+            }
+
+            #[test]
+            fn should_set_zero_when_value_after_shift_is_zero() {
+                const VALUE: Byte = 0b10000000;
+                let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.program_counter = 0x00;
+
+                assert_eq!(cpu.processor_status.get_zero_flag(), false);
+
+                let tasks = rol_zp(&mut cpu);
+                run_tasks(&mut cpu, tasks);
+
+                assert_eq!(cpu.processor_status.get_zero_flag(), true);
+            }
         }
     }
 
@@ -1217,54 +1279,116 @@ mod rol {
 mod ror {
     #[cfg(test)]
     mod common {
-        use std::cell::RefCell;
+        mod acc {
+            use std::cell::RefCell;
 
-        use crate::cpu::{
-            instructions::shifts::ror_acc,
-            tests::{run_tasks, MemoryMock},
-            CPU,
-        };
+            use crate::cpu::{
+                instructions::shifts::ror_acc,
+                tests::{run_tasks, MemoryMock},
+                CPU,
+            };
 
-        #[test]
-        fn should_set_carry_when_bit_0_is_set() {
-            let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_nmos(memory);
-            cpu.accumulator = 0b00000001;
+            #[test]
+            fn should_set_carry_when_bit_0_is_set() {
+                let memory = &RefCell::new(MemoryMock::default());
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.accumulator = 0b00000001;
 
-            assert_eq!(cpu.processor_status.get_carry_flag(), false);
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            let tasks = ror_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+                let tasks = ror_acc(&mut cpu);
+                run_tasks(&mut cpu, tasks);
 
-            assert_eq!(cpu.processor_status.get_carry_flag(), true);
+                assert_eq!(cpu.processor_status.get_carry_flag(), true);
+            }
+
+            #[test]
+            fn should_not_change_carry_when_bit_0_is_not_set() {
+                let memory = &RefCell::new(MemoryMock::default());
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.accumulator = 0b11111110;
+
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
+
+                let tasks = ror_acc(&mut cpu);
+                run_tasks(&mut cpu, tasks);
+
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
+            }
+
+            #[test]
+            fn should_set_zero_when_value_after_shift_is_zero() {
+                let memory = &RefCell::new(MemoryMock::default());
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.accumulator = 0b00000001;
+
+                assert_eq!(cpu.processor_status.get_zero_flag(), false);
+
+                let tasks = ror_acc(&mut cpu);
+                run_tasks(&mut cpu, tasks);
+
+                assert_eq!(cpu.processor_status.get_zero_flag(), true);
+            }
         }
 
-        #[test]
-        fn should_not_change_carry_when_bit_0_is_not_set() {
-            let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_nmos(memory);
-            cpu.accumulator = 0b11111110;
+        mod mem {
+            use std::cell::RefCell;
 
-            assert_eq!(cpu.processor_status.get_carry_flag(), false);
+            use crate::{
+                consts::Byte,
+                cpu::{
+                    instructions::shifts::ror_zp,
+                    tests::{run_tasks, MemoryMock},
+                    CPU,
+                },
+            };
 
-            let tasks = ror_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            const ZERO_PAGE_ADDR: Byte = 0x01;
 
-            assert_eq!(cpu.processor_status.get_carry_flag(), false);
-        }
+            #[test]
+            fn should_set_carry_when_bit_0_is_set_before_rotation() {
+                const VALUE: Byte = 0b00000001;
+                let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.program_counter = 0x00;
 
-        #[test]
-        fn should_set_zero_when_value_after_shift_is_zero() {
-            let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_nmos(memory);
-            cpu.accumulator = 0b00000001;
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-            assert_eq!(cpu.processor_status.get_zero_flag(), false);
+                let tasks = ror_zp(&mut cpu);
+                run_tasks(&mut cpu, tasks);
 
-            let tasks = ror_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+                assert_eq!(cpu.processor_status.get_carry_flag(), true);
+            }
 
-            assert_eq!(cpu.processor_status.get_zero_flag(), true);
+            #[test]
+            fn should_not_change_carry_when_bit_0_is_not_set_before_rotation() {
+                const VALUE: Byte = 0b11111110;
+                let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.program_counter = 0x00;
+
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
+
+                let tasks = ror_zp(&mut cpu);
+                run_tasks(&mut cpu, tasks);
+
+                assert_eq!(cpu.processor_status.get_carry_flag(), false);
+            }
+
+            #[test]
+            fn should_set_zero_when_value_after_shift_is_zero() {
+                const VALUE: Byte = 0b00000001;
+                let memory = &RefCell::new(MemoryMock::new(&[ZERO_PAGE_ADDR, VALUE]));
+                let mut cpu = CPU::new_nmos(memory);
+                cpu.program_counter = 0x00;
+
+                assert_eq!(cpu.processor_status.get_zero_flag(), false);
+
+                let tasks = ror_zp(&mut cpu);
+                run_tasks(&mut cpu, tasks);
+
+                assert_eq!(cpu.processor_status.get_zero_flag(), true);
+            }
         }
     }
 

@@ -7,6 +7,8 @@ enum ModificationVariant {
     Dec,
     ShiftLeft,
     ShiftRight,
+    RotateLeft,
+    RotateRight,
 }
 
 #[derive(PartialEq, PartialOrd)]
@@ -66,6 +68,26 @@ impl ModifyMemoryTasks {
             value: Byte::default(),
         };
     }
+
+    pub fn new_rotate_left(addr_tasks: Box<dyn Tasks>) -> Self {
+        return ModifyMemoryTasks {
+            variant: ModificationVariant::RotateLeft,
+            addr_tasks,
+            step: ModifyMemoryStep::Addressing,
+            previous_value: Byte::default(),
+            value: Byte::default(),
+        };
+    }
+
+    pub fn new_rotate_right(addr_tasks: Box<dyn Tasks>) -> Self {
+        return ModifyMemoryTasks {
+            variant: ModificationVariant::RotateRight,
+            addr_tasks,
+            step: ModifyMemoryStep::Addressing,
+            previous_value: Byte::default(),
+            value: Byte::default(),
+        };
+    }
 }
 
 impl Tasks for ModifyMemoryTasks {
@@ -101,6 +123,22 @@ impl Tasks for ModifyMemoryTasks {
                     ModificationVariant::ShiftRight => {
                         self.value = self.value >> 1;
                     }
+                    ModificationVariant::RotateLeft => {
+                        let mod_value = self.value << 1;
+                        if !cpu.processor_status.get_carry_flag() {
+                            self.value = mod_value;
+                        } else {
+                            self.value = mod_value | 0b00000001;
+                        }
+                    }
+                    ModificationVariant::RotateRight => {
+                        let mod_value = self.value >> 1;
+                        if !cpu.processor_status.get_carry_flag() {
+                            self.value = mod_value;
+                        } else {
+                            self.value = mod_value | 0b10000000;
+                        }
+                    }
                 }
 
                 self.step = ModifyMemoryStep::MemoryAndStatusWrite;
@@ -111,11 +149,11 @@ impl Tasks for ModifyMemoryTasks {
                 cpu.set_status_of_value(self.value);
 
                 match self.variant {
-                    ModificationVariant::ShiftLeft => {
+                    ModificationVariant::ShiftLeft | ModificationVariant::RotateLeft => {
                         cpu.processor_status
                             .change_carry_flag(self.previous_value & 0b10000000 > 0);
                     }
-                    ModificationVariant::ShiftRight => {
+                    ModificationVariant::ShiftRight | ModificationVariant::RotateRight => {
                         cpu.processor_status
                             .change_carry_flag(self.previous_value & 0b00000001 > 0);
                     }
