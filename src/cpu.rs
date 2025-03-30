@@ -35,10 +35,8 @@ enum Registers {
 
 type OpcodeHandler = fn(&mut CPU) -> Box<dyn Tasks>;
 
-type InstructionCtx = Option<Word>;
 struct InstructionExecution {
     opcode: Byte,
-    ctx: InstructionCtx,
     starting_cycle: usize,
     tasks: Box<dyn Tasks>,
 }
@@ -283,34 +281,6 @@ impl<'a> CPU<'a> {
         self.address_output = Word::from_le_bytes([self.address_output.to_le_bytes()[0], hi]);
     }
 
-    fn get_current_instruction_ctx(&self) -> Option<Word> {
-        return match &self.current_instruction {
-            Some(current_instruciton) => current_instruciton.ctx,
-            None => panic!("cannot get ctx for non-exisiting instruction"),
-        };
-    }
-
-    fn set_current_instruction_ctx(&mut self, vals: (Option<Byte>, Option<Byte>)) {
-        match &mut self.current_instruction {
-            Some(current_instruction) => {
-                let [old_lo, old_hi] = current_instruction.ctx.unwrap_or(0).to_le_bytes();
-                let new_lo = vals.0.unwrap_or(old_lo);
-                let new_hi = vals.1.unwrap_or(old_hi);
-                let new_val = Word::from_le_bytes([new_lo, new_hi]);
-                current_instruction.ctx = Some(new_val);
-            }
-            None => panic!("cannot get ctx for non-exisiting instruction"),
-        };
-    }
-
-    fn set_ctx_lo(&mut self, lo: Byte) {
-        self.set_current_instruction_ctx((Some(lo), None));
-    }
-
-    fn set_ctx_hi(&mut self, hi: Byte) {
-        self.set_current_instruction_ctx((None, Some(hi)));
-    }
-
     fn read_memory(&self, addr_mode: Option<AddressingMode>) -> Box<ReadMemoryTasks> {
         match addr_mode {
             Some(mode) => {
@@ -364,7 +334,6 @@ impl<'a> CPU<'a> {
         };
 
         return InstructionExecution {
-            ctx: None,
             tasks: tasks,
             opcode: opcode,
             starting_cycle: self.cycle,
