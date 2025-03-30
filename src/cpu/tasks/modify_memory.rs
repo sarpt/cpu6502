@@ -5,6 +5,8 @@ use super::Tasks;
 enum ModificationVariant {
     Inc,
     Dec,
+    ShiftLeft,
+    ShiftRight,
 }
 
 #[derive(PartialEq, PartialOrd)]
@@ -20,6 +22,7 @@ pub struct ModifyMemoryTasks {
     variant: ModificationVariant,
     addr_tasks: Box<dyn Tasks>,
     step: ModifyMemoryStep,
+    previous_value: Byte,
     value: Byte,
 }
 
@@ -29,6 +32,7 @@ impl ModifyMemoryTasks {
             variant: ModificationVariant::Inc,
             addr_tasks,
             step: ModifyMemoryStep::Addressing,
+            previous_value: Byte::default(),
             value: Byte::default(),
         };
     }
@@ -38,6 +42,27 @@ impl ModifyMemoryTasks {
             variant: ModificationVariant::Dec,
             addr_tasks,
             step: ModifyMemoryStep::Addressing,
+            previous_value: Byte::default(),
+            value: Byte::default(),
+        };
+    }
+
+    pub fn new_shift_left(addr_tasks: Box<dyn Tasks>) -> Self {
+        return ModifyMemoryTasks {
+            variant: ModificationVariant::ShiftLeft,
+            addr_tasks,
+            step: ModifyMemoryStep::Addressing,
+            previous_value: Byte::default(),
+            value: Byte::default(),
+        };
+    }
+
+    pub fn new_shift_right(addr_tasks: Box<dyn Tasks>) -> Self {
+        return ModifyMemoryTasks {
+            variant: ModificationVariant::ShiftRight,
+            addr_tasks,
+            step: ModifyMemoryStep::Addressing,
+            previous_value: Byte::default(),
             value: Byte::default(),
         };
     }
@@ -65,9 +90,17 @@ impl Tasks for ModifyMemoryTasks {
                 return false;
             }
             ModifyMemoryStep::ValueModification => {
+                self.previous_value = self.value;
+
                 match self.variant {
                     ModificationVariant::Inc => self.value = self.value.wrapping_add(1),
                     ModificationVariant::Dec => self.value = self.value.wrapping_sub(1),
+                    ModificationVariant::ShiftLeft => {
+                        self.value = self.value << 1;
+                    }
+                    ModificationVariant::ShiftRight => {
+                        self.value = self.value >> 1;
+                    }
                 }
 
                 self.step = ModifyMemoryStep::MemoryAndStatusWrite;
@@ -76,6 +109,18 @@ impl Tasks for ModifyMemoryTasks {
             ModifyMemoryStep::MemoryAndStatusWrite => {
                 cpu.put_into_memory(cpu.address_output, self.value);
                 cpu.set_status_of_value(self.value);
+
+                match self.variant {
+                    ModificationVariant::ShiftLeft => {
+                        cpu.processor_status
+                            .change_carry_flag(self.previous_value & 0b10000000 > 0);
+                    }
+                    ModificationVariant::ShiftRight => {
+                        cpu.processor_status
+                            .change_carry_flag(self.previous_value & 0b00000001 > 0);
+                    }
+                    _ => {}
+                };
 
                 self.step = ModifyMemoryStep::Done;
                 return true;
