@@ -25,13 +25,6 @@ impl GenericTasks {
         };
     }
 
-    pub fn new_dependent(dependency: Box<dyn Tasks>) -> Self {
-        return GenericTasks {
-            dependency: Some(dependency),
-            tasks_queue: VecDeque::new(),
-        };
-    }
-
     pub fn push(&mut self, task: ScheduledTask) -> () {
         self.tasks_queue.push_back(task);
     }
