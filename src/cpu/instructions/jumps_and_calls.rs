@@ -1,7 +1,9 @@
 use std::rc::Rc;
 
 use crate::cpu::{
-    addressing::get_addressing_tasks, tasks::GenericTasks, AddressingMode, Tasks, CPU,
+    addressing::{get_addressing_tasks, AddressingTasks},
+    tasks::GenericTasks,
+    AddressingMode, Tasks, CPU,
 };
 
 #[derive(PartialEq, PartialOrd)]
@@ -15,11 +17,11 @@ enum JsrSteps {
 
 struct JsrTasks {
     step: JsrSteps,
-    addressing_tasks: Box<dyn Tasks>,
+    addressing_tasks: Box<dyn AddressingTasks>,
 }
 
 impl JsrTasks {
-    pub fn new(addressing_tasks: Box<dyn Tasks>) -> Self {
+    pub fn new(addressing_tasks: Box<dyn AddressingTasks>) -> Self {
         return JsrTasks {
             step: JsrSteps::Addressing,
             addressing_tasks,
@@ -59,7 +61,10 @@ impl Tasks for JsrTasks {
                 return false;
             }
             JsrSteps::SetProgramCounter => {
-                cpu.program_counter = cpu.address_output;
+                cpu.program_counter = self
+                    .addressing_tasks
+                    .address()
+                    .expect("unexpected lack of output address in SetProgramCounter step");
 
                 self.step = JsrSteps::Done;
                 return true;
@@ -105,11 +110,11 @@ pub fn rts(_cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 pub struct JmpTasks {
-    addressing_tasks: Box<dyn Tasks>,
+    addressing_tasks: Box<dyn AddressingTasks>,
 }
 
 impl JmpTasks {
-    fn new(addressing_tasks: Box<dyn Tasks>) -> Self {
+    fn new(addressing_tasks: Box<dyn AddressingTasks>) -> Self {
         return JmpTasks { addressing_tasks };
     }
 }
@@ -127,7 +132,10 @@ impl Tasks for JmpTasks {
         let done = self.addressing_tasks.tick(cpu);
 
         if done {
-            cpu.program_counter = cpu.address_output;
+            cpu.program_counter = self
+                .addressing_tasks
+                .address()
+                .expect("unexpected lack of address in JmpTasks");
         }
 
         return done;

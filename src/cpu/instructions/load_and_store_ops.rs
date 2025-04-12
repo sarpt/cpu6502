@@ -1,6 +1,7 @@
 use crate::cpu::{
-    addressing::get_addressing_tasks, tasks::read_memory::ReadMemoryTasks, AddressingMode,
-    Registers, Tasks, CPU,
+    addressing::{get_addressing_tasks, AddressingTasks},
+    tasks::read_memory::ReadMemoryTasks,
+    AddressingMode, Registers, Tasks, CPU,
 };
 
 struct LoadTasks {
@@ -133,12 +134,12 @@ pub fn ldx_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
 
 struct StoreTasks {
     done: bool,
-    addressing_tasks: Box<dyn Tasks>,
+    addressing_tasks: Box<dyn AddressingTasks>,
     src_register: Registers,
 }
 
 impl StoreTasks {
-    pub fn new(addressing_tasks: Box<dyn Tasks>, src_register: Registers) -> Self {
+    pub fn new(addressing_tasks: Box<dyn AddressingTasks>, src_register: Registers) -> Self {
         return StoreTasks {
             done: false,
             addressing_tasks,
@@ -163,7 +164,12 @@ impl Tasks for StoreTasks {
         }
 
         let value = cpu.get_register(self.src_register);
-        cpu.put_into_memory(cpu.address_output, value);
+        cpu.put_into_memory(
+            self.addressing_tasks
+                .address()
+                .expect("unexpected lack of address in StoreTasks"),
+            value,
+        );
         self.done = true;
 
         return self.done;
