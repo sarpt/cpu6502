@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use addressing::{get_addressing_tasks, AddressingMode};
-use tasks::read_memory::ReadMemoryTasks;
+use tasks::read_memory::{AddressingReadMemoryTasks, ImmediateReadMemoryTasks, ReadMemoryTasks};
 use tasks::{GenericTasks, Tasks};
 
 use super::consts::{Byte, Word};
@@ -281,22 +281,26 @@ impl<'a> CPU<'a> {
         self.address_output = Word::from_le_bytes([self.address_output.to_le_bytes()[0], hi]);
     }
 
-    fn read_memory(&self, addr_mode: Option<AddressingMode>) -> Box<ReadMemoryTasks> {
+    fn read_memory(&self, addr_mode: Option<AddressingMode>) -> Box<dyn ReadMemoryTasks> {
         match addr_mode {
             Some(mode) => {
                 let addressing_tasks = get_addressing_tasks(self, mode);
                 if access_cycle_has_been_done_during_addressing(mode) {
-                    return Box::new(ReadMemoryTasks::new_with_access_during_addressing(
-                        addressing_tasks,
-                    ));
+                    return Box::new(
+                        AddressingReadMemoryTasks::new_with_access_during_addressing(
+                            addressing_tasks,
+                        ),
+                    );
                 } else {
-                    return Box::new(ReadMemoryTasks::new_with_access_in_separate_cycle(
-                        addressing_tasks,
-                    ));
+                    return Box::new(
+                        AddressingReadMemoryTasks::new_with_access_in_separate_cycle(
+                            addressing_tasks,
+                        ),
+                    );
                 }
             }
             None => {
-                return Box::new(ReadMemoryTasks::new_with_immediate_addressing());
+                return Box::new(ImmediateReadMemoryTasks::new());
             }
         }
     }

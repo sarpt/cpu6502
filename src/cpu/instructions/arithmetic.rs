@@ -14,12 +14,12 @@ fn compare(
 
 struct CompareTasks {
     done: bool,
-    read_memory_tasks: Box<ReadMemoryTasks>,
+    read_memory_tasks: Box<dyn ReadMemoryTasks>,
     register: Registers,
 }
 
 impl CompareTasks {
-    pub fn new(read_memory_tasks: Box<ReadMemoryTasks>, register: Registers) -> Self {
+    pub fn new(read_memory_tasks: Box<dyn ReadMemoryTasks>, register: Registers) -> Self {
         return CompareTasks {
             read_memory_tasks,
             done: false,
@@ -165,13 +165,13 @@ fn sbc(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp) {
 
 struct OperationsWithCarryTasks {
     done: bool,
-    read_memory_tasks: Box<ReadMemoryTasks>,
+    read_memory_tasks: Box<dyn ReadMemoryTasks>,
     op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
 }
 
 impl OperationsWithCarryTasks {
     pub fn new(
-        read_memory_tasks: Box<ReadMemoryTasks>,
+        read_memory_tasks: Box<dyn ReadMemoryTasks>,
         op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
     ) -> Self {
         return OperationsWithCarryTasks {

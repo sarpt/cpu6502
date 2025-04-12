@@ -9,12 +9,12 @@ enum Variant {
 
 struct LogicalTasks {
     done: bool,
-    read_memory_tasks: Box<ReadMemoryTasks>,
+    read_memory_tasks: Box<dyn ReadMemoryTasks>,
     variant: Variant,
 }
 
 impl LogicalTasks {
-    pub fn new_and(read_memory_tasks: Box<ReadMemoryTasks>) -> Self {
+    pub fn new_and(read_memory_tasks: Box<dyn ReadMemoryTasks>) -> Self {
         return LogicalTasks {
             done: false,
             read_memory_tasks,
@@ -22,7 +22,7 @@ impl LogicalTasks {
         };
     }
 
-    pub fn new_eor(read_memory_tasks: Box<ReadMemoryTasks>) -> Self {
+    pub fn new_eor(read_memory_tasks: Box<dyn ReadMemoryTasks>) -> Self {
         return LogicalTasks {
             done: false,
             read_memory_tasks,
@@ -30,7 +30,7 @@ impl LogicalTasks {
         };
     }
 
-    pub fn new_ora(read_memory_tasks: Box<ReadMemoryTasks>) -> Self {
+    pub fn new_ora(read_memory_tasks: Box<dyn ReadMemoryTasks>) -> Self {
         return LogicalTasks {
             done: false,
             read_memory_tasks,
@@ -38,7 +38,7 @@ impl LogicalTasks {
         };
     }
 
-    pub fn new_bit(read_memory_tasks: Box<ReadMemoryTasks>) -> Self {
+    pub fn new_bit(read_memory_tasks: Box<dyn ReadMemoryTasks>) -> Self {
         return LogicalTasks {
             done: false,
             read_memory_tasks,
