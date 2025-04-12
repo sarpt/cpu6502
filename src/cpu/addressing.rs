@@ -1,4 +1,5 @@
 mod absolute;
+mod address;
 mod indirect;
 mod zero_page;
 
@@ -7,6 +8,8 @@ use indirect::{
     IndexIndirectXAddressingTasks, IndirectAddressingTasks, IndirectIndexYAddressingTasks,
 };
 use zero_page::{ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks};
+
+use crate::consts::Word;
 
 use super::{tasks::Tasks, ChipVariant, CPU};
 
@@ -28,7 +31,11 @@ enum OffsetVariant {
     Y,
 }
 
-pub fn get_addressing_tasks(cpu: &CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
+pub trait AddressingTasks: Tasks {
+    fn address(&self) -> Option<Word>;
+}
+
+pub fn get_addressing_tasks(cpu: &CPU, addr_mode: AddressingMode) -> Box<dyn AddressingTasks> {
     match addr_mode {
         AddressingMode::ZeroPage => {
             return Box::new(ZeroPageAddressingTasks::new());
