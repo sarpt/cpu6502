@@ -1,9 +1,6 @@
-use std::rc::Rc;
-
 use crate::cpu::{
-    addressing::get_addressing_tasks,
-    tasks::{read_memory::ReadMemoryTasks, GenericTasks},
-    AddressingMode, Registers, Tasks, CPU,
+    addressing::get_addressing_tasks, tasks::read_memory::ReadMemoryTasks, AddressingMode,
+    Registers, Tasks, CPU,
 };
 
 struct LoadTasks {
@@ -134,16 +131,49 @@ pub fn ldx_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
     return ld(cpu, Some(AddressingMode::AbsoluteY), Registers::IndexX);
 }
 
+struct StoreTasks {
+    done: bool,
+    addressing_tasks: Box<dyn Tasks>,
+    src_register: Registers,
+}
+
+impl StoreTasks {
+    pub fn new(addressing_tasks: Box<dyn Tasks>, src_register: Registers) -> Self {
+        return StoreTasks {
+            done: false,
+            addressing_tasks,
+            src_register,
+        };
+    }
+}
+
+impl Tasks for StoreTasks {
+    fn done(&self) -> bool {
+        return self.done;
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
+        if self.done {
+            panic!("tick mustn't be called when done")
+        }
+
+        if !self.addressing_tasks.done() {
+            self.addressing_tasks.tick(cpu);
+            return false;
+        }
+
+        let value = cpu.get_register(self.src_register);
+        cpu.put_into_memory(cpu.address_output, value);
+        self.done = true;
+
+        return self.done;
+    }
+}
+
 pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Box<dyn Tasks> {
     let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
-    let mut tasks = GenericTasks::new_dependent(addr_tasks);
 
-    tasks.push(Rc::new(move |cpu| {
-        let value = cpu.get_register(register);
-        cpu.put_into_memory(cpu.address_output, value);
-    }));
-
-    return Box::new(tasks);
+    return Box::new(StoreTasks::new(addr_tasks, register));
 }
 
 pub fn sta_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
