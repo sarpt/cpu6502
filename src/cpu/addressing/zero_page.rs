@@ -1,14 +1,21 @@
-use crate::{consts::Byte, cpu::tasks::Tasks};
+use crate::{
+    consts::{Byte, Word},
+    cpu::tasks::Tasks,
+};
 
-use super::OffsetVariant;
+use super::{address::Address, AddressingTasks, OffsetVariant};
 
 pub struct ZeroPageAddressingTasks {
     done: bool,
+    addr: Address,
 }
 
 impl ZeroPageAddressingTasks {
     pub fn new() -> Self {
-        return ZeroPageAddressingTasks { done: false };
+        return ZeroPageAddressingTasks {
+            done: false,
+            addr: Address::new(),
+        };
     }
 }
 
@@ -23,11 +30,18 @@ impl Tasks for ZeroPageAddressingTasks {
         }
 
         let addr: Byte = cpu.access_memory(cpu.program_counter);
-        cpu.set_address_output(addr);
+        cpu.set_address_output(addr); // TODO: remove after switch to using address method in users
+        self.addr.set(addr);
         cpu.increment_program_counter();
         self.done = true;
 
         return self.done;
+    }
+}
+
+impl AddressingTasks for ZeroPageAddressingTasks {
+    fn address(&self) -> Option<Word> {
+        self.addr.value()
     }
 }
 
@@ -37,6 +51,7 @@ enum ZeroPageOffsetStep {
 }
 
 pub struct ZeroPageOffsetAddressingTasks {
+    addr: Address,
     done: bool,
     step: ZeroPageOffsetStep,
     variant: OffsetVariant,
@@ -45,6 +60,7 @@ pub struct ZeroPageOffsetAddressingTasks {
 impl ZeroPageOffsetAddressingTasks {
     pub fn new_offset_by_x() -> Self {
         return ZeroPageOffsetAddressingTasks {
+            addr: Address::new(),
             done: false,
             step: ZeroPageOffsetStep::ZeroPageAccess,
             variant: OffsetVariant::X,
@@ -53,6 +69,7 @@ impl ZeroPageOffsetAddressingTasks {
 
     pub fn new_offset_by_y() -> Self {
         return ZeroPageOffsetAddressingTasks {
+            addr: Address::new(),
             done: false,
             step: ZeroPageOffsetStep::ZeroPageAccess,
             variant: OffsetVariant::Y,
@@ -86,11 +103,18 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
                 };
                 let addr_output = cpu.address_output as Byte;
                 let final_address = addr_output.wrapping_add(offset);
-                cpu.set_address_output(final_address);
+                cpu.set_address_output(final_address); // TODO: remove after switch to using address method in users
+                self.addr.set(final_address);
 
                 self.done = true;
                 return self.done;
             }
         }
+    }
+}
+
+impl AddressingTasks for ZeroPageOffsetAddressingTasks {
+    fn address(&self) -> Option<crate::consts::Word> {
+        self.addr.value()
     }
 }
