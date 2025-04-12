@@ -6,12 +6,12 @@ use crate::cpu::{
 
 struct LoadTasks {
     done: bool,
-    read_memory_tasks: Box<ReadMemoryTasks>,
+    read_memory_tasks: Box<dyn ReadMemoryTasks>,
     register: Registers,
 }
 
 impl LoadTasks {
-    pub fn new(read_memory_tasks: Box<ReadMemoryTasks>, register: Registers) -> Self {
+    pub fn new(read_memory_tasks: Box<dyn ReadMemoryTasks>, register: Registers) -> Self {
         return LoadTasks {
             done: false,
             read_memory_tasks,
