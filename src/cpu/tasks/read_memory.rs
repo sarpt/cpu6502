@@ -1,4 +1,7 @@
-use crate::{consts::Byte, cpu::CPU};
+use crate::{
+    consts::Byte,
+    cpu::{addressing::AddressingTasks, CPU},
+};
 
 use super::Tasks;
 
@@ -14,14 +17,14 @@ enum AddressingReadMemoryStep {
 }
 
 pub struct AddressingReadMemoryTasks {
-    addressing_tasks: Box<dyn Tasks>,
+    addressing_tasks: Box<dyn AddressingTasks>,
     access_during_addressing: bool,
     step: AddressingReadMemoryStep,
     value: Option<Byte>,
 }
 
 impl AddressingReadMemoryTasks {
-    pub fn new_with_access_during_addressing(addressing_tasks: Box<dyn Tasks>) -> Self {
+    pub fn new_with_access_during_addressing(addressing_tasks: Box<dyn AddressingTasks>) -> Self {
         return AddressingReadMemoryTasks {
             addressing_tasks,
             access_during_addressing: true,
@@ -30,7 +33,7 @@ impl AddressingReadMemoryTasks {
         };
     }
 
-    pub fn new_with_access_in_separate_cycle(addressing_tasks: Box<dyn Tasks>) -> Self {
+    pub fn new_with_access_in_separate_cycle(addressing_tasks: Box<dyn AddressingTasks>) -> Self {
         return AddressingReadMemoryTasks {
             addressing_tasks,
             access_during_addressing: false,
@@ -40,7 +43,13 @@ impl AddressingReadMemoryTasks {
     }
 
     fn access_memory(&mut self, cpu: &CPU) -> () {
-        self.value = Some(cpu.access_memory(cpu.address_output));
+        self.value = Some(
+            cpu.access_memory(
+                self.addressing_tasks
+                    .address()
+                    .expect("unexpected lack of address during access"),
+            ),
+        );
     }
 }
 
@@ -147,7 +156,6 @@ mod read_memory_tasks {
         fn should_return_value_at_address_of_program_counter() {
             let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
             let mut cpu = CPU::new_nmos(memory);
-            cpu.address_output = 0x0;
             cpu.program_counter = 0x02;
 
             let mut tasks = Box::new(ImmediateReadMemoryTasks::new());
