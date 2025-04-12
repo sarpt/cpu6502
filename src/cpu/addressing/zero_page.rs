@@ -90,7 +90,7 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
         match self.step {
             ZeroPageOffsetStep::ZeroPageAccess => {
                 let addr: Byte = cpu.access_memory(cpu.program_counter);
-                cpu.set_address_output(addr);
+                self.addr.set(addr);
                 cpu.increment_program_counter();
                 self.step = ZeroPageOffsetStep::Offset;
 
@@ -101,7 +101,11 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
                     OffsetVariant::X => cpu.index_register_x.into(),
                     OffsetVariant::Y => cpu.index_register_y.into(),
                 };
-                let addr_output = cpu.address_output as Byte;
+                let addr_output = self
+                    .addr
+                    .value()
+                    .expect("unexpected lack of address at Offset step")
+                    as Byte;
                 let final_address = addr_output.wrapping_add(offset);
                 cpu.set_address_output(final_address); // TODO: remove after switch to using address method in users
                 self.addr.set(final_address);
