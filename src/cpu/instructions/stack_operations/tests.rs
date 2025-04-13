@@ -15,8 +15,8 @@ mod pha {
         cpu.stack_pointer = 0xFF;
         cpu.accumulator = 0xDE;
 
-        let tasks = pha(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = pha(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[0x01FF], 0xDE);
     }
@@ -29,8 +29,8 @@ mod pha {
         cpu.stack_pointer = 0xFF;
         cpu.cycle = 0;
 
-        let tasks = pha(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = pha(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -54,8 +54,8 @@ mod pla {
         memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.accumulator = 0x00;
 
-        let tasks = pla(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = pla(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.accumulator, 0xDE);
     }
@@ -68,8 +68,8 @@ mod pla {
         memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.cycle = 0;
 
-        let tasks = pla(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = pla(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -82,8 +82,8 @@ mod pla {
         memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        let tasks = pla(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = pla(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -106,8 +106,8 @@ mod php {
         cpu.processor_status = (0b10101010 as u8).into();
         cpu.stack_pointer = 0xFF;
 
-        let tasks = php(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = php(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[0x01FF], 0b10101010);
     }
@@ -120,8 +120,8 @@ mod php {
         cpu.stack_pointer = 0xFF;
         cpu.cycle = 0;
 
-        let tasks = php(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = php(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -145,8 +145,8 @@ mod plp {
         memory.borrow_mut()[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        let tasks = plp(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = plp(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0xDE);
     }
@@ -160,8 +160,8 @@ mod plp {
         cpu.processor_status = (0x00 as u8).into();
         cpu.cycle = 0;
 
-        let tasks = plp(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = plp(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -183,8 +183,8 @@ mod txs {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0xDE;
 
-        let tasks = txs(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = txs(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.stack_pointer, 0xDE);
     }
@@ -196,8 +196,8 @@ mod txs {
         cpu.index_register_x = 0xDE;
         cpu.cycle = 0;
 
-        let tasks = txs(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = txs(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -219,8 +219,8 @@ mod tsx {
         let mut cpu = CPU::new_nmos(memory);
         cpu.stack_pointer = 0xDE;
 
-        let tasks = tsx(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tsx(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.index_register_x, 0xDE);
     }
@@ -232,8 +232,8 @@ mod tsx {
         cpu.stack_pointer = 0xDE;
         cpu.cycle = 0;
 
-        let tasks = tsx(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tsx(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -245,8 +245,8 @@ mod tsx {
         cpu.stack_pointer = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        let tasks = tsx(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tsx(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }

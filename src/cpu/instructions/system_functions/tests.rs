@@ -21,8 +21,8 @@ mod brk {
             cpu.stack_pointer = 0xFF;
             cpu.program_counter = 0xABCD;
 
-            let tasks = brk(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = brk(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[0x01FF], 0xAB);
             assert_eq!(memory.borrow()[0x01FE], 0xCE);
@@ -40,8 +40,8 @@ mod brk {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            let tasks = brk(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = brk(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.program_counter, 0x9BAD);
         }
@@ -53,8 +53,8 @@ mod brk {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_break_flag(false);
 
-            let tasks = brk(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = brk(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status.get_break_flag(), true);
         }
@@ -66,8 +66,8 @@ mod brk {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = brk(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = brk(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -92,8 +92,8 @@ mod brk {
                 cpu.program_counter = 0x00;
                 cpu.processor_status.change_decimal_mode_flag(true);
 
-                let tasks = brk(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = brk(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
             }
@@ -112,8 +112,8 @@ mod brk {
                 cpu.program_counter = 0x00;
                 cpu.processor_status.change_decimal_mode_flag(true);
 
-                let tasks = brk(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = brk(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
             }
@@ -137,8 +137,8 @@ mod brk {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_decimal_mode_flag(true);
 
-            let tasks = brk(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = brk(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status.get_decimal_mode_flag(), true);
         }
@@ -167,8 +167,8 @@ mod rti {
         cpu.stack_pointer = 0xFC;
         cpu.program_counter = 0x00;
 
-        let tasks = rti(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = rti(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b11111111);
         assert_eq!(cpu.program_counter, 0xABCD);
@@ -181,8 +181,8 @@ mod rti {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        let tasks = rti(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = rti(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -204,8 +204,8 @@ mod nop {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x05;
 
-        let tasks = nop(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = nop(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x06);
     }
@@ -217,8 +217,8 @@ mod nop {
         cpu.program_counter = 0x05;
         cpu.cycle = 0;
 
-        let tasks = nop(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = nop(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }

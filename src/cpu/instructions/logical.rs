@@ -237,8 +237,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x16;
 
-            let tasks = ora_im(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_im(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -250,8 +250,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x86;
 
-            let tasks = ora_im(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_im(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -264,8 +264,8 @@ mod ora {
             cpu.accumulator = 0x14;
             cpu.cycle = 0;
 
-            let tasks = ora_im(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_im(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -291,8 +291,8 @@ mod ora {
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
 
-            let tasks = ora_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -304,8 +304,8 @@ mod ora {
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
-            let tasks = ora_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -318,8 +318,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = ora_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -347,8 +347,8 @@ mod ora {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = ora_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -361,8 +361,8 @@ mod ora {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = ora_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -376,8 +376,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = ora_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -404,8 +404,8 @@ mod ora {
             cpu.accumulator = 0x16;
             cpu.program_counter = 0x00;
 
-            let tasks = ora_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -417,8 +417,8 @@ mod ora {
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
-            let tasks = ora_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -431,8 +431,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = ora_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -463,8 +463,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            let tasks = ora_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -477,8 +477,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            let tasks = ora_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -492,8 +492,8 @@ mod ora {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = ora_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -514,8 +514,8 @@ mod ora {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = ora_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -546,8 +546,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            let tasks = ora_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -560,8 +560,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            let tasks = ora_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -575,8 +575,8 @@ mod ora {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = ora_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -597,8 +597,8 @@ mod ora {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = ora_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -636,8 +636,8 @@ mod ora {
             cpu.accumulator = 0x16;
             cpu.index_register_x = OFFSET;
 
-            let tasks = ora_inx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_inx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -657,8 +657,8 @@ mod ora {
             cpu.accumulator = 0x86;
             cpu.index_register_x = OFFSET;
 
-            let tasks = ora_inx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_inx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -679,8 +679,8 @@ mod ora {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = ora_inx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_inx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -721,8 +721,8 @@ mod ora {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = ora_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x36);
         }
@@ -742,8 +742,8 @@ mod ora {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = ora_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -765,8 +765,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = ora_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -786,8 +786,8 @@ mod ora {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = ora_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ora_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -818,8 +818,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            let tasks = bit_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = bit_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0b00000010);
         }
@@ -832,8 +832,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            let tasks = bit_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = bit_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -846,8 +846,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            let tasks = bit_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = bit_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -859,8 +859,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            let tasks = bit_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = bit_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -895,8 +895,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            let tasks = bit_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = bit_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0b00000010);
         }
@@ -914,8 +914,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            let tasks = bit_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = bit_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0b01000000);
         }
@@ -933,8 +933,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            let tasks = bit_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = bit_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0b10000000);
         }
@@ -951,8 +951,8 @@ mod bit {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0xF0;
 
-            let tasks = bit_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = bit_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -983,8 +983,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
 
-            let tasks = and_im(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_im(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -996,8 +996,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x86;
 
-            let tasks = and_im(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_im(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1010,8 +1010,8 @@ mod and {
             cpu.accumulator = 0x07;
             cpu.cycle = 0;
 
-            let tasks = and_im(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_im(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -1037,8 +1037,8 @@ mod and {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            let tasks = and_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -1050,8 +1050,8 @@ mod and {
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
-            let tasks = and_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1064,8 +1064,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = and_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -1093,8 +1093,8 @@ mod and {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = and_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -1107,8 +1107,8 @@ mod and {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = and_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1122,8 +1122,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = and_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1150,8 +1150,8 @@ mod and {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            let tasks = and_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -1163,8 +1163,8 @@ mod and {
             cpu.accumulator = 0x86;
             cpu.program_counter = 0x00;
 
-            let tasks = and_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1177,8 +1177,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = and_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1209,8 +1209,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            let tasks = and_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -1223,8 +1223,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            let tasks = and_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1238,8 +1238,8 @@ mod and {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = and_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1260,8 +1260,8 @@ mod and {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = and_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1292,8 +1292,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            let tasks = and_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -1306,8 +1306,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            let tasks = and_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1321,8 +1321,8 @@ mod and {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = and_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1343,8 +1343,8 @@ mod and {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = and_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1382,8 +1382,8 @@ mod and {
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
 
-            let tasks = and_inx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_inx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -1403,8 +1403,8 @@ mod and {
             cpu.accumulator = 0x86;
             cpu.index_register_x = OFFSET;
 
-            let tasks = and_inx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_inx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1425,8 +1425,8 @@ mod and {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = and_inx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_inx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1467,8 +1467,8 @@ mod and {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = and_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x02);
         }
@@ -1488,8 +1488,8 @@ mod and {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = and_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1511,8 +1511,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = and_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1532,8 +1532,8 @@ mod and {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = and_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = and_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1564,8 +1564,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
 
-            let tasks = eor_im(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_im(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1577,8 +1577,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.accumulator = 0x07;
 
-            let tasks = eor_im(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_im(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1591,8 +1591,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.cycle = 0;
 
-            let tasks = eor_im(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_im(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -1618,8 +1618,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            let tasks = eor_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1631,8 +1631,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            let tasks = eor_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1645,8 +1645,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = eor_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -1674,8 +1674,8 @@ mod eor {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = eor_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1688,8 +1688,8 @@ mod eor {
             cpu.index_register_x = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = eor_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1703,8 +1703,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = eor_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1731,8 +1731,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            let tasks = eor_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1744,8 +1744,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.program_counter = 0x00;
 
-            let tasks = eor_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1758,8 +1758,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = eor_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1790,8 +1790,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            let tasks = eor_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1804,8 +1804,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.index_register_x = OFFSET;
 
-            let tasks = eor_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1819,8 +1819,8 @@ mod eor {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = eor_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1841,8 +1841,8 @@ mod eor {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = eor_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1873,8 +1873,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            let tasks = eor_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1887,8 +1887,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.index_register_y = OFFSET;
 
-            let tasks = eor_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -1902,8 +1902,8 @@ mod eor {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = eor_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -1924,8 +1924,8 @@ mod eor {
             cpu.index_register_y = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = eor_ay(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_ay(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1963,8 +1963,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
 
-            let tasks = eor_inx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_inx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -1984,8 +1984,8 @@ mod eor {
             cpu.accumulator = 0x07;
             cpu.index_register_x = OFFSET;
 
-            let tasks = eor_inx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_inx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -2006,8 +2006,8 @@ mod eor {
             cpu.index_register_x = OFFSET;
             cpu.cycle = 0;
 
-            let tasks = eor_inx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_inx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -2048,8 +2048,8 @@ mod eor {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = eor_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x82);
         }
@@ -2069,8 +2069,8 @@ mod eor {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = eor_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.processor_status, 0x80);
         }
@@ -2092,8 +2092,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = eor_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -2113,8 +2113,8 @@ mod eor {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = eor_iny(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = eor_iny(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }

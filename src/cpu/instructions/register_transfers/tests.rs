@@ -14,8 +14,8 @@ mod tax {
         let mut cpu = CPU::new_nmos(memory);
         cpu.accumulator = 0xDE;
 
-        let tasks = tax(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tax(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.index_register_x, 0xDE);
     }
@@ -27,8 +27,8 @@ mod tax {
         cpu.accumulator = 0xDE;
         cpu.cycle = 0;
 
-        let tasks = tax(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tax(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -40,8 +40,8 @@ mod tax {
         cpu.accumulator = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        let tasks = tax(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tax(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -63,8 +63,8 @@ mod txa {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0xDE;
 
-        let tasks = txa(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = txa(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.accumulator, 0xDE);
     }
@@ -76,8 +76,8 @@ mod txa {
         cpu.index_register_x = 0xDE;
         cpu.cycle = 0;
 
-        let tasks = txa(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = txa(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -89,8 +89,8 @@ mod txa {
         cpu.index_register_x = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        let tasks = txa(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = txa(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -112,8 +112,8 @@ mod tay {
         let mut cpu = CPU::new_nmos(memory);
         cpu.accumulator = 0xDE;
 
-        let tasks = tay(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tay(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.index_register_y, 0xDE);
     }
@@ -125,8 +125,8 @@ mod tay {
         cpu.accumulator = 0xDE;
         cpu.cycle = 0;
 
-        let tasks = tay(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tay(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -138,8 +138,8 @@ mod tay {
         cpu.accumulator = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        let tasks = tay(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tay(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -161,8 +161,8 @@ mod tya {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0xDE;
 
-        let tasks = tya(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tya(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.accumulator, 0xDE);
     }
@@ -174,8 +174,8 @@ mod tya {
         cpu.index_register_y = 0xDE;
         cpu.cycle = 0;
 
-        let tasks = tya(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tya(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -187,8 +187,8 @@ mod tya {
         cpu.index_register_y = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
-        let tasks = tya(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = tya(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }

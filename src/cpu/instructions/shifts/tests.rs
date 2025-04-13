@@ -19,8 +19,8 @@ mod asl {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = asl_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = asl_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), true);
             }
@@ -33,8 +33,8 @@ mod asl {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = asl_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = asl_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
             }
@@ -47,8 +47,8 @@ mod asl {
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-                let tasks = asl_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = asl_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), true);
             }
@@ -61,8 +61,8 @@ mod asl {
 
                 assert_eq!(cpu.processor_status.get_negative_flag(), false);
 
-                let tasks = asl_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = asl_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_negative_flag(), true);
             }
@@ -91,8 +91,8 @@ mod asl {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = asl_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = asl_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), true);
             }
@@ -106,8 +106,8 @@ mod asl {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = asl_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = asl_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
             }
@@ -121,8 +121,8 @@ mod asl {
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-                let tasks = asl_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = asl_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), true);
             }
@@ -136,8 +136,8 @@ mod asl {
 
                 assert_eq!(cpu.processor_status.get_negative_flag(), false);
 
-                let tasks = asl_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = asl_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_negative_flag(), true);
             }
@@ -165,8 +165,8 @@ mod asl {
             cpu.accumulator = VALUE;
             cpu.program_counter = 0x00;
 
-            let tasks = asl_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = asl_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x04);
         }
@@ -179,8 +179,8 @@ mod asl {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = asl_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = asl_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -208,8 +208,8 @@ mod asl {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            let tasks = asl_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = asl_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x04);
         }
@@ -221,8 +221,8 @@ mod asl {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = asl_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = asl_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -252,8 +252,8 @@ mod asl {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            let tasks = asl_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = asl_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word], 0x04);
         }
@@ -266,8 +266,8 @@ mod asl {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = asl_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = asl_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -301,8 +301,8 @@ mod asl {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            let tasks = asl_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = asl_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0x04);
         }
@@ -319,8 +319,8 @@ mod asl {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = asl_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = asl_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -357,8 +357,8 @@ mod asl {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            let tasks = asl_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = asl_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word], 0x04);
         }
@@ -377,8 +377,8 @@ mod asl {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = asl_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = asl_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -406,8 +406,8 @@ mod lsr {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = lsr_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = lsr_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), true);
             }
@@ -420,8 +420,8 @@ mod lsr {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = lsr_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = lsr_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
             }
@@ -434,8 +434,8 @@ mod lsr {
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-                let tasks = lsr_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = lsr_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), true);
             }
@@ -464,8 +464,8 @@ mod lsr {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = lsr_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = lsr_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), true);
             }
@@ -479,8 +479,8 @@ mod lsr {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = lsr_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = lsr_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
             }
@@ -494,8 +494,8 @@ mod lsr {
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-                let tasks = lsr_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = lsr_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), true);
             }
@@ -523,8 +523,8 @@ mod lsr {
             cpu.accumulator = VALUE;
             cpu.program_counter = 0x00;
 
-            let tasks = lsr_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = lsr_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0x01);
         }
@@ -537,8 +537,8 @@ mod lsr {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = lsr_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = lsr_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -566,8 +566,8 @@ mod lsr {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            let tasks = lsr_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = lsr_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x01);
         }
@@ -579,8 +579,8 @@ mod lsr {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = lsr_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = lsr_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -610,8 +610,8 @@ mod lsr {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            let tasks = lsr_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = lsr_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word], 0x01);
         }
@@ -624,8 +624,8 @@ mod lsr {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = lsr_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = lsr_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -659,8 +659,8 @@ mod lsr {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            let tasks = lsr_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = lsr_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0x01);
         }
@@ -677,8 +677,8 @@ mod lsr {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = lsr_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = lsr_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -715,8 +715,8 @@ mod lsr {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            let tasks = lsr_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = lsr_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word], 0x01);
         }
@@ -735,8 +735,8 @@ mod lsr {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = lsr_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = lsr_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -764,8 +764,8 @@ mod rol {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = rol_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = rol_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), true);
             }
@@ -778,8 +778,8 @@ mod rol {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = rol_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = rol_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
             }
@@ -792,8 +792,8 @@ mod rol {
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-                let tasks = rol_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = rol_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), true);
             }
@@ -822,8 +822,8 @@ mod rol {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = rol_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = rol_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), true);
             }
@@ -837,8 +837,8 @@ mod rol {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = rol_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = rol_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
             }
@@ -852,8 +852,8 @@ mod rol {
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-                let tasks = rol_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = rol_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), true);
             }
@@ -881,8 +881,8 @@ mod rol {
             let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = VALUE;
 
-            let tasks = rol_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0b00000100);
         }
@@ -894,8 +894,8 @@ mod rol {
             cpu.processor_status.change_carry_flag(true);
             cpu.accumulator = VALUE;
 
-            let tasks = rol_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0b00000101);
         }
@@ -907,8 +907,8 @@ mod rol {
             cpu.processor_status.change_carry_flag(false);
             cpu.accumulator = VALUE;
 
-            let tasks = rol_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0b00000100);
         }
@@ -921,8 +921,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = rol_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -950,8 +950,8 @@ mod rol {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            let tasks = rol_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000100);
         }
@@ -963,8 +963,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            let tasks = rol_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000101);
         }
@@ -976,8 +976,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            let tasks = rol_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000100);
         }
@@ -989,8 +989,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = rol_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1020,8 +1020,8 @@ mod rol {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            let tasks = rol_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1037,8 +1037,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            let tasks = rol_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1054,8 +1054,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            let tasks = rol_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1071,8 +1071,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = rol_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1106,8 +1106,8 @@ mod rol {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            let tasks = rol_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000100);
         }
@@ -1124,8 +1124,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            let tasks = rol_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000101);
         }
@@ -1142,8 +1142,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            let tasks = rol_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000100);
         }
@@ -1160,8 +1160,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = rol_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1198,8 +1198,8 @@ mod rol {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            let tasks = rol_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1221,8 +1221,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            let tasks = rol_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1244,8 +1244,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            let tasks = rol_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1267,8 +1267,8 @@ mod rol {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = rol_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = rol_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -1296,8 +1296,8 @@ mod ror {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = ror_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = ror_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), true);
             }
@@ -1310,8 +1310,8 @@ mod ror {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = ror_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = ror_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
             }
@@ -1324,8 +1324,8 @@ mod ror {
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-                let tasks = ror_acc(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = ror_acc(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), true);
             }
@@ -1354,8 +1354,8 @@ mod ror {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = ror_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = ror_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), true);
             }
@@ -1369,8 +1369,8 @@ mod ror {
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
 
-                let tasks = ror_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = ror_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_carry_flag(), false);
             }
@@ -1384,8 +1384,8 @@ mod ror {
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), false);
 
-                let tasks = ror_zp(&mut cpu);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = ror_zp(&mut cpu);
+                run_tasks(&mut cpu, &mut *tasks);
 
                 assert_eq!(cpu.processor_status.get_zero_flag(), true);
             }
@@ -1413,8 +1413,8 @@ mod ror {
             let mut cpu = CPU::new_nmos(memory);
             cpu.accumulator = VALUE;
 
-            let tasks = ror_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0b00000001);
         }
@@ -1426,8 +1426,8 @@ mod ror {
             cpu.processor_status.change_carry_flag(true);
             cpu.accumulator = VALUE;
 
-            let tasks = ror_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0b10000001);
         }
@@ -1439,8 +1439,8 @@ mod ror {
             cpu.processor_status.change_carry_flag(false);
             cpu.accumulator = VALUE;
 
-            let tasks = ror_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.accumulator, 0b00000001);
         }
@@ -1453,8 +1453,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = ror_acc(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_acc(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -1482,8 +1482,8 @@ mod ror {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            let tasks = ror_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000001);
         }
@@ -1495,8 +1495,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            let tasks = ror_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b10000001);
         }
@@ -1508,8 +1508,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            let tasks = ror_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0b00000001);
         }
@@ -1521,8 +1521,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = ror_zp(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_zp(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -1552,8 +1552,8 @@ mod ror {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            let tasks = ror_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1569,8 +1569,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            let tasks = ror_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1586,8 +1586,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            let tasks = ror_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ZERO_PAGE_ADDR + OFFSET) as Word],
@@ -1603,8 +1603,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = ror_zpx(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_zpx(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1638,8 +1638,8 @@ mod ror {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            let tasks = ror_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000001);
         }
@@ -1656,8 +1656,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            let tasks = ror_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b10000001);
         }
@@ -1674,8 +1674,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            let tasks = ror_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(memory.borrow()[ABSOLUTE_ADDR_LO as Word], 0b00000001);
         }
@@ -1692,8 +1692,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = ror_a(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_a(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -1730,8 +1730,8 @@ mod ror {
             cpu.index_register_x = OFFSET;
             cpu.program_counter = 0x00;
 
-            let tasks = ror_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1753,8 +1753,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(true);
 
-            let tasks = ror_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1776,8 +1776,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.processor_status.change_carry_flag(false);
 
-            let tasks = ror_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(
                 memory.borrow()[(ABSOLUTE_ADDR_LO + OFFSET) as Word],
@@ -1799,8 +1799,8 @@ mod ror {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = ror_ax(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = ror_ax(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 6);
         }
