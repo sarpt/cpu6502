@@ -53,7 +53,6 @@ pub struct CPU<'a> {
     processor_status: processor_status::ProcessorStatus,
     memory: &'a RefCell<dyn Memory>,
     opcode_handlers: HashMap<Byte, OpcodeHandler>,
-    address_output: Word,
     sync: bool,
 }
 
@@ -71,7 +70,6 @@ impl<'a> CPU<'a> {
             processor_status: processor_status::ProcessorStatus::default(),
             memory: memory,
             opcode_handlers: instructions::get_instructions(),
-            address_output: 0,
             sync: false,
         };
     }
@@ -267,18 +265,6 @@ impl<'a> CPU<'a> {
         let val = self.access_memory(stack_addr);
 
         return val;
-    }
-
-    fn set_address_output<T: Into<Word>>(&mut self, val: T) {
-        self.address_output = val.into();
-    }
-
-    fn set_address_output_lo(&mut self, lo: Byte) {
-        self.address_output = Word::from_le_bytes([lo, self.address_output.to_le_bytes()[1]]);
-    }
-
-    fn set_address_output_hi(&mut self, hi: Byte) {
-        self.address_output = Word::from_le_bytes([self.address_output.to_le_bytes()[0], hi]);
     }
 
     fn read_memory(&self, addr_mode: Option<AddressingMode>) -> Box<dyn ReadMemoryTasks> {
