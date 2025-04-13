@@ -79,7 +79,7 @@ mod get_addressing_tasks {
 
         use crate::cpu::{
             addressing::{get_addressing_tasks, AddressingMode},
-            tests::{run_tasks, MemoryMock},
+            tests::MemoryMock,
             CPU,
         };
 
@@ -88,11 +88,13 @@ mod get_addressing_tasks {
             let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x01;
-            cpu.address_output = 0x0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Absolute);
-            run_tasks(&mut cpu, tasks);
-            assert_eq!(cpu.address_output, 0xCBFF);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Absolute);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
+
+            assert_eq!(tasks.address(), Some(0xCBFF));
         }
 
         #[test]
@@ -101,8 +103,10 @@ mod get_addressing_tasks {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x01;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Absolute);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Absolute);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
             assert_eq!(cpu.program_counter, 0x03);
         }
@@ -114,8 +118,11 @@ mod get_addressing_tasks {
             cpu.program_counter = 0x01;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::Absolute);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Absolute);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -127,7 +134,7 @@ mod get_addressing_tasks {
 
         use crate::cpu::{
             addressing::{get_addressing_tasks, AddressingMode},
-            tests::{run_tasks, MemoryMock},
+            tests::MemoryMock,
             CPU,
         };
 
@@ -138,12 +145,13 @@ mod get_addressing_tasks {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x02;
             cpu.index_register_x = 0x01;
-            cpu.address_output = 0x0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteX);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteX);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
-            assert_eq!(cpu.address_output, 0x52CC);
+            assert_eq!(tasks.address(), Some(0x52CC));
         }
 
         #[test]
@@ -153,8 +161,10 @@ mod get_addressing_tasks {
             cpu.program_counter = 0x02;
             cpu.index_register_x = 0x01;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteX);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteX);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
             assert_eq!(cpu.program_counter, 0x04);
         }
@@ -168,8 +178,11 @@ mod get_addressing_tasks {
             cpu.index_register_x = 0x01;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteX);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteX);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -183,8 +196,11 @@ mod get_addressing_tasks {
             cpu.index_register_x = 0xFF;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteX);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteX);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -196,7 +212,7 @@ mod get_addressing_tasks {
 
         use crate::cpu::{
             addressing::{get_addressing_tasks, AddressingMode},
-            tests::{run_tasks, MemoryMock},
+            tests::MemoryMock,
             CPU,
         };
 
@@ -207,12 +223,13 @@ mod get_addressing_tasks {
             let mut cpu = CPU::new_nmos(memory);
             cpu.index_register_y = 0x01;
             cpu.program_counter = 0x02;
-            cpu.address_output = 0x0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
-            assert_eq!(cpu.address_output, 0x52CC);
+            assert_eq!(tasks.address(), Some(0x52CC));
         }
 
         #[test]
@@ -222,8 +239,10 @@ mod get_addressing_tasks {
             cpu.index_register_y = 0x01;
             cpu.program_counter = 0x02;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
             assert_eq!(cpu.program_counter, 0x04);
         }
@@ -237,8 +256,11 @@ mod get_addressing_tasks {
             cpu.index_register_y = 0x01;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 3);
         }
@@ -252,8 +274,11 @@ mod get_addressing_tasks {
             cpu.index_register_y = 0xFF;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -265,7 +290,7 @@ mod get_addressing_tasks {
 
         use crate::cpu::{
             addressing::{get_addressing_tasks, AddressingMode},
-            tests::{run_tasks, MemoryMock},
+            tests::MemoryMock,
             CPU,
         };
 
@@ -274,14 +299,15 @@ mod get_addressing_tasks {
         ) {
             let memory = &RefCell::new(MemoryMock::new(&[0x01, 0xFF, 0x03, 0xDD, 0x25]));
             let mut cpu = CPU::new_nmos(memory);
-            cpu.address_output = 0x0;
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x01;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::IndexIndirectX);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::IndexIndirectX);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
-            assert_eq!(cpu.address_output, 0xDD03);
+            assert_eq!(tasks.address(), Some(0xDD03));
         }
 
         #[test]
@@ -291,8 +317,10 @@ mod get_addressing_tasks {
             cpu.program_counter = 0x00;
             cpu.index_register_x = 0x01;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::IndexIndirectX);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::IndexIndirectX);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
             assert_eq!(cpu.program_counter, 0x01);
         }
@@ -305,8 +333,11 @@ mod get_addressing_tasks {
             cpu.index_register_x = 0x01;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::IndexIndirectX);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::IndexIndirectX);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -318,7 +349,7 @@ mod get_addressing_tasks {
 
         use crate::cpu::{
             addressing::{get_addressing_tasks, AddressingMode},
-            tests::{run_tasks, MemoryMock},
+            tests::MemoryMock,
             CPU,
         };
 
@@ -326,14 +357,15 @@ mod get_addressing_tasks {
         fn should_return_address_offset_by_index_register_y_which_is_stored_at_zero_page_address() {
             let memory = RefCell::new(MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]));
             let mut cpu = CPU::new_nmos(&memory);
-            cpu.address_output = 0x0;
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::IndirectIndexY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::IndirectIndexY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
-            assert_eq!(cpu.address_output, 0xDD05);
+            assert_eq!(tasks.address(), Some(0xDD05));
         }
 
         #[test]
@@ -343,8 +375,10 @@ mod get_addressing_tasks {
             cpu.index_register_y = 0x02;
             cpu.program_counter = 0x00;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::IndirectIndexY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::IndirectIndexY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
             assert_eq!(cpu.program_counter, 0x01);
         }
@@ -358,8 +392,11 @@ mod get_addressing_tasks {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::IndirectIndexY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::IndirectIndexY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -373,8 +410,11 @@ mod get_addressing_tasks {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::IndirectIndexY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::IndirectIndexY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 5);
         }
@@ -386,7 +426,7 @@ mod get_addressing_tasks {
 
         use crate::cpu::{
             addressing::{get_addressing_tasks, AddressingMode},
-            tests::{run_tasks, MemoryMock},
+            tests::MemoryMock,
             CPU,
         };
 
@@ -396,12 +436,13 @@ mod get_addressing_tasks {
             let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x02;
-            cpu.address_output = 0x0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPage);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPage);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
-            assert_eq!(cpu.address_output, 0x00CB);
+            assert_eq!(tasks.address(), Some(0x00CB));
         }
 
         #[test]
@@ -410,8 +451,10 @@ mod get_addressing_tasks {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x02;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPage);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPage);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
             assert_eq!(cpu.program_counter, 0x03);
         }
@@ -423,8 +466,11 @@ mod get_addressing_tasks {
             cpu.program_counter = 0x02;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPage);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPage);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 1);
         }
@@ -436,7 +482,7 @@ mod get_addressing_tasks {
 
         use crate::cpu::{
             addressing::{get_addressing_tasks, AddressingMode},
-            tests::{run_tasks, MemoryMock},
+            tests::MemoryMock,
             CPU,
         };
 
@@ -447,12 +493,13 @@ mod get_addressing_tasks {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x02;
             cpu.index_register_x = 0x03;
-            cpu.address_output = 0x0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageX);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageX);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
-            assert_eq!(cpu.address_output, 0x00CE);
+            assert_eq!(tasks.address(), Some(0x00CE));
         }
 
         #[test]
@@ -462,8 +509,10 @@ mod get_addressing_tasks {
             cpu.program_counter = 0x02;
             cpu.index_register_x = 0x03;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageX);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageX);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
             assert_eq!(cpu.program_counter, 0x03);
         }
@@ -476,8 +525,11 @@ mod get_addressing_tasks {
             cpu.index_register_x = 0x03;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageX);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageX);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -489,7 +541,7 @@ mod get_addressing_tasks {
 
         use crate::cpu::{
             addressing::{get_addressing_tasks, AddressingMode},
-            tests::{run_tasks, MemoryMock},
+            tests::MemoryMock,
             CPU,
         };
 
@@ -500,12 +552,13 @@ mod get_addressing_tasks {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x03;
             cpu.index_register_y = 0x03;
-            cpu.address_output = 0x0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
-            assert_eq!(cpu.address_output, 0x0055);
+            assert_eq!(tasks.address(), Some(0x0055));
         }
 
         #[test]
@@ -515,8 +568,10 @@ mod get_addressing_tasks {
             cpu.program_counter = 0x02;
             cpu.index_register_y = 0x03;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+            }
 
             assert_eq!(cpu.program_counter, 0x03);
         }
@@ -529,8 +584,11 @@ mod get_addressing_tasks {
             cpu.index_register_y = 0x03;
             cpu.cycle = 0;
 
-            let tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageY);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageY);
+            while !tasks.done() {
+                _ = tasks.tick(&mut cpu);
+                cpu.cycle += 1;
+            }
 
             assert_eq!(cpu.cycle, 2);
         }
@@ -544,7 +602,7 @@ mod get_addressing_tasks {
 
             use crate::cpu::{
                 addressing::{get_addressing_tasks, AddressingMode},
-                tests::{run_tasks, MemoryMock},
+                tests::MemoryMock,
                 CPU,
             };
 
@@ -554,12 +612,13 @@ mod get_addressing_tasks {
                 let memory = RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
                 let mut cpu = CPU::new_nmos(&memory);
                 cpu.program_counter = 0x00;
-                cpu.address_output = 0x0;
 
-                let tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
+                while !tasks.done() {
+                    _ = tasks.tick(&mut cpu);
+                }
 
-                assert_eq!(cpu.address_output, 0x0001);
+                assert_eq!(tasks.address(), Some(0x0001));
             }
 
             #[test]
@@ -568,8 +627,10 @@ mod get_addressing_tasks {
                 let mut cpu = CPU::new_nmos(&memory);
                 cpu.program_counter = 0x00;
 
-                let tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
+                while !tasks.done() {
+                    _ = tasks.tick(&mut cpu);
+                }
 
                 assert_eq!(cpu.program_counter, 0x02);
             }
@@ -583,7 +644,7 @@ mod get_addressing_tasks {
                 consts::Byte,
                 cpu::{
                     addressing::{get_addressing_tasks, AddressingMode},
-                    tests::{run_tasks, MemoryMock},
+                    tests::MemoryMock,
                     CPU,
                 },
             };
@@ -595,8 +656,11 @@ mod get_addressing_tasks {
                 cpu.program_counter = 0x02;
                 cpu.cycle = 0;
 
-                let tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
+                while !tasks.done() {
+                    _ = tasks.tick(&mut cpu);
+                    cpu.cycle += 1;
+                }
 
                 assert_eq!(cpu.cycle, 4);
             }
@@ -620,13 +684,14 @@ mod get_addressing_tasks {
                 let memory = RefCell::new(MemoryMock::new(&program));
                 let mut cpu = CPU::new_nmos(&memory);
                 cpu.program_counter = 0x0001;
-                cpu.address_output = 0x0;
                 cpu.cycle = 0;
 
-                let tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
+                while !tasks.done() {
+                    _ = tasks.tick(&mut cpu);
+                }
 
-                assert_eq!(cpu.address_output, 0x09A5);
+                assert_eq!(tasks.address(), Some(0x09A5));
             }
         }
 
@@ -638,7 +703,7 @@ mod get_addressing_tasks {
                 consts::Byte,
                 cpu::{
                     addressing::{get_addressing_tasks, AddressingMode},
-                    tests::{run_tasks, MemoryMock},
+                    tests::MemoryMock,
                     CPU,
                 },
             };
@@ -650,8 +715,11 @@ mod get_addressing_tasks {
                 cpu.program_counter = 0x02;
                 cpu.cycle = 0;
 
-                let tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
+                while !tasks.done() {
+                    _ = tasks.tick(&mut cpu);
+                    cpu.cycle += 1;
+                }
 
                 assert_eq!(cpu.cycle, 5);
             }
@@ -673,13 +741,14 @@ mod get_addressing_tasks {
                 let memory = RefCell::new(MemoryMock::new(&program));
                 let mut cpu = CPU::new_rockwell_cmos(&memory);
                 cpu.program_counter = 0x0001;
-                cpu.address_output = 0x0;
                 cpu.cycle = 0;
 
-                let tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
-                run_tasks(&mut cpu, tasks);
+                let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
+                while !tasks.done() {
+                    _ = tasks.tick(&mut cpu);
+                }
 
-                assert_eq!(cpu.address_output, 0xCCA5);
+                assert_eq!(tasks.address(), Some(0xCCA5));
             }
         }
     }

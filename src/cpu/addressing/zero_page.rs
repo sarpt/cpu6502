@@ -30,7 +30,6 @@ impl Tasks for ZeroPageAddressingTasks {
         }
 
         let addr: Byte = cpu.access_memory(cpu.program_counter);
-        cpu.set_address_output(addr); // TODO: remove after switch to using address method in users
         self.addr.set(addr);
         cpu.increment_program_counter();
         self.done = true;
@@ -107,7 +106,6 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
                     .expect("unexpected lack of address at Offset step")
                     as Byte;
                 let final_address = addr_output.wrapping_add(offset);
-                cpu.set_address_output(final_address); // TODO: remove after switch to using address method in users
                 self.addr.set(final_address);
 
                 self.done = true;
