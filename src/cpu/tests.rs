@@ -583,11 +583,15 @@ mod sync {
 }
 
 #[cfg(test)]
-pub fn run_tasks(cpu: &mut super::CPU, tasks: Box<dyn super::Tasks>) {
-    cpu.current_instruction = Some(super::InstructionExecution {
-        opcode: 0x00,
-        starting_cycle: 0,
-        tasks: tasks,
-    });
-    cpu.execute_next_instruction();
+pub fn run_tasks(cpu: &mut super::CPU, tasks: &mut dyn super::Tasks) {
+    while !tasks.done() {
+        _ = tasks.tick(cpu);
+        cpu.cycle += 1;
+    }
+    // cpu.current_instruction = Some(super::InstructionExecution {
+    //     opcode: 0x00,
+    //     starting_cycle: 0,
+    //     tasks: tasks,
+    // });
+    // cpu.execute_next_instruction();
 }

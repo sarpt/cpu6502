@@ -173,8 +173,8 @@ mod jsr_a {
         cpu.program_counter = 0x00;
         cpu.stack_pointer = 0xFF;
 
-        let tasks = jsr_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = jsr_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x5144);
     }
@@ -186,8 +186,8 @@ mod jsr_a {
         cpu.program_counter = 0x00;
         cpu.stack_pointer = 0xFF;
 
-        let tasks = jsr_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = jsr_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[0x01FF], 0x00);
         assert_eq!(memory.borrow()[0x01FE], 0x01);
@@ -200,8 +200,8 @@ mod jsr_a {
         cpu.program_counter = 0x00;
         cpu.stack_pointer = 0xFF;
 
-        let tasks = jsr_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = jsr_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.stack_pointer, 0xFD);
     }
@@ -213,8 +213,8 @@ mod jsr_a {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        let tasks = jsr_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = jsr_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -239,8 +239,8 @@ mod rts {
         memory.borrow_mut()[0x01FE] = 0x51;
         cpu.stack_pointer = 0xFD;
 
-        let tasks = rts(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = rts(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x4452);
     }
@@ -254,8 +254,8 @@ mod rts {
         memory.borrow_mut()[0x01FE] = 0x51;
         cpu.stack_pointer = 0xFD;
 
-        let tasks = rts(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = rts(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.stack_pointer, 0xFF);
     }
@@ -270,8 +270,8 @@ mod rts {
         cpu.stack_pointer = 0xFD;
         cpu.cycle = 0;
 
-        let tasks = rts(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = rts(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -293,8 +293,8 @@ mod jmp_a {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        let tasks = jmp_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = jmp_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x5144);
     }
@@ -306,8 +306,8 @@ mod jmp_a {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        let tasks = jmp_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = jmp_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -331,8 +331,8 @@ mod jmp_in {
             let mut cpu = CPU::new_nmos(memory);
             cpu.program_counter = 0x00;
 
-            let tasks = jmp_in(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = jmp_in(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.program_counter, 0x0001);
         }
@@ -355,8 +355,8 @@ mod jmp_in {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = jmp_in(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = jmp_in(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -379,8 +379,8 @@ mod jmp_in {
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
-            let tasks = jmp_in(&mut cpu);
-            run_tasks(&mut cpu, tasks);
+            let mut tasks = jmp_in(&mut cpu);
+            run_tasks(&mut cpu, &mut *tasks);
 
             assert_eq!(cpu.cycle, 5);
         }

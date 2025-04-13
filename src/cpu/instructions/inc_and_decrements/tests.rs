@@ -14,8 +14,8 @@ mod inx_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0x02;
 
-        let tasks = inx_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inx_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.index_register_x, 0x03);
     }
@@ -27,8 +27,8 @@ mod inx_im {
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
 
-        let tasks = inx_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inx_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -39,8 +39,8 @@ mod inx_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0xFF;
 
-        let tasks = inx_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inx_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -62,8 +62,8 @@ mod iny_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0x02;
 
-        let tasks = iny_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = iny_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.index_register_y, 0x03);
     }
@@ -75,8 +75,8 @@ mod iny_im {
         cpu.index_register_y = 0x02;
         cpu.cycle = 0;
 
-        let tasks = iny_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = iny_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -87,8 +87,8 @@ mod iny_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0xFF;
 
-        let tasks = iny_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = iny_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -113,8 +113,8 @@ mod inc_zp {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        let tasks = inc_zp(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_zp(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x03);
     }
@@ -126,8 +126,8 @@ mod inc_zp {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        let tasks = inc_zp(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_zp(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 4);
     }
@@ -139,8 +139,8 @@ mod inc_zp {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        let tasks = inc_zp(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_zp(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -167,8 +167,8 @@ mod inc_zpx {
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
-        let tasks = inc_zpx(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_zpx(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_X as Word], 0x0A);
     }
@@ -181,8 +181,8 @@ mod inc_zpx {
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
 
-        let tasks = inc_zpx(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_zpx(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -195,8 +195,8 @@ mod inc_zpx {
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
-        let tasks = inc_zpx(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_zpx(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -223,8 +223,8 @@ mod inc_a {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        let tasks = inc_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[ADDR as Word], 0x0A);
     }
@@ -236,8 +236,8 @@ mod inc_a {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        let tasks = inc_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -249,8 +249,8 @@ mod inc_a {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        let tasks = inc_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -279,8 +279,8 @@ mod inc_ax {
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
-        let tasks = inc_ax(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_ax(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[ADDR_OFFSET_BY_X], 0x0A);
     }
@@ -293,8 +293,8 @@ mod inc_ax {
         cpu.index_register_x = OFFSET;
         cpu.cycle = 0;
 
-        let tasks = inc_ax(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_ax(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 6);
     }
@@ -307,8 +307,8 @@ mod inc_ax {
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
-        let tasks = inc_ax(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = inc_ax(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -330,8 +330,8 @@ mod dex_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0x02;
 
-        let tasks = dex_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dex_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.index_register_x, 0x01);
     }
@@ -343,8 +343,8 @@ mod dex_im {
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
 
-        let tasks = dex_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dex_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -355,8 +355,8 @@ mod dex_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_x = 0x01;
 
-        let tasks = dex_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dex_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -378,8 +378,8 @@ mod dey_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0x02;
 
-        let tasks = dey_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dey_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.index_register_y, 0x01);
     }
@@ -391,8 +391,8 @@ mod dey_im {
         cpu.index_register_y = 0x02;
         cpu.cycle = 0;
 
-        let tasks = dey_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dey_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -403,8 +403,8 @@ mod dey_im {
         let mut cpu = CPU::new_nmos(memory);
         cpu.index_register_y = 0x01;
 
-        let tasks = dey_im(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dey_im(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -429,8 +429,8 @@ mod dec_zp {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        let tasks = dec_zp(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_zp(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR as Word], 0x01);
     }
@@ -442,8 +442,8 @@ mod dec_zp {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        let tasks = dec_zp(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_zp(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 4);
     }
@@ -455,8 +455,8 @@ mod dec_zp {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        let tasks = dec_zp(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_zp(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -483,8 +483,8 @@ mod dec_zpx {
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
-        let tasks = dec_zpx(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_zpx(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[ZERO_PAGE_ADDR_SUM_X as Word], 0x08);
     }
@@ -497,8 +497,8 @@ mod dec_zpx {
         cpu.index_register_x = 0x02;
         cpu.cycle = 0;
 
-        let tasks = dec_zpx(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_zpx(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -511,8 +511,8 @@ mod dec_zpx {
         cpu.program_counter = 0x00;
         cpu.index_register_x = 0x02;
 
-        let tasks = dec_zpx(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_zpx(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -539,8 +539,8 @@ mod dec_a {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        let tasks = dec_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[ADDR as Word], 0x08);
     }
@@ -552,8 +552,8 @@ mod dec_a {
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
-        let tasks = dec_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -565,8 +565,8 @@ mod dec_a {
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x00;
 
-        let tasks = dec_a(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_a(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }
@@ -595,8 +595,8 @@ mod dec_ax {
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
-        let tasks = dec_ax(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_ax(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(memory.borrow()[ADDR_OFFSET_BY_X], 0x08);
     }
@@ -609,8 +609,8 @@ mod dec_ax {
         cpu.index_register_x = OFFSET;
         cpu.cycle = 0;
 
-        let tasks = dec_ax(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_ax(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 6);
     }
@@ -623,8 +623,8 @@ mod dec_ax {
         cpu.program_counter = 0x00;
         cpu.index_register_x = OFFSET;
 
-        let tasks = dec_ax(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = dec_ax(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.processor_status, 0b00000010);
     }

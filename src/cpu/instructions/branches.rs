@@ -152,6 +152,7 @@ mod common_branching_tasks {
         consts::Byte,
         cpu::{
             instructions::branches::BranchTasks,
+            tasks::Tasks,
             tests::{run_tasks, MemoryMock},
             CPU,
         },
@@ -164,8 +165,8 @@ mod common_branching_tasks {
         cpu.program_counter = 0x0000;
 
         let condition: fn(&CPU) -> bool = |_| false;
-        let tasks = Box::new(BranchTasks::new(condition));
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -178,8 +179,8 @@ mod common_branching_tasks {
         cpu.program_counter = 0x00;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        let tasks = Box::new(BranchTasks::new(condition));
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -199,8 +200,8 @@ mod common_branching_tasks {
         cpu.program_counter = 0x02;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        let tasks = Box::new(BranchTasks::new(condition));
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x00);
     }
@@ -215,8 +216,8 @@ mod common_branching_tasks {
         cpu.program_counter = 0x00FE;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        let tasks = Box::new(BranchTasks::new(condition));
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0103);
     }
@@ -236,8 +237,8 @@ mod common_branching_tasks {
         cpu.program_counter = 0x00;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        let tasks = Box::new(BranchTasks::new(condition));
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0xFFFE);
     }
@@ -250,8 +251,8 @@ mod common_branching_tasks {
         cpu.cycle = 0;
 
         let condition: fn(&CPU) -> bool = |_| false;
-        let tasks = Box::new(BranchTasks::new(condition));
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -265,8 +266,8 @@ mod common_branching_tasks {
         cpu.cycle = 0;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        let tasks = Box::new(BranchTasks::new(condition));
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -282,8 +283,8 @@ mod common_branching_tasks {
         cpu.cycle = 0;
 
         let condition: fn(&CPU) -> bool = |_| true;
-        let tasks = Box::new(BranchTasks::new(condition));
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -309,8 +310,8 @@ mod bcc {
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
 
-        let tasks = bcc(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bcc(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -323,8 +324,8 @@ mod bcc {
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
 
-        let tasks = bcc(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bcc(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -350,8 +351,8 @@ mod bcs {
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
 
-        let tasks = bcs(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bcs(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -364,8 +365,8 @@ mod bcs {
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
 
-        let tasks = bcs(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bcs(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -391,8 +392,8 @@ mod beq {
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
 
-        let tasks = beq(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = beq(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -405,8 +406,8 @@ mod beq {
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
 
-        let tasks = beq(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = beq(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -432,8 +433,8 @@ mod bmi {
         cpu.processor_status.change_negative_flag(false);
         cpu.program_counter = 0x00;
 
-        let tasks = bmi(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bmi(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -446,8 +447,8 @@ mod bmi {
         cpu.processor_status.change_negative_flag(true);
         cpu.program_counter = 0x00;
 
-        let tasks = bmi(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bmi(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -473,8 +474,8 @@ mod bne {
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
 
-        let tasks = bne(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bne(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -487,8 +488,8 @@ mod bne {
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
 
-        let tasks = bne(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bne(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -514,8 +515,8 @@ mod bpl {
         cpu.processor_status.change_negative_flag(true);
         cpu.program_counter = 0x00;
 
-        let tasks = bpl(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bpl(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -528,8 +529,8 @@ mod bpl {
         cpu.processor_status.change_negative_flag(false);
         cpu.program_counter = 0x00;
 
-        let tasks = bpl(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bpl(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -555,8 +556,8 @@ mod bvc {
         cpu.processor_status.change_overflow_flag(true);
         cpu.program_counter = 0x00;
 
-        let tasks = bvc(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bvc(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -569,8 +570,8 @@ mod bvc {
         cpu.processor_status.change_overflow_flag(false);
         cpu.program_counter = 0x00;
 
-        let tasks = bvc(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bvc(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -596,8 +597,8 @@ mod bvs {
         cpu.processor_status.change_overflow_flag(false);
         cpu.program_counter = 0x00;
 
-        let tasks = bvs(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bvs(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -610,8 +611,8 @@ mod bvs {
         cpu.processor_status.change_overflow_flag(true);
         cpu.program_counter = 0x00;
 
-        let tasks = bvs(&mut cpu);
-        run_tasks(&mut cpu, tasks);
+        let mut tasks = bvs(&mut cpu);
+        run_tasks(&mut cpu, &mut *tasks);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
