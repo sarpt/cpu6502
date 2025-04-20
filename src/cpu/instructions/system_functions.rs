@@ -5,13 +5,34 @@ use crate::{
     cpu::{tasks::GenericTasks, ChipVariant, Tasks, CPU},
 };
 
-pub fn nop(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    let mut tasks = GenericTasks::new();
-    tasks.push(Rc::new(|cpu: &mut CPU| {
-        cpu.increment_program_counter();
-    }));
+struct NopTasks {
+    done: bool,
+}
 
-    return Box::new(tasks);
+impl NopTasks {
+    fn new() -> Self {
+        return NopTasks { done: false };
+    }
+}
+
+impl Tasks for NopTasks {
+    fn done(&self) -> bool {
+        return self.done;
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
+        if self.done() {
+            panic!("tick mustn't be called when done")
+        }
+
+        cpu.increment_program_counter();
+        self.done = true;
+        return true;
+    }
+}
+
+pub fn nop(_cpu: &mut CPU) -> Box<dyn Tasks> {
+    return Box::new(NopTasks::new());
 }
 
 pub fn brk(_cpu: &mut CPU) -> Box<dyn Tasks> {
