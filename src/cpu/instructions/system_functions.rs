@@ -35,41 +35,83 @@ pub fn nop(_cpu: &mut CPU) -> Box<dyn Tasks> {
     return Box::new(NopTasks::new());
 }
 
-pub fn brk(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    let mut tasks = GenericTasks::new();
-    tasks.push(Rc::new(|cpu: &mut CPU| {
-        cpu.access_memory(cpu.program_counter); // fetch and discard
-        cpu.increment_program_counter();
-    }));
+#[derive(PartialEq, PartialOrd)]
+enum BrkSteps {
+    InitialFetchAndDiscard,
+    PushProgramCounterHi,
+    PushProgramCounterLo,
+    PushProcessorStatus,
+    AccessBrkVectorLo,
+    AccessBrkVectorHi,
+    Done,
+}
 
-    tasks.push(Rc::new(|cpu: &mut CPU| {
-        cpu.push_byte_to_stack(cpu.get_program_counter_hi());
-    }));
+struct BrkTasks {
+    step: BrkSteps,
+}
 
-    tasks.push(Rc::new(|cpu: &mut CPU| {
-        cpu.push_byte_to_stack(cpu.get_program_counter_lo());
-    }));
+impl BrkTasks {
+    fn new() -> Self {
+        return BrkTasks {
+            step: BrkSteps::InitialFetchAndDiscard,
+        };
+    }
+}
 
-    tasks.push(Rc::new(|cpu: &mut CPU| {
-        cpu.push_byte_to_stack(cpu.processor_status.into());
-    }));
+impl Tasks for BrkTasks {
+    fn done(&self) -> bool {
+        self.step == BrkSteps::Done
+    }
 
-    tasks.push(Rc::new(|cpu: &mut CPU| {
-        let lo = cpu.access_memory(BRK_INTERRUPT_VECTOR);
-        cpu.set_program_counter_lo(lo);
-    }));
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
+        match self.step {
+            BrkSteps::InitialFetchAndDiscard => {
+                cpu.access_memory(cpu.program_counter); // fetch and discard
+                cpu.increment_program_counter();
+                self.step = BrkSteps::PushProgramCounterHi;
+                return false;
+            }
+            BrkSteps::PushProgramCounterHi => {
+                cpu.push_byte_to_stack(cpu.get_program_counter_hi());
+                self.step = BrkSteps::PushProgramCounterLo;
+                return false;
+            }
+            BrkSteps::PushProgramCounterLo => {
+                cpu.push_byte_to_stack(cpu.get_program_counter_lo());
+                self.step = BrkSteps::PushProcessorStatus;
+                return false;
+            }
+            BrkSteps::PushProcessorStatus => {
+                cpu.push_byte_to_stack(cpu.processor_status.into());
+                self.step = BrkSteps::AccessBrkVectorLo;
+                return false;
+            }
+            BrkSteps::AccessBrkVectorLo => {
+                let lo = cpu.access_memory(BRK_INTERRUPT_VECTOR);
+                cpu.set_program_counter_lo(lo);
+                self.step = BrkSteps::AccessBrkVectorHi;
+                return false;
+            }
+            BrkSteps::AccessBrkVectorHi => {
+                let hi = cpu.access_memory(BRK_INTERRUPT_VECTOR + 1);
+                cpu.set_program_counter_hi(hi);
 
-    tasks.push(Rc::new(|cpu: &mut CPU| {
-        let hi = cpu.access_memory(BRK_INTERRUPT_VECTOR + 1);
-        cpu.set_program_counter_hi(hi);
-
-        cpu.processor_status.change_break_flag(true);
-        if cpu.chip_variant != ChipVariant::NMOS {
-            cpu.processor_status.change_decimal_mode_flag(false);
+                cpu.processor_status.change_break_flag(true);
+                if cpu.chip_variant != ChipVariant::NMOS {
+                    cpu.processor_status.change_decimal_mode_flag(false);
+                }
+                self.step = BrkSteps::Done;
+                return true;
+            }
+            BrkSteps::Done => {
+                panic!("tick mustn't be called when done")
+            }
         }
-    }));
+    }
+}
 
-    return Box::new(tasks);
+pub fn brk(_cpu: &mut CPU) -> Box<dyn Tasks> {
+    return Box::new(BrkTasks::new());
 }
 
 #[derive(PartialEq, PartialOrd)]
