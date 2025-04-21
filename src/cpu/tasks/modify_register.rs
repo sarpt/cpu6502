@@ -87,7 +87,8 @@ impl Tasks for ModifyRegisterTasks {
             panic!("tick mustn't be called when done")
         }
 
-        self.value = cpu.get_register(self.register);
+        let previous_value = cpu.get_register(self.register);
+        self.value = previous_value;
         match self.variant {
             ModificationVariant::Inc => self.value = self.value.wrapping_add(1),
             ModificationVariant::Dec => self.value = self.value.wrapping_sub(1),
@@ -116,6 +117,17 @@ impl Tasks for ModifyRegisterTasks {
         }
 
         cpu.set_register(self.register, self.value);
+        match self.variant {
+            ModificationVariant::ShiftLeft | ModificationVariant::RotateLeft => {
+                cpu.processor_status
+                    .change_carry_flag(previous_value & 0b10000000 > 0);
+            }
+            ModificationVariant::ShiftRight | ModificationVariant::RotateRight => {
+                cpu.processor_status
+                    .change_carry_flag(previous_value & 0b00000001 > 0);
+            }
+            _ => {}
+        }
 
         self.done = true;
         return self.done;
