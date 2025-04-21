@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use addressing::{get_addressing_tasks, AddressingMode};
 use tasks::read_memory::{AddressingReadMemoryTasks, ImmediateReadMemoryTasks, ReadMemoryTasks};
-use tasks::{GenericTasks, Tasks};
+use tasks::{DummyTasks, Tasks};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
@@ -122,7 +122,7 @@ impl<'a> CPU<'a> {
             Some(current_instruction) => {
                 let mut tasks = std::mem::replace(
                     &mut current_instruction.tasks,
-                    Box::new(GenericTasks::new()),
+                    Box::new(DummyTasks::default()),
                 );
 
                 self.sync = false;
