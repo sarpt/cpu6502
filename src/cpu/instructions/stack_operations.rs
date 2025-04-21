@@ -5,18 +5,56 @@ use crate::cpu::{
     Registers, Tasks, CPU,
 };
 
+#[derive(PartialEq, PartialOrd)]
+enum PushRegisterSteps {
+    DummyFetch,
+    PushToStack,
+    Done,
+}
+
+struct PushRegisterTasks {
+    register: Registers,
+    step: PushRegisterSteps,
+}
+
+impl PushRegisterTasks {
+    fn new(register: Registers) -> Self {
+        return PushRegisterTasks {
+            register,
+            step: PushRegisterSteps::DummyFetch,
+        };
+    }
+}
+
+impl Tasks for PushRegisterTasks {
+    fn done(&self) -> bool {
+        return self.step == PushRegisterSteps::Done;
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
+        match self.step {
+            PushRegisterSteps::DummyFetch => {
+                cpu.dummy_fetch();
+
+                self.step = PushRegisterSteps::PushToStack;
+                return false;
+            }
+            PushRegisterSteps::PushToStack => {
+                let val = cpu.get_register(self.register);
+                cpu.push_byte_to_stack(val);
+
+                self.step = PushRegisterSteps::Done;
+                return true;
+            }
+            PushRegisterSteps::Done => {
+                panic!("tick mustn't be called when done")
+            }
+        }
+    }
+}
+
 fn push_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
-    let mut tasks = GenericTasks::new();
-    tasks.push(Rc::new(|cpu| {
-        cpu.dummy_fetch();
-    }));
-
-    tasks.push(Rc::new(move |cpu| {
-        let val = cpu.get_register(register);
-        cpu.push_byte_to_stack(val);
-    }));
-
-    return Box::new(tasks);
+    return Box::new(PushRegisterTasks::new(register));
 }
 
 pub fn pha(cpu: &mut CPU) -> Box<dyn Tasks> {
