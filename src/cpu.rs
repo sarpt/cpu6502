@@ -37,9 +37,9 @@ enum Registers {
 
 type OpcodeHandler = fn(&mut CPU) -> Box<dyn Tasks>;
 
-struct InstructionExecution {
-    opcode: Byte,
-    starting_cycle: usize,
+pub struct InstructionExecution {
+    pub opcode: Byte,
+    pub starting_cycle: usize,
     tasks: Box<dyn Tasks>,
 }
 
@@ -147,6 +147,10 @@ impl<'a> CPU<'a> {
 
     pub fn sync(&mut self) -> bool {
         return self.sync;
+    }
+
+    pub fn get_last_instruction(&self) -> Option<&InstructionExecution> {
+        return self.instruction_history.back();
     }
 
     fn access_memory(&self, addr: Word) -> Byte {
