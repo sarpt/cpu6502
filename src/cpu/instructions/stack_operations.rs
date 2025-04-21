@@ -65,23 +65,64 @@ pub fn php(cpu: &mut CPU) -> Box<dyn Tasks> {
     return push_register(cpu, Registers::ProcessorStatus);
 }
 
+#[derive(PartialEq, PartialOrd)]
+enum PullRegisterSteps {
+    DummyFetch,
+    PreDecrementStackPointer,
+    PullFromStack,
+    Done,
+}
+
+struct PullRegisterTasks {
+    register: Registers,
+    step: PullRegisterSteps,
+}
+
+impl PullRegisterTasks {
+    fn new(register: Registers) -> Self {
+        return PullRegisterTasks {
+            register,
+            step: PullRegisterSteps::DummyFetch,
+        };
+    }
+}
+
+impl Tasks for PullRegisterTasks {
+    fn done(&self) -> bool {
+        return self.step == PullRegisterSteps::Done;
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
+        match self.step {
+            PullRegisterSteps::DummyFetch => {
+                cpu.dummy_fetch();
+
+                self.step = PullRegisterSteps::PreDecrementStackPointer;
+                return false;
+            }
+            PullRegisterSteps::PreDecrementStackPointer => {
+                // dummy tick, simulate separate stack pointer decrement
+                // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
+                // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
+                self.step = PullRegisterSteps::PullFromStack;
+                return false;
+            }
+            PullRegisterSteps::PullFromStack => {
+                let value = cpu.pop_byte_from_stack();
+                cpu.set_register(self.register, value);
+
+                self.step = PullRegisterSteps::Done;
+                return true;
+            }
+            PullRegisterSteps::Done => {
+                panic!("tick mustn't be called when done")
+            }
+        }
+    }
+}
+
 fn pull_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
-    let mut tasks = GenericTasks::new();
-    tasks.push(Rc::new(|cpu| {
-        cpu.dummy_fetch();
-    }));
-
-    // dummy tick, simulate separate stack pointer decrement
-    // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
-    // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
-    tasks.push(Rc::new(|_| {}));
-
-    tasks.push(Rc::new(move |cpu| {
-        let value = cpu.pop_byte_from_stack();
-        cpu.set_register(register, value);
-    }));
-
-    return Box::new(tasks);
+    return Box::new(PullRegisterTasks::new(register));
 }
 
 pub fn pla(cpu: &mut CPU) -> Box<dyn Tasks> {
