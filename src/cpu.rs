@@ -1,9 +1,11 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 
+use ringbuffer::{AllocRingBuffer, RingBuffer};
+
 use addressing::{get_addressing_tasks, AddressingMode};
 use tasks::read_memory::{AddressingReadMemoryTasks, ImmediateReadMemoryTasks, ReadMemoryTasks};
-use tasks::{DummyTasks, Tasks};
+use tasks::Tasks;
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
@@ -44,6 +46,7 @@ struct InstructionExecution {
 pub struct CPU<'a> {
     chip_variant: ChipVariant,
     current_instruction: Option<InstructionExecution>,
+    instruction_history: AllocRingBuffer<InstructionExecution>,
     cycle: usize,
     program_counter: Word,
     stack_pointer: Byte,
@@ -56,11 +59,14 @@ pub struct CPU<'a> {
     sync: bool,
 }
 
+const INSTRUCTION_HISTORY_CAPACITY: usize = 32;
+
 impl<'a> CPU<'a> {
     fn new(memory: &'a RefCell<dyn Memory>, chip_variant: ChipVariant) -> Self {
         return CPU {
             chip_variant: chip_variant,
             current_instruction: None,
+            instruction_history: AllocRingBuffer::new(INSTRUCTION_HISTORY_CAPACITY),
             cycle: 0,
             program_counter: RESET_VECTOR,
             stack_pointer: 0x00,
@@ -118,40 +124,25 @@ impl<'a> CPU<'a> {
     }
 
     pub fn tick(&mut self) {
-        match &mut self.current_instruction {
-            Some(current_instruction) => {
-                let mut tasks = std::mem::replace(
-                    &mut current_instruction.tasks,
-                    Box::new(DummyTasks::default()),
-                );
-
+        let current_instruction = std::mem::replace(&mut self.current_instruction, None);
+        match current_instruction {
+            Some(mut current_instruction) => {
                 self.sync = false;
-                let tasks_done = tasks.tick(self);
+                let tasks_done = current_instruction.tasks.tick(self);
                 self.cycle += 1;
                 if tasks_done {
-                    self.current_instruction = None;
+                    self.instruction_history.push(current_instruction);
                     return;
                 }
 
-                let current_instruction_after_running_task = self
-                    .current_instruction
-                    .as_mut()
-                    .expect("non-instruction fetching tick encountered current_instruction as none after running task");
-                std::mem::swap(
-                    &mut current_instruction_after_running_task.tasks,
-                    &mut tasks,
-                );
+                self.current_instruction = Some(current_instruction);
             }
             None => {
-                self.fetch_instruction();
+                self.sync = true;
+                let opcode = self.fetch_opcode();
+                self.current_instruction = Some(self.schedule_instruction(opcode));
             }
         }
-    }
-
-    fn fetch_instruction(&mut self) {
-        self.sync = true;
-        let opcode = self.fetch_opcode();
-        self.current_instruction = Some(self.schedule_instruction(opcode));
     }
 
     pub fn sync(&mut self) -> bool {
