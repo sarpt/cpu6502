@@ -1,8 +1,5 @@
-use std::rc::Rc;
-
 use crate::cpu::{
     addressing::{get_addressing_tasks, AddressingTasks},
-    tasks::GenericTasks,
     AddressingMode, Tasks, CPU,
 };
 
@@ -81,32 +78,73 @@ pub fn jsr_a(cpu: &mut CPU) -> Box<dyn Tasks> {
     return Box::new(JsrTasks::new(addr_tasks));
 }
 
+#[derive(PartialEq, PartialOrd)]
+enum RtsSteps {
+    DummyFetch,
+    PreDecrementStackPointer,
+    PopProgramCounterLo,
+    PopProgramCounterHi,
+    IncrementProgramCounter,
+    Done,
+}
+
+struct RtsTasks {
+    step: RtsSteps,
+}
+
+impl RtsTasks {
+    fn new() -> Self {
+        return RtsTasks {
+            step: RtsSteps::DummyFetch,
+        };
+    }
+}
+
+impl Tasks for RtsTasks {
+    fn done(&self) -> bool {
+        self.step == RtsSteps::Done
+    }
+
+    fn tick(&mut self, cpu: &mut CPU) -> bool {
+        match self.step {
+            RtsSteps::DummyFetch => {
+                cpu.dummy_fetch();
+                self.step = RtsSteps::PreDecrementStackPointer;
+                return false;
+            }
+            RtsSteps::PreDecrementStackPointer => {
+                // dummy tick, simulate separate stack pointer decrement
+                // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
+                // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
+                self.step = RtsSteps::PopProgramCounterLo;
+                return false;
+            }
+            RtsSteps::PopProgramCounterLo => {
+                let lo = cpu.pop_byte_from_stack();
+                cpu.set_program_counter_lo(lo);
+                self.step = RtsSteps::PopProgramCounterHi;
+                return false;
+            }
+            RtsSteps::PopProgramCounterHi => {
+                let hi = cpu.pop_byte_from_stack();
+                cpu.set_program_counter_hi(hi);
+                self.step = RtsSteps::IncrementProgramCounter;
+                return false;
+            }
+            RtsSteps::IncrementProgramCounter => {
+                cpu.increment_program_counter();
+                self.step = RtsSteps::Done;
+                return true;
+            }
+            RtsSteps::Done => {
+                panic!("tick mustn't be called when done")
+            }
+        }
+    }
+}
+
 pub fn rts(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    let mut tasks = GenericTasks::new();
-    tasks.push(Rc::new(|cpu| {
-        cpu.dummy_fetch();
-    }));
-
-    // dummy tick, simulate separate stack pointer decrement
-    // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
-    // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
-    tasks.push(Rc::new(|_| {}));
-
-    tasks.push(Rc::new(|cpu: &mut CPU| {
-        let lo = cpu.pop_byte_from_stack();
-        cpu.set_program_counter_lo(lo);
-    }));
-
-    tasks.push(Rc::new(|cpu: &mut CPU| {
-        let hi = cpu.pop_byte_from_stack();
-        cpu.set_program_counter_hi(hi);
-    }));
-
-    tasks.push(Rc::new(|cpu| {
-        cpu.increment_program_counter();
-    }));
-
-    return Box::new(tasks);
+    return Box::new(RtsTasks::new());
 }
 
 pub struct JmpTasks {
