@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use crate::cpu::{tasks::GenericTasks, Registers, Tasks, CPU};
+use crate::cpu::{
+    tasks::{transfer_register::TransferRegistersTasks, GenericTasks},
+    Registers, Tasks, CPU,
+};
 
 fn push_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
     let mut tasks = GenericTasks::new();
@@ -52,21 +55,17 @@ pub fn plp(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 pub fn tsx(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    let mut tasks = GenericTasks::new();
-    tasks.push(Rc::new(|cpu| {
-        cpu.transfer_registers(Registers::StackPointer, Registers::IndexX);
-    }));
-
-    return Box::new(tasks);
+    return Box::new(TransferRegistersTasks::new(
+        Registers::StackPointer,
+        Registers::IndexX,
+    ));
 }
 
 pub fn txs(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    let mut tasks = GenericTasks::new();
-    tasks.push(Rc::new(|cpu| {
-        cpu.transfer_registers(Registers::IndexX, Registers::StackPointer);
-    }));
-
-    return Box::new(tasks);
+    return Box::new(TransferRegistersTasks::new(
+        Registers::IndexX,
+        Registers::StackPointer,
+    ));
 }
 
 #[cfg(test)]

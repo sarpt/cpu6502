@@ -5,6 +5,7 @@ use super::CPU;
 pub mod modify_memory;
 pub mod modify_register;
 pub mod read_memory;
+pub mod transfer_register;
 
 type ScheduledTask = Rc<dyn Fn(&mut CPU) -> ()>;
 

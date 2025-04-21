@@ -1,37 +1,4 @@
-use crate::cpu::{Registers, Tasks, CPU};
-
-struct TransferRegistersTasks {
-    src: Registers,
-    tgt: Registers,
-    done: bool,
-}
-
-impl TransferRegistersTasks {
-    fn new(src: Registers, tgt: Registers) -> Self {
-        return TransferRegistersTasks {
-            src,
-            tgt,
-            done: false,
-        };
-    }
-}
-
-impl Tasks for TransferRegistersTasks {
-    fn done(&self) -> bool {
-        self.done
-    }
-
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
-        if self.done() {
-            panic!("tick mustn't be called when done")
-        }
-
-        cpu.transfer_registers(self.src, self.tgt);
-
-        self.done = true;
-        return self.done;
-    }
-}
+use crate::cpu::{tasks::transfer_register::TransferRegistersTasks, Registers, Tasks, CPU};
 
 pub fn tax(_cpu: &mut CPU) -> Box<dyn Tasks> {
     return Box::new(TransferRegistersTasks::new(
