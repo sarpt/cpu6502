@@ -18,12 +18,11 @@ impl Tasks for NopTasks {
         return self.done;
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, _cpu: &mut CPU) -> bool {
         if self.done() {
             panic!("tick mustn't be called when done")
         }
 
-        cpu.increment_program_counter();
         self.done = true;
         return true;
     }
@@ -383,19 +382,7 @@ mod nop {
     };
 
     #[test]
-    fn should_increment_program_counter() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
-        cpu.program_counter = 0x05;
-
-        let mut tasks = nop(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
-
-        assert_eq!(cpu.program_counter, 0x06);
-    }
-
-    #[test]
-    fn should_take_one_cycle() {
+    fn should_take_one_cycles() {
         let memory = &RefCell::new(MemoryMock::default());
         let mut cpu = CPU::new_nmos(memory);
         cpu.program_counter = 0x05;
