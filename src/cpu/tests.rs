@@ -135,9 +135,10 @@ mod fetch_instruction {
         let mut uut = CPU::new_nmos(memory);
         uut.program_counter = 0x0001;
 
-        let result = uut.fetch_opcode();
+        let (opcode_result, opcode_addr) = uut.fetch_opcode();
 
-        assert_eq!(result, 0x51);
+        assert_eq!(opcode_result, 0x51);
+        assert_eq!(opcode_addr, 0x0001);
     }
 
     #[test]
@@ -579,6 +580,50 @@ mod sync {
         uut.tick();
 
         assert_eq!(uut.sync(), false);
+    }
+}
+
+#[cfg(test)]
+mod get_last_instruction {
+    use std::cell::RefCell;
+
+    use crate::cpu::{
+        opcodes::{LDA_IM, NOP},
+        tests::MemoryMock,
+        CPU,
+    };
+
+    #[test]
+    fn should_return_last_ran_instruction() {
+        let memory = &RefCell::new(MemoryMock::new(&[NOP, LDA_IM, 0xFF]));
+        let mut uut = CPU::new_nmos(memory);
+        uut.program_counter = 0x00;
+
+        uut.execute_next_instruction();
+
+        let mut last_instruction = uut
+            .get_last_instruction()
+            .expect("last instruction is unexpectedly None");
+        let mut instruction_info = format!("{}", last_instruction);
+        assert_eq!(instruction_info, "1@0x00: 0xEA");
+
+        uut.execute_next_instruction();
+
+        last_instruction = uut
+            .get_last_instruction()
+            .expect("last instruction is unexpectedly None");
+        instruction_info = format!("{}", last_instruction);
+        assert_eq!(instruction_info, "3@0x01: 0xA9");
+    }
+
+    #[test]
+    fn should_return_none_when_no_instructions_were_ran_yet() {
+        let memory = &RefCell::new(MemoryMock::new(&[NOP, LDA_IM, 0xFF]));
+        let uut = CPU::new_nmos(memory);
+
+        uut.get_last_instruction();
+
+        assert_eq!(uut.get_last_instruction().is_none(), true);
     }
 }
 

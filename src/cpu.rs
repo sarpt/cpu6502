@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::fmt::Display;
 
 use ringbuffer::{AllocRingBuffer, RingBuffer};
 
@@ -8,7 +9,7 @@ use tasks::read_memory::{AddressingReadMemoryTasks, ImmediateReadMemoryTasks, Re
 use tasks::Tasks;
 
 use super::consts::{Byte, Word};
-use crate::consts::RESET_VECTOR;
+use crate::consts::{DEFAULT_INSTRUCTION_HISTORY_CAPACITY, RESET_VECTOR};
 use crate::{consts::STACK_PAGE_HI, memory::Memory};
 
 mod addressing;
@@ -16,8 +17,6 @@ mod instructions;
 mod opcodes;
 mod processor_status;
 mod tasks;
-
-type Instruction = Byte;
 
 #[derive(Copy, Clone, PartialEq)]
 enum ChipVariant {
@@ -37,12 +36,6 @@ enum Registers {
 
 type OpcodeHandler = fn(&mut CPU) -> Box<dyn Tasks>;
 
-pub struct InstructionExecution {
-    pub opcode: Byte,
-    pub starting_cycle: usize,
-    tasks: Box<dyn Tasks>,
-}
-
 pub struct CPU<'a> {
     chip_variant: ChipVariant,
     current_instruction: Option<InstructionExecution>,
@@ -59,14 +52,12 @@ pub struct CPU<'a> {
     sync: bool,
 }
 
-const INSTRUCTION_HISTORY_CAPACITY: usize = 32;
-
 impl<'a> CPU<'a> {
     fn new(memory: &'a RefCell<dyn Memory>, chip_variant: ChipVariant) -> Self {
         return CPU {
             chip_variant: chip_variant,
             current_instruction: None,
-            instruction_history: AllocRingBuffer::new(INSTRUCTION_HISTORY_CAPACITY),
+            instruction_history: AllocRingBuffer::new(DEFAULT_INSTRUCTION_HISTORY_CAPACITY),
             cycle: 0,
             program_counter: RESET_VECTOR,
             stack_pointer: 0x00,
@@ -139,8 +130,7 @@ impl<'a> CPU<'a> {
             }
             None => {
                 self.sync = true;
-                let opcode = self.fetch_opcode();
-                self.current_instruction = Some(self.schedule_instruction(opcode));
+                self.current_instruction = Some(self.schedule_instruction());
             }
         }
     }
@@ -198,12 +188,13 @@ impl<'a> CPU<'a> {
         };
     }
 
-    fn fetch_opcode(&mut self) -> Instruction {
-        let opcode = self.access_memory(self.program_counter);
+    fn fetch_opcode(&mut self) -> (Byte, Word) {
+        let addr = self.program_counter;
+        let opcode = self.access_memory(addr);
         self.increment_program_counter();
         self.cycle += 1;
 
-        return opcode;
+        return (opcode, addr);
     }
 
     fn fetch_address_from(&mut self, addr: Word) -> Word {
@@ -311,14 +302,16 @@ impl<'a> CPU<'a> {
         self.access_memory(self.program_counter); // fetch and discard
     }
 
-    fn schedule_instruction(&mut self, opcode: Byte) -> InstructionExecution {
+    fn schedule_instruction(&mut self) -> InstructionExecution {
+        let (opcode, addr) = self.fetch_opcode();
         let handler = self.opcode_handlers.get(&opcode);
         let tasks = match handler {
             Some(cb) => cb(self),
-            None => panic!("illegal opcode found: {:#04x}", opcode),
+            None => panic!("illegal opcode found: {:#04X}", opcode),
         };
 
         return InstructionExecution {
+            addr,
             tasks: tasks,
             opcode: opcode,
             starting_cycle: self.cycle,
@@ -330,6 +323,23 @@ fn access_cycle_has_been_done_during_addressing(addr_mode: AddressingMode) -> bo
     return addr_mode == AddressingMode::AbsoluteX
         || addr_mode == AddressingMode::AbsoluteY
         || addr_mode == AddressingMode::IndirectIndexY;
+}
+
+pub struct InstructionExecution {
+    pub addr: Word,
+    pub opcode: Byte,
+    pub starting_cycle: usize,
+    tasks: Box<dyn Tasks>,
+}
+
+impl Display for InstructionExecution {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}@{:#04X}: {:#04X}",
+            self.starting_cycle, self.addr, self.opcode
+        )
+    }
 }
 
 #[cfg(test)]
