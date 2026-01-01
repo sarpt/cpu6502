@@ -16,14 +16,14 @@ impl MemoryMock {
         };
         mock.data[..payload.len()].copy_from_slice(payload);
 
-        return mock;
+        mock
     }
 }
 
 impl Default for MemoryMock {
     fn default() -> Self {
         const DATA: [u8; 5] = [0x44, 0x51, 0x88, 0x42, 0x99];
-        return MemoryMock::new(&DATA);
+        MemoryMock::new(&DATA)
     }
 }
 
@@ -32,28 +32,24 @@ impl Index<Word> for MemoryMock {
 
     fn index(&self, index: Word) -> &Self::Output {
         let addr: usize = index.into();
-        return &self.data[addr];
+        &self.data[addr]
     }
 }
 
 impl IndexMut<Word> for MemoryMock {
     fn index_mut(&mut self, index: Word) -> &mut Self::Output {
         let addr: usize = index.into();
-        return &mut self.data[addr];
+        &mut self.data[addr]
     }
 }
 
 #[cfg(test)]
 mod new {
-    use std::cell::RefCell;
-
     use super::super::*;
-    use super::MemoryMock;
 
     #[test]
     fn should_be_in_reset_state_after_creation() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let uut = CPU::new_nmos(memory);
+        let uut = CPU::new_nmos();
 
         assert_eq!(uut.accumulator, 0);
         assert_eq!(uut.cycle, 0);
@@ -67,8 +63,6 @@ mod new {
 
 #[cfg(test)]
 mod reset {
-    use std::cell::RefCell;
-
     use super::super::*;
     use super::MemoryMock;
 
@@ -77,65 +71,41 @@ mod reset {
         const RESET_VECTOR_HI: Byte = 0x00;
         const RESET_VECTOR_LO: Byte = 0xAD;
 
-        let mut payload = MemoryMock::default();
-        payload[0xFFFC] = RESET_VECTOR_LO;
-        payload[0xFFFD] = RESET_VECTOR_HI;
-        let memory = &RefCell::new(payload);
-        let mut uut = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        memory[0xFFFC] = RESET_VECTOR_LO;
+        memory[0xFFFD] = RESET_VECTOR_HI;
+        let mut uut = CPU::new_nmos();
         uut.program_counter = 0xFFFF;
 
-        uut.reset();
+        uut.reset(&memory);
 
         assert_eq!(uut.program_counter, 0x00AD);
     }
 
     #[test]
     fn should_set_negative_flag_in_processor_status_to_zero_after_reset() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let memory = MemoryMock::default();
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b11111111);
 
-        uut.reset();
+        uut.reset(&memory);
 
         assert_eq!(uut.processor_status, 0b11110111);
     }
 }
 
 #[cfg(test)]
-mod access_memory {
-    use std::cell::RefCell;
-
-    use super::MemoryMock;
-    use crate::consts::Word;
-    use crate::cpu::CPU;
-
-    const ADDR: Word = 0x0003;
-
-    #[test]
-    fn should_return_a_byte() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let uut = CPU::new_nmos(memory);
-
-        let result = uut.access_memory(ADDR);
-
-        assert_eq!(result, 0x42);
-    }
-}
-
-#[cfg(test)]
 mod fetch_instruction {
-    use std::cell::RefCell;
-
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_return_an_instruction_pointed_by_a_program_counter() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let memory = MemoryMock::default();
+        let mut uut = CPU::new_nmos();
         uut.program_counter = 0x0001;
 
-        let (opcode_result, opcode_addr) = uut.fetch_opcode();
+        let (opcode_result, opcode_addr) = uut.fetch_opcode(&memory);
 
         assert_eq!(opcode_result, 0x51);
         assert_eq!(opcode_addr, 0x0001);
@@ -143,13 +113,13 @@ mod fetch_instruction {
 
     #[test]
     fn should_increase_cycle_counter_and_a_program_counter() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let memory = MemoryMock::default();
+        let mut uut = CPU::new_nmos();
         uut.program_counter = 0x0001;
 
         assert_eq!(uut.cycle, 0);
 
-        uut.fetch_opcode();
+        uut.fetch_opcode(&memory);
 
         assert_eq!(uut.cycle, 1);
         assert_eq!(uut.program_counter, 0x0002);
@@ -158,15 +128,11 @@ mod fetch_instruction {
 
 #[cfg(test)]
 mod get_register {
-    use std::cell::RefCell;
-
-    use super::MemoryMock;
     use crate::cpu::{Registers, CPU};
 
     #[test]
     fn should_return_accumulator() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.accumulator = 0xdf;
 
         let result = uut.get_register(Registers::Accumulator);
@@ -176,8 +142,7 @@ mod get_register {
 
     #[test]
     fn should_return_index_register_x() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.index_register_x = 0xdf;
 
         let result = uut.get_register(Registers::IndexX);
@@ -187,8 +152,7 @@ mod get_register {
 
     #[test]
     fn should_return_index_register_y() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.index_register_y = 0xdf;
 
         let result = uut.get_register(Registers::IndexY);
@@ -199,15 +163,11 @@ mod get_register {
 
 #[cfg(test)]
 mod set_register {
-    use std::cell::RefCell;
-
-    use super::MemoryMock;
     use crate::cpu::{Registers, CPU};
 
     #[test]
     fn should_set_accumulator() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.accumulator = 0x00;
 
         let value = 0xF5;
@@ -218,8 +178,7 @@ mod set_register {
 
     #[test]
     fn should_set_index_register_x() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.index_register_x = 0x00;
 
         let value = 0xF5;
@@ -230,8 +189,7 @@ mod set_register {
 
     #[test]
     fn should_set_index_register_y() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.index_register_y = 0x00;
 
         let value = 0xF5;
@@ -242,8 +200,7 @@ mod set_register {
 
     #[test]
     fn should_set_stack_pointer() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.stack_pointer = 0x00;
 
         let value = 0xF5;
@@ -254,9 +211,8 @@ mod set_register {
 
     #[test]
     fn should_set_processor_status() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.processor_status = (0x00 as u8).into();
+        let mut uut = CPU::new_nmos();
+        uut.processor_status = 0x00_u8.into();
 
         let value = 0xF5;
         uut.set_register(Registers::ProcessorStatus, value);
@@ -266,9 +222,8 @@ mod set_register {
 
     #[test]
     fn should_set_processor_status_when_provided_accumulator_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.processor_status = (0x00 as u8).into();
+        let mut uut = CPU::new_nmos();
+        uut.processor_status = 0x00_u8.into();
 
         let value = 0xF5;
         uut.set_register(Registers::Accumulator, value);
@@ -278,9 +233,8 @@ mod set_register {
 
     #[test]
     fn should_set_processor_status_when_provided_index_register_x_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.processor_status = (0x00 as u8).into();
+        let mut uut = CPU::new_nmos();
+        uut.processor_status = 0x00_u8.into();
 
         let value = 0xF5;
         uut.set_register(Registers::IndexX, value);
@@ -290,9 +244,8 @@ mod set_register {
 
     #[test]
     fn should_set_processor_status_when_provided_index_register_y_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.processor_status = (0x00 as u8).into();
+        let mut uut = CPU::new_nmos();
+        uut.processor_status = 0x00_u8.into();
 
         let value = 0xF5;
         uut.set_register(Registers::IndexY, value);
@@ -302,9 +255,8 @@ mod set_register {
 
     #[test]
     fn should_not_set_processor_status_when_provided_stack_pointer_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.processor_status = (0x00 as u8).into();
+        let mut uut = CPU::new_nmos();
+        uut.processor_status = 0x00_u8.into();
 
         let value = 0xF5;
         uut.set_register(Registers::StackPointer, value);
@@ -315,31 +267,29 @@ mod set_register {
 
 #[cfg(test)]
 mod push_byte_to_stack {
-    use std::cell::RefCell;
-
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_push_a_byte_to_a_place_to_the_first_page_in_memory_pointed_by_a_stack_pointer() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut uut = CPU::new_nmos();
         uut.stack_pointer = 0xFF;
 
         let value: u8 = 0xDF;
-        uut.push_byte_to_stack(value);
+        uut.push_byte_to_stack(value, &mut memory);
 
-        assert_eq!(uut.memory.borrow()[0x01FF], 0xDF);
+        assert_eq!(memory[0x01FF], 0xDF);
     }
 
     #[test]
     fn should_decrease_stack_pointer_by_one() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut uut = CPU::new_nmos();
         uut.stack_pointer = 0xFF;
 
         let value: u8 = 0xDF;
-        uut.push_byte_to_stack(value);
+        uut.push_byte_to_stack(value, &mut memory);
 
         assert_eq!(uut.stack_pointer, 0xFE);
     }
@@ -347,33 +297,31 @@ mod push_byte_to_stack {
 
 #[cfg(test)]
 mod pop_byte_from_stack {
-    use std::cell::RefCell;
-
     use super::MemoryMock;
     use crate::cpu::CPU;
 
     #[test]
     fn should_pop_byte_from_stack() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.memory.borrow_mut()[0x01FF] = 0xDF;
-        uut.memory.borrow_mut()[0x01FE] = 0x48;
+        let mut memory = MemoryMock::default();
+        let mut uut = CPU::new_nmos();
+        memory[0x01FF] = 0xDF;
+        memory[0x01FE] = 0x48;
         uut.stack_pointer = 0xFD;
 
-        let value = uut.pop_byte_from_stack();
+        let value = uut.pop_byte_from_stack(&memory);
 
         assert_eq!(value, 0x48);
     }
 
     #[test]
     fn should_increment_stack_pointer_once() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
-        uut.memory.borrow_mut()[0x01FF] = 0x00;
-        uut.memory.borrow_mut()[0x01FE] = 0x00;
+        let mut memory = MemoryMock::default();
+        let mut uut = CPU::new_nmos();
+        memory[0x01FF] = 0x00;
+        memory[0x01FE] = 0x00;
         uut.stack_pointer = 0xFD;
 
-        uut.pop_byte_from_stack();
+        uut.pop_byte_from_stack(&memory);
 
         assert_eq!(uut.stack_pointer, 0xFE);
     }
@@ -381,15 +329,11 @@ mod pop_byte_from_stack {
 
 #[cfg(test)]
 mod set_status_of_register {
-    use std::cell::RefCell;
-
-    use super::MemoryMock;
     use crate::cpu::{Registers, CPU};
 
     #[test]
     fn should_set_zero_flag_on_processor_status_when_register_is_zero() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0x00;
 
@@ -401,8 +345,7 @@ mod set_status_of_register {
 
     #[test]
     fn should_unset_zero_flag_on_processor_status_when_register_is_not_zero() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b11111111);
         uut.accumulator = 0xFF;
 
@@ -414,8 +357,7 @@ mod set_status_of_register {
 
     #[test]
     fn should_set_negative_flag_on_processor_status_when_register_has_bit_7_set() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0x80;
 
@@ -427,8 +369,7 @@ mod set_status_of_register {
 
     #[test]
     fn should_unset_negative_flag_on_processor_status_when_register_has_bit_7_unset() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b11111111);
         uut.accumulator = 0x00;
 
@@ -441,15 +382,11 @@ mod set_status_of_register {
 
 #[cfg(test)]
 mod set_cmp_status {
-    use std::cell::RefCell;
-
-    use super::MemoryMock;
     use crate::cpu::{Registers, CPU};
 
     #[test]
     fn should_set_zero_flag_on_processor_status_when_register_is_the_same_as_provided_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd3;
 
@@ -457,13 +394,12 @@ mod set_cmp_status {
         let register = Registers::Accumulator;
         uut.set_cmp_status(register, value);
 
-        assert_eq!(uut.processor_status.get_zero_flag(), true);
+        assert!(uut.processor_status.get_zero_flag());
     }
 
     #[test]
     fn should_clear_zero_flag_on_processor_status_when_register_is_different_as_provided_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b00000010);
         uut.accumulator = 0xd5;
 
@@ -471,13 +407,12 @@ mod set_cmp_status {
         let register = Registers::Accumulator;
         uut.set_cmp_status(register, value);
 
-        assert_eq!(uut.processor_status.get_zero_flag(), false);
+        assert!(!uut.processor_status.get_zero_flag());
     }
 
     #[test]
     fn should_change_carry_flag_on_processor_status_when_register_is_the_same_as_provided_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd3;
 
@@ -485,13 +420,12 @@ mod set_cmp_status {
         let register = Registers::Accumulator;
         uut.set_cmp_status(register, value);
 
-        assert_eq!(uut.processor_status.get_carry_flag(), true);
+        assert!(uut.processor_status.get_carry_flag());
     }
 
     #[test]
     fn should_change_carry_flag_on_processor_status_when_register_is_bigger_than_provided_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd5;
 
@@ -499,13 +433,12 @@ mod set_cmp_status {
         let register = Registers::Accumulator;
         uut.set_cmp_status(register, value);
 
-        assert_eq!(uut.processor_status.get_carry_flag(), true);
+        assert!(uut.processor_status.get_carry_flag());
     }
 
     #[test]
     fn should_clear_zero_flag_on_processor_status_when_register_is_smaller_than_provided_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b00000001);
         uut.accumulator = 0x01;
 
@@ -513,14 +446,13 @@ mod set_cmp_status {
         let register = Registers::Accumulator;
         uut.set_cmp_status(register, value);
 
-        assert_eq!(uut.processor_status.get_carry_flag(), false);
+        assert!(!uut.processor_status.get_carry_flag());
     }
 
     #[test]
     fn should_set_negative_flag_on_processor_status_when_difference_with_provided_value_has_most_significant_byte_set(
     ) {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b00000000);
         uut.accumulator = 0xd3;
 
@@ -528,14 +460,13 @@ mod set_cmp_status {
         let register = Registers::Accumulator;
         uut.set_cmp_status(register, value);
 
-        assert_eq!(uut.processor_status.get_negative_flag(), true);
+        assert!(uut.processor_status.get_negative_flag());
     }
 
     #[test]
     fn should_clear_negative_flag_on_processor_status_when_difference_with_provided_value_has_most_significant_byte_clear(
     ) {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut uut = CPU::new_nmos(memory);
+        let mut uut = CPU::new_nmos();
         uut.processor_status.set(0b00000010);
         uut.accumulator = 0xd5;
 
@@ -543,50 +474,47 @@ mod set_cmp_status {
         let register = Registers::Accumulator;
         uut.set_cmp_status(register, value);
 
-        assert_eq!(uut.processor_status.get_negative_flag(), false);
+        assert!(!uut.processor_status.get_negative_flag());
     }
 }
 
 #[cfg(test)]
 mod sync {
-    use std::cell::RefCell;
+    use crate::cpu::tests::MemoryMock;
 
     use super::super::*;
-    use super::MemoryMock;
 
     #[test]
     fn should_be_true_during_opcode_fetching_cycle() {
-        let memory = &RefCell::new(MemoryMock::new(&[0xA9, 0xFF]));
-        let mut uut = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut uut = CPU::new_nmos();
 
-        assert_eq!(uut.sync(), false);
+        assert!(!uut.sync());
 
-        uut.tick();
+        uut.tick(&mut memory);
 
-        assert_eq!(uut.sync(), true);
+        assert!(uut.sync());
     }
 
     #[test]
     fn should_be_false_after_opcode_fetching_cycle() {
-        let memory = &RefCell::new(MemoryMock::new(&[0xA9, 0xFF]));
-        let mut uut = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut uut = CPU::new_nmos();
 
-        assert_eq!(uut.sync(), false);
+        assert!(!uut.sync());
 
-        uut.tick();
+        uut.tick(&mut memory);
 
-        assert_eq!(uut.sync(), true);
+        assert!(uut.sync());
 
-        uut.tick();
+        uut.tick(&mut memory);
 
-        assert_eq!(uut.sync(), false);
+        assert!(!uut.sync());
     }
 }
 
 #[cfg(test)]
 mod get_last_instruction {
-    use std::cell::RefCell;
-
     use crate::cpu::{
         opcodes::{LDA_IM, NOP},
         tests::MemoryMock,
@@ -595,11 +523,11 @@ mod get_last_instruction {
 
     #[test]
     fn should_return_last_ran_instruction() {
-        let memory = &RefCell::new(MemoryMock::new(&[NOP, LDA_IM, 0xFF]));
-        let mut uut = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[NOP, LDA_IM, 0xFF]);
+        let mut uut = CPU::new_nmos();
         uut.program_counter = 0x00;
 
-        uut.execute_next_instruction();
+        uut.execute_next_instruction(&mut memory);
 
         let mut last_instruction = uut
             .get_last_instruction()
@@ -607,7 +535,7 @@ mod get_last_instruction {
         let mut instruction_info = format!("{}", last_instruction);
         assert_eq!(instruction_info, "1@0x00: 0xEA");
 
-        uut.execute_next_instruction();
+        uut.execute_next_instruction(&mut memory);
 
         last_instruction = uut
             .get_last_instruction()
@@ -618,8 +546,7 @@ mod get_last_instruction {
 
     #[test]
     fn should_return_none_when_no_instructions_were_ran_yet() {
-        let memory = &RefCell::new(MemoryMock::new(&[NOP, LDA_IM, 0xFF]));
-        let uut = CPU::new_nmos(memory);
+        let uut = CPU::new_nmos();
 
         uut.get_last_instruction();
 
@@ -628,9 +555,9 @@ mod get_last_instruction {
 }
 
 #[cfg(test)]
-pub fn run_tasks(cpu: &mut super::CPU, tasks: &mut dyn super::Tasks) {
+pub fn run_tasks(cpu: &mut super::CPU, tasks: &mut dyn super::Tasks, memory: &mut dyn Memory) {
     while !tasks.done() {
-        _ = tasks.tick(cpu);
+        _ = tasks.tick(cpu, memory);
         cpu.cycle += 1;
     }
 }

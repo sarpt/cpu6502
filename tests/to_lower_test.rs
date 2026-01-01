@@ -59,45 +59,39 @@ fn should_change_word_to_lower_case() {
         (0x040B, 0x65),
     ];
     let program: &[(u16, u8)] = &[src_string, TO_LOWER_PROCEDURE, BOOTSTRAP].concat();
-    let memory = RefCell::new(Generic64kMem::from(program));
+    let mut memory = Generic64kMem::from(program);
 
-    let mut cpu = CPU::new_nmos(&memory);
-    cpu.reset();
-    cpu.execute_until_break();
+    let mut cpu = CPU::new_nmos();
+    cpu.reset(&memory);
+    cpu.execute_until_break(&mut memory);
 
-    assert_eq!(
-        str::from_utf8(&memory.borrow()[0x0500..0x050C]),
-        Ok("some message")
-    );
+    assert_eq!(str::from_utf8(&memory[0x0500..0x050C]), Ok("some message"));
     assert_eq!(cpu.get_processor_status() & 0b00000001, 0);
 }
 
 #[test]
 fn should_report_string_too_long() {
     let program: &[(u16, u8)] = &[TO_LOWER_PROCEDURE, BOOTSTRAP].concat();
-    let memory = RefCell::new(Generic64kMem::from(program));
-    memory.borrow_mut().insert(0x0400, &[0x53; 256]);
+    let mut memory = Generic64kMem::from(program);
+    memory.insert(0x0400, &[0x53; 256]);
 
-    let mut cpu = CPU::new_nmos(&memory);
-    cpu.reset();
-    cpu.execute_until_break();
+    let mut cpu = CPU::new_nmos();
+    cpu.reset(&memory);
+    cpu.execute_until_break(&mut memory);
 
-    assert_eq!(
-        str::from_utf8(&memory.borrow()[0x0500..0x050C]),
-        Ok("ssssssssssss")
-    );
+    assert_eq!(str::from_utf8(&memory[0x0500..0x050C]), Ok("ssssssssssss"));
     assert_eq!(cpu.get_processor_status() & 0b00000001, 1);
 }
 
 #[test]
 fn should_handle_empty_string() {
     let program: &[(u16, u8)] = &[TO_LOWER_PROCEDURE, BOOTSTRAP].concat();
-    let memory = RefCell::new(Generic64kMem::from(program));
+    let mut memory = Generic64kMem::from(program);
 
-    let mut cpu = CPU::new_nmos(&memory);
-    cpu.reset();
-    cpu.execute_until_break();
+    let mut cpu = CPU::new_nmos();
+    cpu.reset(&memory);
+    cpu.execute_until_break(&mut memory);
 
-    assert_eq!(memory.borrow()[0x0500], 0);
+    assert_eq!(memory[0x0500], 0);
     assert_eq!(cpu.get_processor_status() & 0b00000001, 0);
 }

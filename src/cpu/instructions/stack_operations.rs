@@ -1,4 +1,7 @@
-use crate::cpu::{tasks::transfer_register::TransferRegistersTasks, Registers, Tasks, CPU};
+use crate::{
+    cpu::{tasks::transfer_register::TransferRegistersTasks, Registers, Tasks, CPU},
+    memory::Memory,
+};
 
 #[derive(PartialEq, PartialOrd)]
 enum PushRegisterSteps {
@@ -26,17 +29,17 @@ impl Tasks for PushRegisterTasks {
         self.step == PushRegisterSteps::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         match self.step {
             PushRegisterSteps::DummyFetch => {
-                cpu.dummy_fetch();
+                cpu.dummy_fetch(memory);
 
                 self.step = PushRegisterSteps::PushToStack;
                 false
             }
             PushRegisterSteps::PushToStack => {
                 let val = cpu.get_register(self.register);
-                cpu.push_byte_to_stack(val);
+                cpu.push_byte_to_stack(val, memory);
 
                 self.step = PushRegisterSteps::Done;
                 true
@@ -87,10 +90,10 @@ impl Tasks for PullRegisterTasks {
         self.step == PullRegisterSteps::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         match self.step {
             PullRegisterSteps::DummyFetch => {
-                cpu.dummy_fetch();
+                cpu.dummy_fetch(memory);
 
                 self.step = PullRegisterSteps::PreDecrementStackPointer;
                 false
@@ -103,7 +106,7 @@ impl Tasks for PullRegisterTasks {
                 false
             }
             PullRegisterSteps::PullFromStack => {
-                let value = cpu.pop_byte_from_stack();
+                let value = cpu.pop_byte_from_stack(memory);
                 cpu.set_register(self.register, value);
 
                 self.step = PullRegisterSteps::Done;
@@ -154,27 +157,27 @@ mod pha {
 
     #[test]
     fn should_push_accumulator_into_stack() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.stack_pointer = 0xFF;
         cpu.accumulator = 0xDE;
 
         let mut tasks = pha(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-        assert_eq!(memory.borrow()[0x01FF], 0xDE);
+        assert_eq!(memory[0x01FF], 0xDE);
     }
 
     #[test]
     fn should_take_two_cycles() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.accumulator = 0xDE;
         cpu.stack_pointer = 0xFF;
         cpu.cycle = 0;
 
         let mut tasks = pha(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -192,42 +195,42 @@ mod pla {
 
     #[test]
     fn should_pull_stack_into_accumulator() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.stack_pointer = 0xFE;
-        memory.borrow_mut()[0x01FF] = 0xDE;
+        memory[0x01FF] = 0xDE;
         cpu.accumulator = 0x00;
 
         let mut tasks = pla(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.accumulator, 0xDE);
     }
 
     #[test]
     fn should_take_three_cycles() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.stack_pointer = 0xFE;
-        memory.borrow_mut()[0x01FF] = 0xDE;
+        memory[0x01FF] = 0xDE;
         cpu.cycle = 0;
 
         let mut tasks = pla(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 3);
     }
 
     #[test]
     fn should_set_processor_status_based_on_accumulator_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.stack_pointer = 0xFE;
-        memory.borrow_mut()[0x01FF] = 0xDE;
+        memory[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
         let mut tasks = pla(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }
@@ -245,27 +248,27 @@ mod php {
 
     #[test]
     fn should_push_processor_status_into_stack() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status = (0b10101010 as u8).into();
         cpu.stack_pointer = 0xFF;
 
         let mut tasks = php(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-        assert_eq!(memory.borrow()[0x01FF], 0b10101010);
+        assert_eq!(memory[0x01FF], 0b10101010);
     }
 
     #[test]
     fn should_take_two_cycles() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status = (0b10101010 as u8).into();
         cpu.stack_pointer = 0xFF;
         cpu.cycle = 0;
 
         let mut tasks = php(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -283,29 +286,29 @@ mod plp {
 
     #[test]
     fn should_pull_stack_into_accumulator() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.stack_pointer = 0xFE;
-        memory.borrow_mut()[0x01FF] = 0xDE;
+        memory[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
         let mut tasks = plp(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.processor_status, 0xDE);
     }
 
     #[test]
     fn should_take_three_cycles() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.stack_pointer = 0xFE;
-        memory.borrow_mut()[0x01FF] = 0xDE;
+        memory[0x01FF] = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
         cpu.cycle = 0;
 
         let mut tasks = plp(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -323,25 +326,25 @@ mod txs {
 
     #[test]
     fn should_push_index_x_register_into_stack_pointer_register() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.index_register_x = 0xDE;
 
         let mut tasks = txs(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.stack_pointer, 0xDE);
     }
 
     #[test]
     fn should_take_one_cycle() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.index_register_x = 0xDE;
         cpu.cycle = 0;
 
         let mut tasks = txs(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -359,38 +362,38 @@ mod tsx {
 
     #[test]
     fn should_push_stack_pointer_into_index_x_register_register() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.stack_pointer = 0xDE;
 
         let mut tasks = tsx(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.index_register_x, 0xDE);
     }
 
     #[test]
     fn should_take_one_cycle() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.stack_pointer = 0xDE;
         cpu.cycle = 0;
 
         let mut tasks = tsx(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 1);
     }
 
     #[test]
     fn should_set_processor_status_based_on_index_x_register_value() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.stack_pointer = 0xDE;
         cpu.processor_status = (0x00 as u8).into();
 
         let mut tasks = tsx(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.processor_status, 0b10000000);
     }

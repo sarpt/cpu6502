@@ -1,6 +1,9 @@
-use crate::cpu::{
-    addressing::{get_addressing_tasks, AddressingTasks},
-    AddressingMode, Tasks, CPU,
+use crate::{
+    cpu::{
+        addressing::{get_addressing_tasks, AddressingTasks},
+        AddressingMode, Tasks, CPU,
+    },
+    memory::Memory,
 };
 
 #[derive(PartialEq, PartialOrd)]
@@ -31,10 +34,10 @@ impl Tasks for JsrTasks {
         self.step == JsrSteps::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         match self.step {
             JsrSteps::Addressing => {
-                let addr_done = self.addressing_tasks.tick(cpu);
+                let addr_done = self.addressing_tasks.tick(cpu, memory);
                 if addr_done {
                     self.step = JsrSteps::DecrementProgramCounterHi;
                 }
@@ -42,17 +45,15 @@ impl Tasks for JsrTasks {
                 false
             }
             JsrSteps::DecrementProgramCounterHi => {
-                let [_, ret_program_counter_hi] =
-                    cpu.program_counter.wrapping_sub(1).to_le_bytes();
-                cpu.push_byte_to_stack(ret_program_counter_hi);
+                let [_, ret_program_counter_hi] = cpu.program_counter.wrapping_sub(1).to_le_bytes();
+                cpu.push_byte_to_stack(ret_program_counter_hi, memory);
 
                 self.step = JsrSteps::DecrementProgramCounterLo;
                 false
             }
             JsrSteps::DecrementProgramCounterLo => {
-                let [ret_program_counter_lo, _] =
-                    cpu.program_counter.wrapping_sub(1).to_le_bytes();
-                cpu.push_byte_to_stack(ret_program_counter_lo);
+                let [ret_program_counter_lo, _] = cpu.program_counter.wrapping_sub(1).to_le_bytes();
+                cpu.push_byte_to_stack(ret_program_counter_lo, memory);
 
                 self.step = JsrSteps::SetProgramCounter;
                 false
@@ -105,10 +106,10 @@ impl Tasks for RtsTasks {
         self.step == RtsSteps::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         match self.step {
             RtsSteps::DummyFetch => {
-                cpu.dummy_fetch();
+                cpu.dummy_fetch(memory);
                 self.step = RtsSteps::PreDecrementStackPointer;
                 false
             }
@@ -120,13 +121,13 @@ impl Tasks for RtsTasks {
                 false
             }
             RtsSteps::PopProgramCounterLo => {
-                let lo = cpu.pop_byte_from_stack();
+                let lo = cpu.pop_byte_from_stack(memory);
                 cpu.set_program_counter_lo(lo);
                 self.step = RtsSteps::PopProgramCounterHi;
                 false
             }
             RtsSteps::PopProgramCounterHi => {
-                let hi = cpu.pop_byte_from_stack();
+                let hi = cpu.pop_byte_from_stack(memory);
                 cpu.set_program_counter_hi(hi);
                 self.step = RtsSteps::IncrementProgramCounter;
                 false
@@ -162,12 +163,12 @@ impl Tasks for JmpTasks {
         self.addressing_tasks.done()
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         if self.addressing_tasks.done() {
             return true;
         }
 
-        let done = self.addressing_tasks.tick(cpu);
+        let done = self.addressing_tasks.tick(cpu, memory);
 
         if done {
             cpu.program_counter = self
@@ -206,53 +207,53 @@ mod jsr_a {
 
     #[test]
     fn should_fetch_address_pointed_by_program_counter_and_put_in_program_counter() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x44, 0x51, 0x88]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x44, 0x51, 0x88]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
         cpu.stack_pointer = 0xFF;
 
         let mut tasks = jsr_a(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x5144);
     }
 
     #[test]
     fn should_save_program_counter_shifted_once_into_stack_pointer() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x44, 0x51, 0x88]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x44, 0x51, 0x88]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
         cpu.stack_pointer = 0xFF;
 
         let mut tasks = jsr_a(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-        assert_eq!(memory.borrow()[0x01FF], 0x00);
-        assert_eq!(memory.borrow()[0x01FE], 0x01);
+        assert_eq!(memory[0x01FF], 0x00);
+        assert_eq!(memory[0x01FE], 0x01);
     }
 
     #[test]
     fn should_decrement_stack_pointer_twice() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x44, 0x51, 0x88]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x44, 0x51, 0x88]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
         cpu.stack_pointer = 0xFF;
 
         let mut tasks = jsr_a(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.stack_pointer, 0xFD);
     }
 
     #[test]
     fn should_take_five_cycles() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x44, 0x51, 0x88]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x44, 0x51, 0x88]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
         let mut tasks = jsr_a(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -270,46 +271,46 @@ mod rts {
 
     #[test]
     fn should_fetch_address_from_stack_and_put_it_in_program_counter_incremented_by_one() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x02, 0x03]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x01, 0x02, 0x03]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
-        memory.borrow_mut()[0x01FF] = 0x44;
-        memory.borrow_mut()[0x01FE] = 0x51;
+        memory[0x01FF] = 0x44;
+        memory[0x01FE] = 0x51;
         cpu.stack_pointer = 0xFD;
 
         let mut tasks = rts(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x4452);
     }
 
     #[test]
     fn should_increment_stack_pointer_twice() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x02, 0x03]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x01, 0x02, 0x03]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
-        memory.borrow_mut()[0x01FF] = 0x44;
-        memory.borrow_mut()[0x01FE] = 0x51;
+        memory[0x01FF] = 0x44;
+        memory[0x01FE] = 0x51;
         cpu.stack_pointer = 0xFD;
 
         let mut tasks = rts(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.stack_pointer, 0xFF);
     }
 
     #[test]
     fn should_take_five_cycles() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x01, 0x02, 0x03]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x01, 0x02, 0x03]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
-        memory.borrow_mut()[0x01FF] = 0x44;
-        memory.borrow_mut()[0x01FE] = 0x51;
+        memory[0x01FF] = 0x44;
+        memory[0x01FE] = 0x51;
         cpu.stack_pointer = 0xFD;
         cpu.cycle = 0;
 
         let mut tasks = rts(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -327,25 +328,25 @@ mod jmp_a {
 
     #[test]
     fn should_put_address_stored_in_memory_at_program_counter_as_a_new_program_counter() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x44, 0x51, 0x88]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x44, 0x51, 0x88]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
 
         let mut tasks = jmp_a(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x5144);
     }
 
     #[test]
     fn should_take_two_cycles() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x44, 0x51, 0x88]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x44, 0x51, 0x88]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
         let mut tasks = jmp_a(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -365,12 +366,12 @@ mod jmp_in {
 
         #[test]
         fn should_fetch_indirect_address_from_memory_and_put_in_program_counter() {
-            let memory = &RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
-            let mut cpu = CPU::new_nmos(memory);
+            let mut memory = MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]);
+            let mut cpu = CPU::new_nmos();
             cpu.program_counter = 0x00;
 
             let mut tasks = jmp_in(&mut cpu);
-            run_tasks(&mut cpu, &mut *tasks);
+            run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
             assert_eq!(cpu.program_counter, 0x0001);
         }
@@ -388,13 +389,13 @@ mod jmp_in {
 
         #[test]
         fn should_take_four_cycles() {
-            let memory = &RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
-            let mut cpu = CPU::new_nmos(memory);
+            let mut memory = MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]);
+            let mut cpu = CPU::new_nmos();
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
             let mut tasks = jmp_in(&mut cpu);
-            run_tasks(&mut cpu, &mut *tasks);
+            run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
             assert_eq!(cpu.cycle, 4);
         }
@@ -412,13 +413,13 @@ mod jmp_in {
 
         #[test]
         fn should_take_five_cycles() {
-            let memory = &RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
-            let mut cpu = CPU::new_rockwell_cmos(memory);
+            let mut memory = MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]);
+            let mut cpu = CPU::new_rockwell_cmos();
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
             let mut tasks = jmp_in(&mut cpu);
-            run_tasks(&mut cpu, &mut *tasks);
+            run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
             assert_eq!(cpu.cycle, 5);
         }

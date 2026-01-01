@@ -1,4 +1,4 @@
-use crate::{consts::Word, cpu::tasks::Tasks};
+use crate::{consts::Word, cpu::tasks::Tasks, memory::Memory};
 
 use super::{address::Address, AddressingTasks, OffsetVariant};
 
@@ -41,14 +41,14 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
         self.done
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
+    fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
         if self.done {
             return self.done;
         }
 
         match self.step {
             AbsoluteOffsetStep::MemoryAccessLo => {
-                let addr_lo = cpu.access_memory(cpu.program_counter);
+                let addr_lo = memory[cpu.program_counter];
                 self.addr.set_lo(addr_lo);
                 cpu.increment_program_counter();
                 self.step = AbsoluteOffsetStep::MemoryAccessHi;
@@ -56,7 +56,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
                 false
             }
             AbsoluteOffsetStep::MemoryAccessHi => {
-                let addr_hi = cpu.access_memory(cpu.program_counter);
+                let addr_hi = memory[cpu.program_counter];
                 self.addr.set_hi(addr_hi);
                 cpu.increment_program_counter();
                 self.step = AbsoluteOffsetStep::OffsetLo;
@@ -130,14 +130,14 @@ impl Tasks for AbsoluteAddressingTasks {
         self.done
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
+    fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
         if self.done {
             return self.done;
         }
 
         match self.step {
             AbsoluteStep::MemoryLo => {
-                let addr_lo = cpu.access_memory(cpu.program_counter);
+                let addr_lo = memory[cpu.program_counter];
                 self.addr.set_lo(addr_lo);
                 cpu.increment_program_counter();
                 self.step = AbsoluteStep::MemoryHi;
@@ -145,7 +145,7 @@ impl Tasks for AbsoluteAddressingTasks {
                 false
             }
             AbsoluteStep::MemoryHi => {
-                let addr_hi = cpu.access_memory(cpu.program_counter);
+                let addr_hi = memory[cpu.program_counter];
                 self.addr.set_hi(addr_hi);
                 cpu.increment_program_counter();
 

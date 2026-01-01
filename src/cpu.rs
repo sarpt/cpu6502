@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Display;
 
@@ -36,7 +35,7 @@ enum Registers {
 
 type OpcodeHandler = fn(&mut CPU) -> Box<dyn Tasks>;
 
-pub struct CPU<'a> {
+pub struct CPU {
     chip_variant: ChipVariant,
     current_instruction: Option<InstructionExecution>,
     instruction_history: AllocRingBuffer<InstructionExecution>,
@@ -47,13 +46,12 @@ pub struct CPU<'a> {
     index_register_x: Byte,
     index_register_y: Byte,
     processor_status: processor_status::ProcessorStatus,
-    memory: &'a RefCell<dyn Memory>,
     opcode_handlers: HashMap<Byte, OpcodeHandler>,
     sync: bool,
 }
 
-impl<'a> CPU<'a> {
-    fn new(memory: &'a RefCell<dyn Memory>, chip_variant: ChipVariant) -> Self {
+impl CPU {
+    fn new(chip_variant: ChipVariant) -> Self {
         CPU {
             chip_variant,
             current_instruction: None,
@@ -65,26 +63,25 @@ impl<'a> CPU<'a> {
             index_register_x: 0,
             index_register_y: 0,
             processor_status: processor_status::ProcessorStatus::default(),
-            memory,
             opcode_handlers: instructions::get_instructions(),
             sync: false,
         }
     }
 
-    pub fn new_nmos(memory: &'a RefCell<dyn Memory>) -> Self {
-        CPU::new(memory, ChipVariant::NMOS)
+    pub fn new_nmos() -> Self {
+        CPU::new(ChipVariant::NMOS)
     }
 
-    pub fn new_rockwell_cmos(memory: &'a RefCell<dyn Memory>) -> Self {
-        CPU::new(memory, ChipVariant::RockwellCMOS)
+    pub fn new_rockwell_cmos() -> Self {
+        CPU::new(ChipVariant::RockwellCMOS)
     }
 
-    pub fn new_wdc_cmos(memory: &'a RefCell<dyn Memory>) -> Self {
-        CPU::new(memory, ChipVariant::WDCCMOS)
+    pub fn new_wdc_cmos() -> Self {
+        CPU::new(ChipVariant::WDCCMOS)
     }
 
-    pub fn reset(&mut self) {
-        self.program_counter = self.fetch_address_from(RESET_VECTOR);
+    pub fn reset(&mut self, memory: &dyn Memory) {
+        self.program_counter = self.fetch_address_from(RESET_VECTOR, memory);
         self.cycle = 0;
         self.stack_pointer = 0x00;
         self.processor_status.change_decimal_mode_flag(false);
@@ -97,29 +94,29 @@ impl<'a> CPU<'a> {
         self.processor_status.into()
     }
 
-    pub fn execute_next_instruction(&mut self) {
+    pub fn execute_next_instruction(&mut self, memory: &mut dyn Memory) {
         loop {
-            self.tick();
+            self.tick(memory);
             if self.current_instruction.is_none() {
                 break;
             }
         }
     }
 
-    pub fn execute_until_break(&mut self) -> usize {
+    pub fn execute_until_break(&mut self, memory: &mut dyn Memory) -> usize {
         while !self.processor_status.get_break_flag() {
-            self.execute_next_instruction();
+            self.execute_next_instruction(memory);
         }
 
         self.cycle
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self, memory: &mut dyn Memory) {
         let current_instruction = self.current_instruction.take();
         match current_instruction {
             Some(mut current_instruction) => {
                 self.sync = false;
-                let tasks_done = current_instruction.tasks.tick(self);
+                let tasks_done = current_instruction.tasks.tick(self, memory);
                 self.cycle += 1;
                 if tasks_done {
                     self.instruction_history.push(current_instruction);
@@ -130,7 +127,7 @@ impl<'a> CPU<'a> {
             }
             None => {
                 self.sync = true;
-                self.current_instruction = Some(self.schedule_instruction());
+                self.current_instruction = Some(self.schedule_instruction(memory));
             }
         }
     }
@@ -141,14 +138,6 @@ impl<'a> CPU<'a> {
 
     pub fn get_last_instruction(&self) -> Option<&InstructionExecution> {
         self.instruction_history.back()
-    }
-
-    fn access_memory(&self, addr: Word) -> Byte {
-        return self.memory.borrow()[addr];
-    }
-
-    fn put_into_memory(&mut self, addr: Word, value: Byte) {
-        self.memory.borrow_mut()[addr] = value;
     }
 
     fn increment_program_counter(&mut self) {
@@ -188,19 +177,19 @@ impl<'a> CPU<'a> {
         }
     }
 
-    fn fetch_opcode(&mut self) -> (Byte, Word) {
+    fn fetch_opcode(&mut self, memory: &dyn Memory) -> (Byte, Word) {
         let addr = self.program_counter;
-        let opcode = self.access_memory(addr);
+        let opcode = memory[addr];
         self.increment_program_counter();
         self.cycle += 1;
 
         (opcode, addr)
     }
 
-    fn fetch_address_from(&mut self, addr: Word) -> Word {
-        let lo = self.access_memory(addr);
+    fn fetch_address_from(&mut self, addr: Word, memory: &dyn Memory) -> Word {
+        let lo = memory[addr];
         self.cycle += 1;
-        let hi = self.access_memory(addr + 1);
+        let hi = memory[addr + 1];
         self.cycle += 1;
 
         Word::from_le_bytes([lo, hi])
@@ -239,16 +228,16 @@ impl<'a> CPU<'a> {
             .change_negative_flag((value & 0b10000000) > 0);
     }
 
-    fn push_byte_to_stack(&mut self, val: Byte) {
+    fn push_byte_to_stack(&mut self, val: Byte, memory: &mut dyn Memory) {
         let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
-        self.put_into_memory(stack_addr, val);
+        memory[stack_addr] = val;
         self.decrement_register(Registers::StackPointer);
     }
 
-    fn pop_byte_from_stack(&mut self) -> Byte {
+    fn pop_byte_from_stack(&mut self, memory: &dyn Memory) -> Byte {
         self.increment_register(Registers::StackPointer);
         let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
-        self.access_memory(stack_addr)
+        memory[stack_addr]
     }
 
     fn read_memory(&self, addr_mode: Option<AddressingMode>) -> Box<dyn ReadMemoryTasks> {
@@ -269,9 +258,7 @@ impl<'a> CPU<'a> {
                     )
                 }
             }
-            None => {
-                Box::new(ImmediateReadMemoryTasks::new())
-            }
+            None => Box::new(ImmediateReadMemoryTasks::new()),
         }
     }
 
@@ -296,12 +283,12 @@ impl<'a> CPU<'a> {
         self.set_register(tgt, value);
     }
 
-    fn dummy_fetch(&mut self) {
-        self.access_memory(self.program_counter); // fetch and discard
+    fn dummy_fetch(&mut self, memory: &dyn Memory) {
+        memory[self.program_counter]; // fetch and discard
     }
 
-    fn schedule_instruction(&mut self) -> InstructionExecution {
-        let (opcode, addr) = self.fetch_opcode();
+    fn schedule_instruction(&mut self, memory: &dyn Memory) -> InstructionExecution {
+        let (opcode, addr) = self.fetch_opcode(memory);
         let handler = self.opcode_handlers.get(&opcode);
         let tasks = match handler {
             Some(cb) => cb(self),

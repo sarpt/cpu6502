@@ -1,6 +1,7 @@
 use crate::{
     consts::BRK_INTERRUPT_VECTOR,
     cpu::{ChipVariant, Tasks, CPU},
+    memory::Memory,
 };
 
 struct NopTasks {
@@ -18,7 +19,7 @@ impl Tasks for NopTasks {
         self.done
     }
 
-    fn tick(&mut self, _cpu: &mut CPU) -> bool {
+    fn tick(&mut self, _cpu: &mut CPU, _: &mut dyn Memory) -> bool {
         if self.done() {
             panic!("tick mustn't be called when done")
         }
@@ -60,37 +61,37 @@ impl Tasks for BrkTasks {
         self.step == BrkSteps::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         match self.step {
             BrkSteps::InitialFetchAndDiscard => {
-                cpu.access_memory(cpu.program_counter); // fetch and discard
+                memory[cpu.program_counter]; // fetch and discard
                 cpu.increment_program_counter();
                 self.step = BrkSteps::PushProgramCounterHi;
                 false
             }
             BrkSteps::PushProgramCounterHi => {
-                cpu.push_byte_to_stack(cpu.get_program_counter_hi());
+                cpu.push_byte_to_stack(cpu.get_program_counter_hi(), memory);
                 self.step = BrkSteps::PushProgramCounterLo;
                 false
             }
             BrkSteps::PushProgramCounterLo => {
-                cpu.push_byte_to_stack(cpu.get_program_counter_lo());
+                cpu.push_byte_to_stack(cpu.get_program_counter_lo(), memory);
                 self.step = BrkSteps::PushProcessorStatus;
                 false
             }
             BrkSteps::PushProcessorStatus => {
-                cpu.push_byte_to_stack(cpu.processor_status.into());
+                cpu.push_byte_to_stack(cpu.processor_status.into(), memory);
                 self.step = BrkSteps::AccessBrkVectorLo;
                 false
             }
             BrkSteps::AccessBrkVectorLo => {
-                let lo = cpu.access_memory(BRK_INTERRUPT_VECTOR);
+                let lo = memory[BRK_INTERRUPT_VECTOR];
                 cpu.set_program_counter_lo(lo);
                 self.step = BrkSteps::AccessBrkVectorHi;
                 false
             }
             BrkSteps::AccessBrkVectorHi => {
-                let hi = cpu.access_memory(BRK_INTERRUPT_VECTOR + 1);
+                let hi = memory[BRK_INTERRUPT_VECTOR + 1];
                 cpu.set_program_counter_hi(hi);
 
                 cpu.processor_status.change_break_flag(true);
@@ -138,10 +139,10 @@ impl Tasks for RtiTasks {
         self.step == RtiSteps::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         match self.step {
             RtiSteps::DummyFetch => {
-                cpu.dummy_fetch();
+                cpu.dummy_fetch(memory);
 
                 self.step = RtiSteps::StackPointerPreDecrement;
                 false
@@ -154,18 +155,18 @@ impl Tasks for RtiTasks {
                 false
             }
             RtiSteps::PopProcessorStatus => {
-                cpu.processor_status = cpu.pop_byte_from_stack().into();
+                cpu.processor_status = cpu.pop_byte_from_stack(memory).into();
                 self.step = RtiSteps::PopProgramCounterLo;
                 false
             }
             RtiSteps::PopProgramCounterLo => {
-                let lo = cpu.pop_byte_from_stack();
+                let lo = cpu.pop_byte_from_stack(memory);
                 cpu.set_program_counter_lo(lo);
                 self.step = RtiSteps::PopProgramCounterHi;
                 false
             }
             RtiSteps::PopProgramCounterHi => {
-                let hi = cpu.pop_byte_from_stack();
+                let hi = cpu.pop_byte_from_stack(memory);
                 cpu.set_program_counter_hi(hi);
                 self.step = RtiSteps::Done;
                 true
@@ -198,59 +199,59 @@ mod brk {
 
         #[test]
         fn should_put_program_counter_incremented_by_one_and_processor_status_on_stack() {
-            let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_nmos(memory);
+            let mut memory = MemoryMock::default();
+            let mut cpu = CPU::new_nmos();
             cpu.processor_status.set(0b11111111);
             cpu.stack_pointer = 0xFF;
             cpu.program_counter = 0xABCD;
 
             let mut tasks = brk(&mut cpu);
-            run_tasks(&mut cpu, &mut *tasks);
+            run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-            assert_eq!(memory.borrow()[0x01FF], 0xAB);
-            assert_eq!(memory.borrow()[0x01FE], 0xCE);
-            assert_eq!(memory.borrow()[0x01FD], 0b11111111);
+            assert_eq!(memory[0x01FF], 0xAB);
+            assert_eq!(memory[0x01FE], 0xCE);
+            assert_eq!(memory[0x01FD], 0b11111111);
         }
 
         #[test]
         fn should_jump_to_address_stored_in_brk_vector() {
             const ADDR_LO: Byte = 0xAD;
             const ADDR_HI: Byte = 0x9B;
-            let memory = &RefCell::new(MemoryMock::default());
-            memory.borrow_mut()[0xFFFE] = ADDR_LO;
-            memory.borrow_mut()[0xFFFF] = ADDR_HI;
+            let mut memory = MemoryMock::default();
+            memory[0xFFFE] = ADDR_LO;
+            memory[0xFFFF] = ADDR_HI;
 
-            let mut cpu = CPU::new_nmos(memory);
+            let mut cpu = CPU::new_nmos();
             cpu.program_counter = 0x00;
 
             let mut tasks = brk(&mut cpu);
-            run_tasks(&mut cpu, &mut *tasks);
+            run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
             assert_eq!(cpu.program_counter, 0x9BAD);
         }
 
         #[test]
         fn should_set_break_processor_status_flag() {
-            let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_nmos(memory);
+            let mut memory = MemoryMock::default();
+            let mut cpu = CPU::new_nmos();
             cpu.program_counter = 0x00;
             cpu.processor_status.change_break_flag(false);
 
             let mut tasks = brk(&mut cpu);
-            run_tasks(&mut cpu, &mut *tasks);
+            run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
             assert_eq!(cpu.processor_status.get_break_flag(), true);
         }
 
         #[test]
         fn should_take_six_cycles() {
-            let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_nmos(memory);
+            let mut memory = MemoryMock::default();
+            let mut cpu = CPU::new_nmos();
             cpu.program_counter = 0x00;
             cpu.cycle = 0;
 
             let mut tasks = brk(&mut cpu);
-            run_tasks(&mut cpu, &mut *tasks);
+            run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
             assert_eq!(cpu.cycle, 6);
         }
@@ -270,13 +271,13 @@ mod brk {
 
             #[test]
             fn should_clear_decimal_processor_status_flag() {
-                let memory = &RefCell::new(MemoryMock::default());
-                let mut cpu = CPU::new_rockwell_cmos(memory);
+                let mut memory = MemoryMock::default();
+                let mut cpu = CPU::new_rockwell_cmos();
                 cpu.program_counter = 0x00;
                 cpu.processor_status.change_decimal_mode_flag(true);
 
                 let mut tasks = brk(&mut cpu);
-                run_tasks(&mut cpu, &mut *tasks);
+                run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
                 assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
             }
@@ -290,13 +291,13 @@ mod brk {
 
             #[test]
             fn should_clear_decimal_processor_status_flag() {
-                let memory = &RefCell::new(MemoryMock::default());
-                let mut cpu = CPU::new_wdc_cmos(memory);
+                let mut memory = MemoryMock::default();
+                let mut cpu = CPU::new_wdc_cmos();
                 cpu.program_counter = 0x00;
                 cpu.processor_status.change_decimal_mode_flag(true);
 
                 let mut tasks = brk(&mut cpu);
-                run_tasks(&mut cpu, &mut *tasks);
+                run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
                 assert_eq!(cpu.processor_status.get_decimal_mode_flag(), false);
             }
@@ -315,13 +316,13 @@ mod brk {
 
         #[test]
         fn should_not_clear_decimal_processor_status_flag() {
-            let memory = &RefCell::new(MemoryMock::default());
-            let mut cpu = CPU::new_nmos(memory);
+            let mut memory = MemoryMock::default();
+            let mut cpu = CPU::new_nmos();
             cpu.program_counter = 0x00;
             cpu.processor_status.change_decimal_mode_flag(true);
 
             let mut tasks = brk(&mut cpu);
-            run_tasks(&mut cpu, &mut *tasks);
+            run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
             assert_eq!(cpu.processor_status.get_decimal_mode_flag(), true);
         }
@@ -340,18 +341,18 @@ mod rti {
 
     #[test]
     fn should_pop_processor_status_and_program_counter_from_stack() {
-        let memory = &RefCell::new(MemoryMock::default());
-        memory.borrow_mut()[0x01FF] = 0xAB;
-        memory.borrow_mut()[0x01FE] = 0xCD;
-        memory.borrow_mut()[0x01FD] = 0b11111111;
+        let mut memory = MemoryMock::default();
+        memory[0x01FF] = 0xAB;
+        memory[0x01FE] = 0xCD;
+        memory[0x01FD] = 0b11111111;
 
-        let mut cpu = CPU::new_nmos(memory);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.set(0b00000000);
         cpu.stack_pointer = 0xFC;
         cpu.program_counter = 0x00;
 
         let mut tasks = rti(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.processor_status, 0b11111111);
         assert_eq!(cpu.program_counter, 0xABCD);
@@ -359,13 +360,13 @@ mod rti {
 
     #[test]
     fn should_take_five_cycles() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
         let mut tasks = rti(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 5);
     }
@@ -383,13 +384,13 @@ mod nop {
 
     #[test]
     fn should_take_one_cycles() {
-        let memory = &RefCell::new(MemoryMock::default());
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::default();
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x05;
         cpu.cycle = 0;
 
         let mut tasks = nop(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 1);
     }

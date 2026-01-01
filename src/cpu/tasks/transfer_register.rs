@@ -1,4 +1,7 @@
-use crate::cpu::{Registers, Tasks, CPU};
+use crate::{
+    cpu::{Registers, Tasks, CPU},
+    memory::Memory,
+};
 
 pub struct TransferRegistersTasks {
     src: Registers,
@@ -21,7 +24,7 @@ impl Tasks for TransferRegistersTasks {
         self.done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, _: &mut dyn Memory) -> bool {
         if self.done() {
             panic!("tick mustn't be called when done")
         }

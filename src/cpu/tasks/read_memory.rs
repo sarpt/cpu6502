@@ -1,6 +1,7 @@
 use crate::{
     consts::Byte,
     cpu::{addressing::AddressingTasks, CPU},
+    memory::Memory,
 };
 
 use super::Tasks;
@@ -42,13 +43,12 @@ impl AddressingReadMemoryTasks {
         }
     }
 
-    fn access_memory(&mut self, cpu: &CPU) {
+    fn access_memory(&mut self, _: &CPU, memory: &dyn Memory) {
         self.value = Some(
-            cpu.access_memory(
-                self.addressing_tasks
-                    .address()
-                    .expect("unexpected lack of address during access"),
-            ),
+            memory[self
+                .addressing_tasks
+                .address()
+                .expect("unexpected lack of address during access")],
         );
     }
 }
@@ -64,12 +64,12 @@ impl Tasks for AddressingReadMemoryTasks {
         self.step == AddressingReadMemoryStep::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         match self.step {
             AddressingReadMemoryStep::AddressCalculation => {
                 let mut addressing_done = false;
                 if !self.addressing_tasks.done() {
-                    addressing_done = self.addressing_tasks.tick(cpu);
+                    addressing_done = self.addressing_tasks.tick(cpu, memory);
                 }
 
                 if !addressing_done {
@@ -81,20 +81,18 @@ impl Tasks for AddressingReadMemoryTasks {
                     return false;
                 }
 
-                self.access_memory(cpu);
+                self.access_memory(cpu, memory);
                 self.step = AddressingReadMemoryStep::Done;
 
                 addressing_done
             }
             AddressingReadMemoryStep::SeparateMemoryAccess => {
-                self.access_memory(cpu);
+                self.access_memory(cpu, memory);
                 self.step = AddressingReadMemoryStep::Done;
 
                 true
             }
-            AddressingReadMemoryStep::Done => {
-                true
-            }
+            AddressingReadMemoryStep::Done => true,
         }
     }
 }
@@ -118,12 +116,12 @@ impl Tasks for ImmediateReadMemoryTasks {
         self.done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         if self.done {
             panic!("tick shouldn't be called when tasks are done")
         }
 
-        self.value = Some(cpu.access_memory(cpu.program_counter));
+        self.value = Some(memory[cpu.program_counter]);
         cpu.increment_program_counter();
         self.done = true;
 
@@ -141,8 +139,6 @@ impl ReadMemoryTasks for ImmediateReadMemoryTasks {
 mod read_memory_tasks {
     #[cfg(test)]
     mod immediate_addressing {
-        use std::cell::RefCell;
-
         use crate::cpu::{
             tasks::{
                 read_memory::{ImmediateReadMemoryTasks, ReadMemoryTasks},
@@ -154,13 +150,13 @@ mod read_memory_tasks {
 
         #[test]
         fn should_return_value_at_address_of_program_counter() {
-            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
-            let mut cpu = CPU::new_nmos(memory);
+            let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+            let mut cpu = CPU::new_nmos();
             cpu.program_counter = 0x02;
 
             let mut tasks = Box::new(ImmediateReadMemoryTasks::new());
             while !tasks.done() {
-                _ = tasks.tick(&mut cpu)
+                _ = tasks.tick(&mut cpu, &mut memory)
             }
 
             assert_eq!(tasks.value(), Some(0xCB));
@@ -168,13 +164,13 @@ mod read_memory_tasks {
 
         #[test]
         fn should_advance_program_counter() {
-            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
-            let mut cpu = CPU::new_nmos(memory);
+            let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+            let mut cpu = CPU::new_nmos();
             cpu.program_counter = 0xCB;
 
             let mut tasks = Box::new(ImmediateReadMemoryTasks::new());
             while !tasks.done() {
-                _ = tasks.tick(&mut cpu)
+                _ = tasks.tick(&mut cpu, &mut memory)
             }
 
             assert_eq!(cpu.program_counter, 0xCC);
@@ -182,14 +178,14 @@ mod read_memory_tasks {
 
         #[test]
         fn should_take_one_cycle() {
-            let memory = &RefCell::new(MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]));
-            let mut cpu = CPU::new_nmos(memory);
+            let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+            let mut cpu = CPU::new_nmos();
             cpu.program_counter = 0xCB;
             cpu.cycle = 0;
 
             let mut tasks = Box::new(ImmediateReadMemoryTasks::new());
             while !tasks.done() {
-                _ = tasks.tick(&mut cpu);
+                _ = tasks.tick(&mut cpu, &mut memory);
                 cpu.cycle += 1;
             }
 

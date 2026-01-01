@@ -11,12 +11,10 @@ pub enum Flags {
     Negative = 7,
 }
 
-#[derive(Debug, Clone, Copy)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct ProcessorStatus {
     flags: Byte,
 }
-
 
 impl PartialEq<Byte> for ProcessorStatus {
     fn eq(&self, other: &Byte) -> bool {

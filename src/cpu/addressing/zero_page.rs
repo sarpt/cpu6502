@@ -1,6 +1,7 @@
 use crate::{
     consts::{Byte, Word},
     cpu::tasks::Tasks,
+    memory::Memory,
 };
 
 use super::{address::Address, AddressingTasks, OffsetVariant};
@@ -24,12 +25,12 @@ impl Tasks for ZeroPageAddressingTasks {
         self.done
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
+    fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
         if self.done {
             return self.done;
         }
 
-        let addr: Byte = cpu.access_memory(cpu.program_counter);
+        let addr: Byte = memory[cpu.program_counter];
         self.addr.set(addr);
         cpu.increment_program_counter();
         self.done = true;
@@ -81,14 +82,14 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
         self.done
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
+    fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
         if self.done {
             return self.done;
         }
 
         match self.step {
             ZeroPageOffsetStep::ZeroPageAccess => {
-                let addr: Byte = cpu.access_memory(cpu.program_counter);
+                let addr: Byte = memory[cpu.program_counter];
                 self.addr.set(addr);
                 cpu.increment_program_counter();
                 self.step = ZeroPageOffsetStep::Offset;
