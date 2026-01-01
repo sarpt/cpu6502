@@ -1,6 +1,7 @@
 use crate::{
     consts::Byte,
     cpu::{Registers, CPU},
+    memory::Memory,
 };
 
 use super::Tasks;
@@ -82,7 +83,7 @@ impl Tasks for ModifyRegisterTasks {
         self.done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, _: &mut dyn Memory) -> bool {
         if self.done() {
             panic!("tick mustn't be called when done")
         }

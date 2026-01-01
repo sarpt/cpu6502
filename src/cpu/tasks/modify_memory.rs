@@ -1,6 +1,7 @@
 use crate::{
     consts::Byte,
     cpu::{addressing::AddressingTasks, CPU},
+    memory::Memory,
 };
 
 use super::Tasks;
@@ -98,10 +99,10 @@ impl Tasks for ModifyMemoryTasks {
         self.step == ModifyMemoryStep::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         match self.step {
             ModifyMemoryStep::Addressing => {
-                let done = self.addr_tasks.tick(cpu);
+                let done = self.addr_tasks.tick(cpu, memory);
                 if done {
                     self.step = ModifyMemoryStep::MemoryAccess
                 }
@@ -109,11 +110,10 @@ impl Tasks for ModifyMemoryTasks {
                 false
             }
             ModifyMemoryStep::MemoryAccess => {
-                self.value = cpu.access_memory(
-                    self.addr_tasks
-                        .address()
-                        .expect("unexpected lack of address in MemoryAccess step"),
-                );
+                self.value = memory[self
+                    .addr_tasks
+                    .address()
+                    .expect("unexpected lack of address in MemoryAccess step")];
 
                 self.step = ModifyMemoryStep::ValueModification;
                 false
@@ -152,12 +152,11 @@ impl Tasks for ModifyMemoryTasks {
                 false
             }
             ModifyMemoryStep::MemoryAndStatusWrite => {
-                cpu.put_into_memory(
-                    self.addr_tasks
-                        .address()
-                        .expect("unexpected lack of address in MemoryAndStatusWrite step"),
-                    self.value,
-                );
+                memory[self
+                    .addr_tasks
+                    .address()
+                    .expect("unexpected lack of address in MemoryAndStatusWrite step")] =
+                    self.value;
                 cpu.set_status_of_value(self.value);
 
                 match self.variant {

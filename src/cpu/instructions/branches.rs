@@ -1,6 +1,7 @@
 use crate::{
     consts::{Byte, Word},
     cpu::{Tasks, CPU},
+    memory::Memory,
 };
 
 #[derive(PartialEq, PartialOrd)]
@@ -32,10 +33,10 @@ impl Tasks for BranchTasks {
         self.step == BranchStep::Done
     }
 
-    fn tick(&mut self, cpu: &mut CPU) -> bool {
+    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
         match self.step {
             BranchStep::ConditionExecution => {
-                self.offset = cpu.access_memory(cpu.program_counter);
+                self.offset = memory[cpu.program_counter];
                 cpu.increment_program_counter();
 
                 if (self.condition)(cpu) {
@@ -160,13 +161,13 @@ mod common_branching_tasks {
 
     #[test]
     fn should_not_take_branch_and_advance_past_operand_when_condition_is_false() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x0000;
 
         let condition: fn(&CPU) -> bool = |_| false;
         let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -174,13 +175,13 @@ mod common_branching_tasks {
     #[test]
     fn should_take_branch_and_offset_program_counter_by_operand_when_condition_is_true() {
         const OFFSET: Byte = 0x03;
-        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
 
         let condition: fn(&CPU) -> bool = |_| true;
         let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -190,18 +191,13 @@ mod common_branching_tasks {
     ) {
         const OFFSET: Byte = 0x03;
         const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
-        let memory = &RefCell::new(MemoryMock::new(&[
-            0x22,
-            0x00,
-            NEGATIVE_OFFSET_TWOS_COMPLEMENT,
-            0x00,
-        ]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x22, 0x00, NEGATIVE_OFFSET_TWOS_COMPLEMENT, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x02;
 
         let condition: fn(&CPU) -> bool = |_| true;
         let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x00);
     }
@@ -211,13 +207,13 @@ mod common_branching_tasks {
         const OFFSET: Byte = 0x04;
         let mut payload: [Byte; 512] = [0x00; 512];
         payload[0x00FE] = OFFSET;
-        let memory = &RefCell::new(MemoryMock::new(&payload));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&payload);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00FE;
 
         let condition: fn(&CPU) -> bool = |_| true;
         let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0103);
     }
@@ -227,32 +223,27 @@ mod common_branching_tasks {
     ) {
         const OFFSET: Byte = 0x03;
         const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
-        let memory = &RefCell::new(MemoryMock::new(&[
-            NEGATIVE_OFFSET_TWOS_COMPLEMENT,
-            0x00,
-            0x00,
-            0x00,
-        ]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[NEGATIVE_OFFSET_TWOS_COMPLEMENT, 0x00, 0x00, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
 
         let condition: fn(&CPU) -> bool = |_| true;
         let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0xFFFE);
     }
 
     #[test]
     fn should_take_one_cycle_when_not_branching() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
         let condition: fn(&CPU) -> bool = |_| false;
         let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 1);
     }
@@ -260,14 +251,14 @@ mod common_branching_tasks {
     #[test]
     fn should_take_two_cycles_when_branching_without_crossing_a_page_flip() {
         const OFFSET: Byte = 0x03;
-        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
         cpu.cycle = 0;
 
         let condition: fn(&CPU) -> bool = |_| true;
         let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 2);
     }
@@ -277,14 +268,14 @@ mod common_branching_tasks {
         const OFFSET: Byte = 0x04;
         let mut payload: [Byte; 512] = [0x00; 512];
         payload[0x00FE] = OFFSET;
-        let memory = &RefCell::new(MemoryMock::new(&payload));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&payload);
+        let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00FE;
         cpu.cycle = 0;
 
         let condition: fn(&CPU) -> bool = |_| true;
         let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.cycle, 3);
     }
@@ -305,13 +296,13 @@ mod bcc {
 
     #[test]
     fn should_not_take_branch_when_carry_flag_is_set() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
 
         let mut tasks = bcc(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -319,13 +310,13 @@ mod bcc {
     #[test]
     fn should_take_branch_when_carry_flag_is_clear() {
         const OFFSET: Byte = 0x03;
-        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
 
         let mut tasks = bcc(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -346,13 +337,13 @@ mod bcs {
 
     #[test]
     fn should_not_take_branch_when_carry_flag_is_clear() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_carry_flag(false);
         cpu.program_counter = 0x00;
 
         let mut tasks = bcs(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -360,13 +351,13 @@ mod bcs {
     #[test]
     fn should_take_branch_when_carry_flag_is_set() {
         const OFFSET: Byte = 0x03;
-        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_carry_flag(true);
         cpu.program_counter = 0x00;
 
         let mut tasks = bcs(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -387,13 +378,13 @@ mod beq {
 
     #[test]
     fn should_not_take_branch_when_zero_flag_is_clear() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
 
         let mut tasks = beq(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -401,13 +392,13 @@ mod beq {
     #[test]
     fn should_take_branch_when_zero_flag_is_set() {
         const OFFSET: Byte = 0x03;
-        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
 
         let mut tasks = beq(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -428,13 +419,13 @@ mod bmi {
 
     #[test]
     fn should_not_take_branch_when_negative_flag_is_clear() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_negative_flag(false);
         cpu.program_counter = 0x00;
 
         let mut tasks = bmi(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -442,13 +433,13 @@ mod bmi {
     #[test]
     fn should_take_branch_when_negative_flag_is_set() {
         const OFFSET: Byte = 0x03;
-        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_negative_flag(true);
         cpu.program_counter = 0x00;
 
         let mut tasks = bmi(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -469,13 +460,13 @@ mod bne {
 
     #[test]
     fn should_not_take_branch_when_zero_flag_is_set() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_zero_flag(true);
         cpu.program_counter = 0x00;
 
         let mut tasks = bne(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -483,13 +474,13 @@ mod bne {
     #[test]
     fn should_take_branch_when_zero_flag_is_clear() {
         const OFFSET: Byte = 0x03;
-        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_zero_flag(false);
         cpu.program_counter = 0x00;
 
         let mut tasks = bne(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -510,13 +501,13 @@ mod bpl {
 
     #[test]
     fn should_not_take_branch_when_negative_flag_is_set() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_negative_flag(true);
         cpu.program_counter = 0x00;
 
         let mut tasks = bpl(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -524,13 +515,13 @@ mod bpl {
     #[test]
     fn should_take_branch_when_negative_flag_is_clear() {
         const OFFSET: Byte = 0x03;
-        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_negative_flag(false);
         cpu.program_counter = 0x00;
 
         let mut tasks = bpl(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -551,13 +542,13 @@ mod bvc {
 
     #[test]
     fn should_not_take_branch_when_negative_flag_is_set() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_overflow_flag(true);
         cpu.program_counter = 0x00;
 
         let mut tasks = bvc(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -565,13 +556,13 @@ mod bvc {
     #[test]
     fn should_take_branch_when_negative_flag_is_clear() {
         const OFFSET: Byte = 0x03;
-        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_overflow_flag(false);
         cpu.program_counter = 0x00;
 
         let mut tasks = bvc(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }
@@ -592,13 +583,13 @@ mod bvs {
 
     #[test]
     fn should_not_take_branch_when_negative_flag_is_clear() {
-        let memory = &RefCell::new(MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[0x22, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_overflow_flag(false);
         cpu.program_counter = 0x00;
 
         let mut tasks = bvs(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0001);
     }
@@ -606,13 +597,13 @@ mod bvs {
     #[test]
     fn should_take_branch_when_negative_flag_is_set() {
         const OFFSET: Byte = 0x03;
-        let memory = &RefCell::new(MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]));
-        let mut cpu = CPU::new_nmos(memory);
+        let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+        let mut cpu = CPU::new_nmos();
         cpu.processor_status.change_overflow_flag(true);
         cpu.program_counter = 0x00;
 
         let mut tasks = bvs(&mut cpu);
-        run_tasks(&mut cpu, &mut *tasks);
+        run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
         assert_eq!(cpu.program_counter, 0x0004);
     }

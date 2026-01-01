@@ -1,6 +1,7 @@
 use crate::{
     consts::{Byte, Word},
     cpu::tasks::Tasks,
+    memory::Memory,
 };
 
 use super::{address::Address, AddressingTasks};
@@ -36,14 +37,14 @@ impl Tasks for IndirectIndexYAddressingTasks {
         self.done
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
+    fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
         if self.done {
             return self.done;
         }
 
         match self.step {
             IndirectIndexYStep::MemoryAccess => {
-                let addr: Byte = cpu.access_memory(cpu.program_counter);
+                let addr: Byte = memory[cpu.program_counter];
                 self.tgt_addr = addr.into();
                 cpu.increment_program_counter();
                 self.step = IndirectIndexYStep::IndirectAccessLo;
@@ -51,14 +52,14 @@ impl Tasks for IndirectIndexYAddressingTasks {
                 false
             }
             IndirectIndexYStep::IndirectAccessLo => {
-                let addr_lo = cpu.access_memory(self.tgt_addr);
+                let addr_lo = memory[self.tgt_addr];
                 self.addr.set_lo(addr_lo);
                 self.step = IndirectIndexYStep::IndirectAccessHi;
 
                 false
             }
             IndirectIndexYStep::IndirectAccessHi => {
-                let addr_hi = cpu.access_memory(self.tgt_addr.wrapping_add(1));
+                let addr_hi = memory[self.tgt_addr.wrapping_add(1)];
                 self.addr.set_hi(addr_hi);
                 self.step = IndirectIndexYStep::OffsetLo;
 
@@ -130,14 +131,14 @@ impl Tasks for IndexIndirectXAddressingTasks {
         self.done
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
+    fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
         if self.done {
             return self.done;
         }
 
         match self.step {
             IndexIndirectXStep::IndirectAccess => {
-                let addr: Byte = cpu.access_memory(cpu.program_counter);
+                let addr: Byte = memory[cpu.program_counter];
                 self.addr.set(addr);
                 cpu.increment_program_counter();
                 self.step = IndexIndirectXStep::SumWithX;
@@ -155,14 +156,14 @@ impl Tasks for IndexIndirectXAddressingTasks {
                 false
             }
             IndexIndirectXStep::MemoryAccessLo => {
-                let addr_lo = cpu.access_memory(self.tgt_addr);
+                let addr_lo = memory[self.tgt_addr];
                 self.addr.set_lo(addr_lo);
                 self.step = IndexIndirectXStep::MemoryAccessHi;
 
                 false
             }
             IndexIndirectXStep::MemoryAccessHi => {
-                let addr_hi = cpu.access_memory(self.tgt_addr.wrapping_add(1));
+                let addr_hi = memory[self.tgt_addr.wrapping_add(1)];
                 self.addr.set_hi(addr_hi);
 
                 self.done = true;
@@ -225,21 +226,21 @@ impl Tasks for IndirectAddressingTasks {
         self.done
     }
 
-    fn tick(&mut self, cpu: &mut super::CPU) -> bool {
+    fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
         if self.done {
             return self.done;
         }
 
         match self.step {
             IndirectStep::IndirectFetchLo => {
-                self.tgt_addr_lo = cpu.access_memory(cpu.program_counter);
+                self.tgt_addr_lo = memory[cpu.program_counter];
                 cpu.increment_program_counter();
                 self.step = IndirectStep::IndirectFetchHi;
 
                 false
             }
             IndirectStep::IndirectFetchHi => {
-                self.tgt_addr_hi = cpu.access_memory(cpu.program_counter);
+                self.tgt_addr_hi = memory[cpu.program_counter];
                 cpu.increment_program_counter();
                 if self.fixed_addressing {
                     self.step = IndirectStep::AddrFixing;
@@ -256,7 +257,7 @@ impl Tasks for IndirectAddressingTasks {
             }
             IndirectStep::MemoryAccessLo => {
                 let addr = Word::from_le_bytes([self.tgt_addr_lo, self.tgt_addr_hi]);
-                let addr_lo = cpu.access_memory(addr);
+                let addr_lo = memory[addr];
                 self.addr.set_lo(addr_lo);
 
                 if self.fixed_addressing {
@@ -269,7 +270,7 @@ impl Tasks for IndirectAddressingTasks {
             }
             IndirectStep::FixedMemoryAccessHi => {
                 let addr = Word::from_le_bytes([self.tgt_addr_lo, self.tgt_addr_hi]);
-                let addr_hi = cpu.access_memory(addr + 1);
+                let addr_hi = memory[addr + 1];
                 self.addr.set_hi(addr_hi);
 
                 self.done = true;
@@ -282,7 +283,7 @@ impl Tasks for IndirectAddressingTasks {
                 if should_incorrectly_jump {
                     target_addr = addr & 0xFF00;
                 };
-                let addr_hi = cpu.access_memory(target_addr);
+                let addr_hi = memory[target_addr];
                 self.addr.set_hi(addr_hi);
 
                 self.done = true;
