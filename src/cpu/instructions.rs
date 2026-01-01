@@ -18,7 +18,7 @@ use super::OpcodeHandler;
 use crate::cpu::opcodes::*;
 
 pub fn get_instructions() -> HashMap<Byte, OpcodeHandler> {
-    return HashMap::from([
+    HashMap::from([
         (ADC_IM, adc_im as OpcodeHandler),
         (ADC_ZP, adc_zp),
         (ADC_ZPX, adc_zpx),
@@ -170,7 +170,7 @@ pub fn get_instructions() -> HashMap<Byte, OpcodeHandler> {
         (TXA, txa),
         (TAY, tay),
         (TYA, tya),
-    ]);
+    ])
 }
 
 mod arithmetic;

@@ -19,16 +19,16 @@ struct JsrTasks {
 
 impl JsrTasks {
     pub fn new(addressing_tasks: Box<dyn AddressingTasks>) -> Self {
-        return JsrTasks {
+        JsrTasks {
             step: JsrSteps::Addressing,
             addressing_tasks,
-        };
+        }
     }
 }
 
 impl Tasks for JsrTasks {
     fn done(&self) -> bool {
-        return self.step == JsrSteps::Done;
+        self.step == JsrSteps::Done
     }
 
     fn tick(&mut self, cpu: &mut CPU) -> bool {
@@ -39,23 +39,23 @@ impl Tasks for JsrTasks {
                     self.step = JsrSteps::DecrementProgramCounterHi;
                 }
 
-                return false;
+                false
             }
             JsrSteps::DecrementProgramCounterHi => {
                 let [_, ret_program_counter_hi] =
-                    cpu.program_counter.clone().wrapping_sub(1).to_le_bytes();
+                    cpu.program_counter.wrapping_sub(1).to_le_bytes();
                 cpu.push_byte_to_stack(ret_program_counter_hi);
 
                 self.step = JsrSteps::DecrementProgramCounterLo;
-                return false;
+                false
             }
             JsrSteps::DecrementProgramCounterLo => {
                 let [ret_program_counter_lo, _] =
-                    cpu.program_counter.clone().wrapping_sub(1).to_le_bytes();
+                    cpu.program_counter.wrapping_sub(1).to_le_bytes();
                 cpu.push_byte_to_stack(ret_program_counter_lo);
 
                 self.step = JsrSteps::SetProgramCounter;
-                return false;
+                false
             }
             JsrSteps::SetProgramCounter => {
                 cpu.program_counter = self
@@ -64,7 +64,7 @@ impl Tasks for JsrTasks {
                     .expect("unexpected lack of output address in SetProgramCounter step");
 
                 self.step = JsrSteps::Done;
-                return true;
+                true
             }
             JsrSteps::Done => {
                 panic!("tick mustn't be called when done")
@@ -74,8 +74,8 @@ impl Tasks for JsrTasks {
 }
 
 pub fn jsr_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    let addr_tasks = get_addressing_tasks(&cpu, AddressingMode::Absolute);
-    return Box::new(JsrTasks::new(addr_tasks));
+    let addr_tasks = get_addressing_tasks(cpu, AddressingMode::Absolute);
+    Box::new(JsrTasks::new(addr_tasks))
 }
 
 #[derive(PartialEq, PartialOrd)]
@@ -94,9 +94,9 @@ struct RtsTasks {
 
 impl RtsTasks {
     fn new() -> Self {
-        return RtsTasks {
+        RtsTasks {
             step: RtsSteps::DummyFetch,
-        };
+        }
     }
 }
 
@@ -110,31 +110,31 @@ impl Tasks for RtsTasks {
             RtsSteps::DummyFetch => {
                 cpu.dummy_fetch();
                 self.step = RtsSteps::PreDecrementStackPointer;
-                return false;
+                false
             }
             RtsSteps::PreDecrementStackPointer => {
                 // dummy tick, simulate separate stack pointer decrement
                 // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
                 // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
                 self.step = RtsSteps::PopProgramCounterLo;
-                return false;
+                false
             }
             RtsSteps::PopProgramCounterLo => {
                 let lo = cpu.pop_byte_from_stack();
                 cpu.set_program_counter_lo(lo);
                 self.step = RtsSteps::PopProgramCounterHi;
-                return false;
+                false
             }
             RtsSteps::PopProgramCounterHi => {
                 let hi = cpu.pop_byte_from_stack();
                 cpu.set_program_counter_hi(hi);
                 self.step = RtsSteps::IncrementProgramCounter;
-                return false;
+                false
             }
             RtsSteps::IncrementProgramCounter => {
                 cpu.increment_program_counter();
                 self.step = RtsSteps::Done;
-                return true;
+                true
             }
             RtsSteps::Done => {
                 panic!("tick mustn't be called when done")
@@ -144,7 +144,7 @@ impl Tasks for RtsTasks {
 }
 
 pub fn rts(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(RtsTasks::new());
+    Box::new(RtsTasks::new())
 }
 
 pub struct JmpTasks {
@@ -153,7 +153,7 @@ pub struct JmpTasks {
 
 impl JmpTasks {
     fn new(addressing_tasks: Box<dyn AddressingTasks>) -> Self {
-        return JmpTasks { addressing_tasks };
+        JmpTasks { addressing_tasks }
     }
 }
 
@@ -176,22 +176,22 @@ impl Tasks for JmpTasks {
                 .expect("unexpected lack of address in JmpTasks");
         }
 
-        return done;
+        done
     }
 }
 
 fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
+    let addr_tasks = get_addressing_tasks(cpu, addr_mode);
 
-    return Box::new(JmpTasks::new(addr_tasks));
+    Box::new(JmpTasks::new(addr_tasks))
 }
 
 pub fn jmp_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return jmp(cpu, AddressingMode::Absolute);
+    jmp(cpu, AddressingMode::Absolute)
 }
 
 pub fn jmp_in(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return jmp(cpu, AddressingMode::Indirect);
+    jmp(cpu, AddressingMode::Indirect)
 }
 
 #[cfg(test)]

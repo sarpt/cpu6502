@@ -12,15 +12,11 @@ pub enum Flags {
 }
 
 #[derive(Debug, Clone, Copy)]
+#[derive(Default)]
 pub struct ProcessorStatus {
     flags: Byte,
 }
 
-impl Default for ProcessorStatus {
-    fn default() -> Self {
-        return ProcessorStatus { flags: 0 };
-    }
-}
 
 impl PartialEq<Byte> for ProcessorStatus {
     fn eq(&self, other: &Byte) -> bool {
@@ -36,15 +32,15 @@ impl PartialEq for ProcessorStatus {
 
 impl Eq for ProcessorStatus {}
 
-impl Into<Byte> for ProcessorStatus {
-    fn into(self) -> Byte {
-        return self.flags;
+impl From<ProcessorStatus> for Byte {
+    fn from(val: ProcessorStatus) -> Self {
+        val.flags
     }
 }
 
 impl From<u8> for ProcessorStatus {
     fn from(value: u8) -> Self {
-        return ProcessorStatus { flags: value };
+        ProcessorStatus { flags: value }
     }
 }
 
@@ -54,7 +50,7 @@ impl ProcessorStatus {
     }
 
     pub fn get_break_flag(&self) -> bool {
-        return self.get_flag(Flags::Break);
+        self.get_flag(Flags::Break)
     }
 
     pub fn change_carry_flag(&mut self, value_set: bool) {
@@ -62,7 +58,7 @@ impl ProcessorStatus {
     }
 
     pub fn get_carry_flag(&self) -> bool {
-        return self.get_flag(Flags::Carry);
+        self.get_flag(Flags::Carry)
     }
 
     pub fn change_decimal_mode_flag(&mut self, value_set: bool) {
@@ -70,7 +66,7 @@ impl ProcessorStatus {
     }
 
     pub fn get_decimal_mode_flag(&self) -> bool {
-        return self.get_flag(Flags::DecimalMode);
+        self.get_flag(Flags::DecimalMode)
     }
 
     pub fn change_interrupt_disable_flag(&mut self, value_set: bool) {
@@ -78,7 +74,7 @@ impl ProcessorStatus {
     }
 
     pub fn get_interrupt_disable_flag(&self) -> bool {
-        return self.get_flag(Flags::InterruptDisable);
+        self.get_flag(Flags::InterruptDisable)
     }
 
     pub fn change_overflow_flag(&mut self, value_set: bool) {
@@ -86,7 +82,7 @@ impl ProcessorStatus {
     }
 
     pub fn get_overflow_flag(&self) -> bool {
-        return self.get_flag(Flags::Overflow);
+        self.get_flag(Flags::Overflow)
     }
 
     pub fn change_negative_flag(&mut self, value_set: bool) {
@@ -94,7 +90,7 @@ impl ProcessorStatus {
     }
 
     pub fn get_negative_flag(&self) -> bool {
-        return self.get_flag(Flags::Negative);
+        self.get_flag(Flags::Negative)
     }
 
     pub fn set(&mut self, val: Byte) {
@@ -106,7 +102,7 @@ impl ProcessorStatus {
     }
 
     pub fn get_zero_flag(&self) -> bool {
-        return self.get_flag(Flags::Zero);
+        self.get_flag(Flags::Zero)
     }
 
     pub fn change_flag(&mut self, flag: Flags, value_set: bool) {
@@ -120,6 +116,6 @@ impl ProcessorStatus {
 
     pub fn get_flag(&self, flag: Flags) -> bool {
         let shift: u8 = flag as u8;
-        return (self.flags & (1 << shift)) > 0;
+        (self.flags & (1 << shift)) > 0
     }
 }

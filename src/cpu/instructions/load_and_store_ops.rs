@@ -12,17 +12,17 @@ struct LoadTasks {
 
 impl LoadTasks {
     pub fn new(read_memory_tasks: Box<dyn ReadMemoryTasks>, register: Registers) -> Self {
-        return LoadTasks {
+        LoadTasks {
             done: false,
             read_memory_tasks,
             register,
-        };
+        }
     }
 }
 
 impl Tasks for LoadTasks {
     fn done(&self) -> bool {
-        return self.done;
+        self.done
     }
 
     fn tick(&mut self, cpu: &mut CPU) -> bool {
@@ -30,11 +30,10 @@ impl Tasks for LoadTasks {
             panic!("tick mustn't be called when done")
         }
 
-        if !self.read_memory_tasks.done() {
-            if !self.read_memory_tasks.tick(cpu) {
+        if !self.read_memory_tasks.done()
+            && !self.read_memory_tasks.tick(cpu) {
                 return false;
             }
-        }
 
         let value = match self.read_memory_tasks.value() {
             Some(ctx) => ctx.to_le_bytes()[0],
@@ -43,93 +42,93 @@ impl Tasks for LoadTasks {
         cpu.set_register(self.register, value);
         self.done = true;
 
-        return self.done;
+        self.done
     }
 }
 
 fn ld(cpu: &mut CPU, addr_mode: Option<AddressingMode>, register: Registers) -> Box<dyn Tasks> {
     let read_memory_tasks = cpu.read_memory(addr_mode);
-    return Box::new(LoadTasks::new(read_memory_tasks, register));
+    Box::new(LoadTasks::new(read_memory_tasks, register))
 }
 
 pub fn lda_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, None, Registers::Accumulator);
+    ld(cpu, None, Registers::Accumulator)
 }
 
 pub fn lda_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::ZeroPage), Registers::Accumulator);
+    ld(cpu, Some(AddressingMode::ZeroPage), Registers::Accumulator)
 }
 
 pub fn lda_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::ZeroPageX), Registers::Accumulator);
+    ld(cpu, Some(AddressingMode::ZeroPageX), Registers::Accumulator)
 }
 
 pub fn lda_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::Absolute), Registers::Accumulator);
+    ld(cpu, Some(AddressingMode::Absolute), Registers::Accumulator)
 }
 
 pub fn lda_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::AbsoluteX), Registers::Accumulator);
+    ld(cpu, Some(AddressingMode::AbsoluteX), Registers::Accumulator)
 }
 
 pub fn lda_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::AbsoluteY), Registers::Accumulator);
+    ld(cpu, Some(AddressingMode::AbsoluteY), Registers::Accumulator)
 }
 
 pub fn lda_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(
+    ld(
         cpu,
         Some(AddressingMode::IndexIndirectX),
         Registers::Accumulator,
-    );
+    )
 }
 
 pub fn lda_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(
+    ld(
         cpu,
         Some(AddressingMode::IndirectIndexY),
         Registers::Accumulator,
-    );
+    )
 }
 
 pub fn ldy_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, None, Registers::IndexY);
+    ld(cpu, None, Registers::IndexY)
 }
 
 pub fn ldy_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::ZeroPage), Registers::IndexY);
+    ld(cpu, Some(AddressingMode::ZeroPage), Registers::IndexY)
 }
 
 pub fn ldy_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::ZeroPageX), Registers::IndexY);
+    ld(cpu, Some(AddressingMode::ZeroPageX), Registers::IndexY)
 }
 
 pub fn ldy_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::Absolute), Registers::IndexY);
+    ld(cpu, Some(AddressingMode::Absolute), Registers::IndexY)
 }
 
 pub fn ldy_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::AbsoluteX), Registers::IndexY);
+    ld(cpu, Some(AddressingMode::AbsoluteX), Registers::IndexY)
 }
 
 pub fn ldx_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, None, Registers::IndexX);
+    ld(cpu, None, Registers::IndexX)
 }
 
 pub fn ldx_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::ZeroPage), Registers::IndexX);
+    ld(cpu, Some(AddressingMode::ZeroPage), Registers::IndexX)
 }
 
 pub fn ldx_zpy(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::ZeroPageY), Registers::IndexX);
+    ld(cpu, Some(AddressingMode::ZeroPageY), Registers::IndexX)
 }
 
 pub fn ldx_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::Absolute), Registers::IndexX);
+    ld(cpu, Some(AddressingMode::Absolute), Registers::IndexX)
 }
 
 pub fn ldx_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ld(cpu, Some(AddressingMode::AbsoluteY), Registers::IndexX);
+    ld(cpu, Some(AddressingMode::AbsoluteY), Registers::IndexX)
 }
 
 struct StoreTasks {
@@ -140,17 +139,17 @@ struct StoreTasks {
 
 impl StoreTasks {
     pub fn new(addressing_tasks: Box<dyn AddressingTasks>, src_register: Registers) -> Self {
-        return StoreTasks {
+        StoreTasks {
             done: false,
             addressing_tasks,
             src_register,
-        };
+        }
     }
 }
 
 impl Tasks for StoreTasks {
     fn done(&self) -> bool {
-        return self.done;
+        self.done
     }
 
     fn tick(&mut self, cpu: &mut CPU) -> bool {
@@ -172,66 +171,66 @@ impl Tasks for StoreTasks {
         );
         self.done = true;
 
-        return self.done;
+        self.done
     }
 }
 
 pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Box<dyn Tasks> {
-    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
+    let addr_tasks = get_addressing_tasks(cpu, addr_mode);
 
-    return Box::new(StoreTasks::new(addr_tasks, register));
+    Box::new(StoreTasks::new(addr_tasks, register))
 }
 
 pub fn sta_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::ZeroPage, Registers::Accumulator);
+    store(cpu, AddressingMode::ZeroPage, Registers::Accumulator)
 }
 
 pub fn sta_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::ZeroPageX, Registers::Accumulator);
+    store(cpu, AddressingMode::ZeroPageX, Registers::Accumulator)
 }
 
 pub fn sta_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::Absolute, Registers::Accumulator);
+    store(cpu, AddressingMode::Absolute, Registers::Accumulator)
 }
 
 pub fn sta_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::AbsoluteX, Registers::Accumulator);
+    store(cpu, AddressingMode::AbsoluteX, Registers::Accumulator)
 }
 
 pub fn sta_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::AbsoluteY, Registers::Accumulator);
+    store(cpu, AddressingMode::AbsoluteY, Registers::Accumulator)
 }
 
 pub fn sta_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::IndexIndirectX, Registers::Accumulator);
+    store(cpu, AddressingMode::IndexIndirectX, Registers::Accumulator)
 }
 
 pub fn sta_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::IndirectIndexY, Registers::Accumulator);
+    store(cpu, AddressingMode::IndirectIndexY, Registers::Accumulator)
 }
 
 pub fn stx_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::ZeroPage, Registers::IndexX);
+    store(cpu, AddressingMode::ZeroPage, Registers::IndexX)
 }
 
 pub fn stx_zpy(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::ZeroPageY, Registers::IndexX);
+    store(cpu, AddressingMode::ZeroPageY, Registers::IndexX)
 }
 
 pub fn stx_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::Absolute, Registers::IndexX);
+    store(cpu, AddressingMode::Absolute, Registers::IndexX)
 }
 
 pub fn sty_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::ZeroPage, Registers::IndexY);
+    store(cpu, AddressingMode::ZeroPage, Registers::IndexY)
 }
 
 pub fn sty_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::ZeroPageX, Registers::IndexY);
+    store(cpu, AddressingMode::ZeroPageX, Registers::IndexY)
 }
 
 pub fn sty_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return store(cpu, AddressingMode::Absolute, Registers::IndexY);
+    store(cpu, AddressingMode::Absolute, Registers::IndexY)
 }
 
 #[cfg(test)]

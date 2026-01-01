@@ -1,31 +1,31 @@
 use crate::cpu::{tasks::transfer_register::TransferRegistersTasks, Registers, Tasks, CPU};
 
 pub fn tax(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(TransferRegistersTasks::new(
+    Box::new(TransferRegistersTasks::new(
         Registers::Accumulator,
         Registers::IndexX,
-    ));
+    ))
 }
 
 pub fn txa(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(TransferRegistersTasks::new(
+    Box::new(TransferRegistersTasks::new(
         Registers::IndexX,
         Registers::Accumulator,
-    ));
+    ))
 }
 
 pub fn tay(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(TransferRegistersTasks::new(
+    Box::new(TransferRegistersTasks::new(
         Registers::Accumulator,
         Registers::IndexY,
-    ));
+    ))
 }
 
 pub fn tya(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(TransferRegistersTasks::new(
+    Box::new(TransferRegistersTasks::new(
         Registers::IndexY,
         Registers::Accumulator,
-    ));
+    ))
 }
 
 #[cfg(test)]

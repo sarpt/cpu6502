@@ -8,17 +8,17 @@ struct ChangeStatusFlagTasks {
 
 impl ChangeStatusFlagTasks {
     fn new(flag: Flags, value: bool) -> Self {
-        return ChangeStatusFlagTasks {
+        ChangeStatusFlagTasks {
             flag,
             done: false,
             value,
-        };
+        }
     }
 }
 
 impl Tasks for ChangeStatusFlagTasks {
     fn done(&self) -> bool {
-        return self.done;
+        self.done
     }
 
     fn tick(&mut self, cpu: &mut CPU) -> bool {
@@ -28,40 +28,40 @@ impl Tasks for ChangeStatusFlagTasks {
 
         cpu.processor_status.change_flag(self.flag, self.value);
         self.done = true;
-        return self.done;
+        self.done
     }
 }
 
 fn change_flag_value(_cpu: &mut CPU, flag: Flags, value: bool) -> Box<dyn Tasks> {
-    return Box::new(ChangeStatusFlagTasks::new(flag, value));
+    Box::new(ChangeStatusFlagTasks::new(flag, value))
 }
 
 pub fn clc(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return change_flag_value(cpu, Flags::Carry, false);
+    change_flag_value(cpu, Flags::Carry, false)
 }
 
 pub fn cld(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return change_flag_value(cpu, Flags::DecimalMode, false);
+    change_flag_value(cpu, Flags::DecimalMode, false)
 }
 
 pub fn cli(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return change_flag_value(cpu, Flags::InterruptDisable, false);
+    change_flag_value(cpu, Flags::InterruptDisable, false)
 }
 
 pub fn clv(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return change_flag_value(cpu, Flags::Overflow, false);
+    change_flag_value(cpu, Flags::Overflow, false)
 }
 
 pub fn sec(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return change_flag_value(cpu, Flags::Carry, true);
+    change_flag_value(cpu, Flags::Carry, true)
 }
 
 pub fn sed(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return change_flag_value(cpu, Flags::DecimalMode, true);
+    change_flag_value(cpu, Flags::DecimalMode, true)
 }
 
 pub fn sei(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return change_flag_value(cpu, Flags::InterruptDisable, true);
+    change_flag_value(cpu, Flags::InterruptDisable, true)
 }
 
 #[cfg(test)]

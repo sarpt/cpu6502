@@ -54,8 +54,8 @@ pub struct CPU<'a> {
 
 impl<'a> CPU<'a> {
     fn new(memory: &'a RefCell<dyn Memory>, chip_variant: ChipVariant) -> Self {
-        return CPU {
-            chip_variant: chip_variant,
+        CPU {
+            chip_variant,
             current_instruction: None,
             instruction_history: AllocRingBuffer::new(DEFAULT_INSTRUCTION_HISTORY_CAPACITY),
             cycle: 0,
@@ -65,25 +65,25 @@ impl<'a> CPU<'a> {
             index_register_x: 0,
             index_register_y: 0,
             processor_status: processor_status::ProcessorStatus::default(),
-            memory: memory,
+            memory,
             opcode_handlers: instructions::get_instructions(),
             sync: false,
-        };
+        }
     }
 
     pub fn new_nmos(memory: &'a RefCell<dyn Memory>) -> Self {
-        return CPU::new(memory, ChipVariant::NMOS);
+        CPU::new(memory, ChipVariant::NMOS)
     }
 
     pub fn new_rockwell_cmos(memory: &'a RefCell<dyn Memory>) -> Self {
-        return CPU::new(memory, ChipVariant::RockwellCMOS);
+        CPU::new(memory, ChipVariant::RockwellCMOS)
     }
 
     pub fn new_wdc_cmos(memory: &'a RefCell<dyn Memory>) -> Self {
-        return CPU::new(memory, ChipVariant::WDCCMOS);
+        CPU::new(memory, ChipVariant::WDCCMOS)
     }
 
-    pub fn reset(&mut self) -> () {
+    pub fn reset(&mut self) {
         self.program_counter = self.fetch_address_from(RESET_VECTOR);
         self.cycle = 0;
         self.stack_pointer = 0x00;
@@ -94,7 +94,7 @@ impl<'a> CPU<'a> {
     }
 
     pub fn get_processor_status(&self) -> Byte {
-        return self.processor_status.into();
+        self.processor_status.into()
     }
 
     pub fn execute_next_instruction(&mut self) {
@@ -111,11 +111,11 @@ impl<'a> CPU<'a> {
             self.execute_next_instruction();
         }
 
-        return self.cycle;
+        self.cycle
     }
 
     pub fn tick(&mut self) {
-        let current_instruction = std::mem::replace(&mut self.current_instruction, None);
+        let current_instruction = self.current_instruction.take();
         match current_instruction {
             Some(mut current_instruction) => {
                 self.sync = false;
@@ -136,11 +136,11 @@ impl<'a> CPU<'a> {
     }
 
     pub fn sync(&mut self) -> bool {
-        return self.sync;
+        self.sync
     }
 
     pub fn get_last_instruction(&self) -> Option<&InstructionExecution> {
-        return self.instruction_history.back();
+        self.instruction_history.back()
     }
 
     fn access_memory(&self, addr: Word) -> Byte {
@@ -179,13 +179,13 @@ impl<'a> CPU<'a> {
     }
 
     fn get_register(&self, register: Registers) -> Byte {
-        return match register {
+        match register {
             Registers::Accumulator => self.accumulator,
             Registers::IndexX => self.index_register_x,
             Registers::IndexY => self.index_register_y,
             Registers::ProcessorStatus => self.processor_status.into(),
             Registers::StackPointer => self.stack_pointer,
-        };
+        }
     }
 
     fn fetch_opcode(&mut self) -> (Byte, Word) {
@@ -194,7 +194,7 @@ impl<'a> CPU<'a> {
         self.increment_program_counter();
         self.cycle += 1;
 
-        return (opcode, addr);
+        (opcode, addr)
     }
 
     fn fetch_address_from(&mut self, addr: Word) -> Word {
@@ -203,7 +203,7 @@ impl<'a> CPU<'a> {
         let hi = self.access_memory(addr + 1);
         self.cycle += 1;
 
-        return Word::from_le_bytes([lo, hi]);
+        Word::from_le_bytes([lo, hi])
     }
 
     fn set_status_of_register(&mut self, register: Registers) {
@@ -248,9 +248,7 @@ impl<'a> CPU<'a> {
     fn pop_byte_from_stack(&mut self) -> Byte {
         self.increment_register(Registers::StackPointer);
         let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
-        let val = self.access_memory(stack_addr);
-
-        return val;
+        self.access_memory(stack_addr)
     }
 
     fn read_memory(&self, addr_mode: Option<AddressingMode>) -> Box<dyn ReadMemoryTasks> {
@@ -258,31 +256,31 @@ impl<'a> CPU<'a> {
             Some(mode) => {
                 let addressing_tasks = get_addressing_tasks(self, mode);
                 if access_cycle_has_been_done_during_addressing(mode) {
-                    return Box::new(
+                    Box::new(
                         AddressingReadMemoryTasks::new_with_access_during_addressing(
                             addressing_tasks,
                         ),
-                    );
+                    )
                 } else {
-                    return Box::new(
+                    Box::new(
                         AddressingReadMemoryTasks::new_with_access_in_separate_cycle(
                             addressing_tasks,
                         ),
-                    );
+                    )
                 }
             }
             None => {
-                return Box::new(ImmediateReadMemoryTasks::new());
+                Box::new(ImmediateReadMemoryTasks::new())
             }
         }
     }
 
     fn get_program_counter_lo(&self) -> Byte {
-        return self.program_counter.to_le_bytes()[0];
+        self.program_counter.to_le_bytes()[0]
     }
 
     fn get_program_counter_hi(&self) -> Byte {
-        return self.program_counter.to_le_bytes()[1];
+        self.program_counter.to_le_bytes()[1]
     }
 
     fn set_program_counter_lo(&mut self, lo: Byte) {
@@ -310,19 +308,19 @@ impl<'a> CPU<'a> {
             None => panic!("illegal opcode found: {:#04X}", opcode),
         };
 
-        return InstructionExecution {
+        InstructionExecution {
             addr,
-            tasks: tasks,
-            opcode: opcode,
+            tasks,
+            opcode,
             starting_cycle: self.cycle,
-        };
+        }
     }
 }
 
 fn access_cycle_has_been_done_during_addressing(addr_mode: AddressingMode) -> bool {
-    return addr_mode == AddressingMode::AbsoluteX
+    addr_mode == AddressingMode::AbsoluteX
         || addr_mode == AddressingMode::AbsoluteY
-        || addr_mode == AddressingMode::IndirectIndexY;
+        || addr_mode == AddressingMode::IndirectIndexY
 }
 
 pub struct InstructionExecution {

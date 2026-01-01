@@ -11,11 +11,17 @@ pub struct Generic64kMem {
     pub data: Vec<Byte>,
 }
 
+impl Default for Generic64kMem {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Generic64kMem {
     pub fn new() -> Self {
-        return Generic64kMem {
+        Generic64kMem {
             data: vec![0; MAX_MEMORY_KB],
-        };
+        }
     }
 
     pub fn store(&mut self, payload: &[(Word, Byte)]) {
@@ -41,7 +47,7 @@ impl Index<Word> for Generic64kMem {
 
     fn index(&self, idx: Word) -> &Self::Output {
         let mem_address: usize = idx.into();
-        return &self.data[mem_address];
+        &self.data[mem_address]
     }
 }
 
@@ -51,14 +57,14 @@ impl Index<Range<Word>> for Generic64kMem {
     fn index(&self, idx: Range<Word>) -> &Self::Output {
         let start: usize = idx.start.into();
         let end: usize = idx.end.into();
-        return &self.data[start..end];
+        &self.data[start..end]
     }
 }
 
 impl IndexMut<Word> for Generic64kMem {
     fn index_mut(&mut self, idx: Word) -> &mut Self::Output {
         let mem_address: usize = idx.into();
-        return &mut self.data[mem_address];
+        &mut self.data[mem_address]
     }
 }
 
@@ -67,6 +73,6 @@ impl From<&[(Word, Byte)]> for Generic64kMem {
         let mut res = Generic64kMem::new();
         res.store(value);
 
-        return res;
+        res
     }
 }

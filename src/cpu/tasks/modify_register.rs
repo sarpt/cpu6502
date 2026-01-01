@@ -23,57 +23,57 @@ pub struct ModifyRegisterTasks {
 
 impl ModifyRegisterTasks {
     pub fn new_inc(register: Registers) -> Self {
-        return ModifyRegisterTasks {
+        ModifyRegisterTasks {
             done: false,
             register,
             value: Byte::default(),
             variant: ModificationVariant::Inc,
-        };
+        }
     }
 
     pub fn new_dec(register: Registers) -> Self {
-        return ModifyRegisterTasks {
+        ModifyRegisterTasks {
             done: false,
             register,
             value: Byte::default(),
             variant: ModificationVariant::Dec,
-        };
+        }
     }
 
     pub fn new_shift_left(register: Registers) -> Self {
-        return ModifyRegisterTasks {
+        ModifyRegisterTasks {
             done: false,
             register,
             value: Byte::default(),
             variant: ModificationVariant::ShiftLeft,
-        };
+        }
     }
 
     pub fn new_shift_right(register: Registers) -> Self {
-        return ModifyRegisterTasks {
+        ModifyRegisterTasks {
             done: false,
             register,
             value: Byte::default(),
             variant: ModificationVariant::ShiftRight,
-        };
+        }
     }
 
     pub fn new_rotate_left(register: Registers) -> Self {
-        return ModifyRegisterTasks {
+        ModifyRegisterTasks {
             done: false,
             register,
             value: Byte::default(),
             variant: ModificationVariant::RotateLeft,
-        };
+        }
     }
 
     pub fn new_rotate_right(register: Registers) -> Self {
-        return ModifyRegisterTasks {
+        ModifyRegisterTasks {
             done: false,
             register,
             value: Byte::default(),
             variant: ModificationVariant::RotateRight,
-        };
+        }
     }
 }
 
@@ -93,10 +93,10 @@ impl Tasks for ModifyRegisterTasks {
             ModificationVariant::Inc => self.value = self.value.wrapping_add(1),
             ModificationVariant::Dec => self.value = self.value.wrapping_sub(1),
             ModificationVariant::ShiftLeft => {
-                self.value = self.value << 1;
+                self.value <<= 1;
             }
             ModificationVariant::ShiftRight => {
-                self.value = self.value >> 1;
+                self.value >>= 1;
             }
             ModificationVariant::RotateLeft => {
                 let mod_value = self.value << 1;
@@ -130,6 +130,6 @@ impl Tasks for ModifyRegisterTasks {
         }
 
         self.done = true;
-        return self.done;
+        self.done
     }
 }

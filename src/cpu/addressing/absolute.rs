@@ -18,27 +18,27 @@ pub struct AbsoluteOffsetAddressingTasks {
 
 impl AbsoluteOffsetAddressingTasks {
     pub fn new_offset_by_x() -> Self {
-        return AbsoluteOffsetAddressingTasks {
+        AbsoluteOffsetAddressingTasks {
             addr: Address::new(),
             done: false,
             step: AbsoluteOffsetStep::MemoryAccessLo,
             variant: OffsetVariant::X,
-        };
+        }
     }
 
     pub fn new_offset_by_y() -> Self {
-        return AbsoluteOffsetAddressingTasks {
+        AbsoluteOffsetAddressingTasks {
             addr: Address::new(),
             done: false,
             step: AbsoluteOffsetStep::MemoryAccessLo,
             variant: OffsetVariant::Y,
-        };
+        }
     }
 }
 
 impl Tasks for AbsoluteOffsetAddressingTasks {
     fn done(&self) -> bool {
-        return self.done;
+        self.done
     }
 
     fn tick(&mut self, cpu: &mut super::CPU) -> bool {
@@ -53,7 +53,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
                 cpu.increment_program_counter();
                 self.step = AbsoluteOffsetStep::MemoryAccessHi;
 
-                return false;
+                false
             }
             AbsoluteOffsetStep::MemoryAccessHi => {
                 let addr_hi = cpu.access_memory(cpu.program_counter);
@@ -61,7 +61,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
                 cpu.increment_program_counter();
                 self.step = AbsoluteOffsetStep::OffsetLo;
 
-                return false;
+                false
             }
             AbsoluteOffsetStep::OffsetLo => {
                 let offset = match self.variant {
@@ -80,7 +80,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
                 if !carry {
                     self.done = true;
                 }
-                return self.done;
+                self.done
             }
             AbsoluteOffsetStep::OffsetHi => {
                 let [lo, hi] = self
@@ -92,7 +92,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
                 self.addr.set(Word::from_le_bytes([lo, new_hi]));
 
                 self.done = true;
-                return self.done;
+                self.done
             }
         }
     }
@@ -117,17 +117,17 @@ pub struct AbsoluteAddressingTasks {
 
 impl AbsoluteAddressingTasks {
     pub fn new() -> Self {
-        return AbsoluteAddressingTasks {
+        AbsoluteAddressingTasks {
             addr: Address::new(),
             done: false,
             step: AbsoluteStep::MemoryLo,
-        };
+        }
     }
 }
 
 impl Tasks for AbsoluteAddressingTasks {
     fn done(&self) -> bool {
-        return self.done;
+        self.done
     }
 
     fn tick(&mut self, cpu: &mut super::CPU) -> bool {
@@ -142,7 +142,7 @@ impl Tasks for AbsoluteAddressingTasks {
                 cpu.increment_program_counter();
                 self.step = AbsoluteStep::MemoryHi;
 
-                return false;
+                false
             }
             AbsoluteStep::MemoryHi => {
                 let addr_hi = cpu.access_memory(cpu.program_counter);
@@ -150,7 +150,7 @@ impl Tasks for AbsoluteAddressingTasks {
                 cpu.increment_program_counter();
 
                 self.done = true;
-                return self.done;
+                self.done
             }
         }
     }

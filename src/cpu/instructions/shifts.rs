@@ -5,105 +5,105 @@ use crate::cpu::{
 };
 
 fn asl(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
-    return Box::new(ModifyMemoryTasks::new_shift_left(addr_tasks));
+    let addr_tasks = get_addressing_tasks(cpu, addr_mode);
+    Box::new(ModifyMemoryTasks::new_shift_left(addr_tasks))
 }
 
 pub fn asl_acc(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(ModifyRegisterTasks::new_shift_left(Registers::Accumulator));
+    Box::new(ModifyRegisterTasks::new_shift_left(Registers::Accumulator))
 }
 
 pub fn asl_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return asl(cpu, AddressingMode::ZeroPage);
+    asl(cpu, AddressingMode::ZeroPage)
 }
 
 pub fn asl_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return asl(cpu, AddressingMode::ZeroPageX);
+    asl(cpu, AddressingMode::ZeroPageX)
 }
 
 pub fn asl_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return asl(cpu, AddressingMode::Absolute);
+    asl(cpu, AddressingMode::Absolute)
 }
 
 pub fn asl_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return asl(cpu, AddressingMode::AbsoluteX);
+    asl(cpu, AddressingMode::AbsoluteX)
 }
 
 fn lsr(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
-    return Box::new(ModifyMemoryTasks::new_shift_right(addr_tasks));
+    let addr_tasks = get_addressing_tasks(cpu, addr_mode);
+    Box::new(ModifyMemoryTasks::new_shift_right(addr_tasks))
 }
 
 pub fn lsr_acc(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(ModifyRegisterTasks::new_shift_right(Registers::Accumulator));
+    Box::new(ModifyRegisterTasks::new_shift_right(Registers::Accumulator))
 }
 
 pub fn lsr_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return lsr(cpu, AddressingMode::ZeroPage);
+    lsr(cpu, AddressingMode::ZeroPage)
 }
 
 pub fn lsr_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return lsr(cpu, AddressingMode::ZeroPageX);
+    lsr(cpu, AddressingMode::ZeroPageX)
 }
 
 pub fn lsr_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return lsr(cpu, AddressingMode::Absolute);
+    lsr(cpu, AddressingMode::Absolute)
 }
 
 pub fn lsr_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return lsr(cpu, AddressingMode::AbsoluteX);
+    lsr(cpu, AddressingMode::AbsoluteX)
 }
 
 fn rol(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
-    return Box::new(ModifyMemoryTasks::new_rotate_left(addr_tasks));
+    let addr_tasks = get_addressing_tasks(cpu, addr_mode);
+    Box::new(ModifyMemoryTasks::new_rotate_left(addr_tasks))
 }
 
 pub fn rol_acc(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(ModifyRegisterTasks::new_rotate_left(Registers::Accumulator));
+    Box::new(ModifyRegisterTasks::new_rotate_left(Registers::Accumulator))
 }
 
 pub fn rol_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return rol(cpu, AddressingMode::ZeroPage);
+    rol(cpu, AddressingMode::ZeroPage)
 }
 
 pub fn rol_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return rol(cpu, AddressingMode::ZeroPageX);
+    rol(cpu, AddressingMode::ZeroPageX)
 }
 
 pub fn rol_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return rol(cpu, AddressingMode::Absolute);
+    rol(cpu, AddressingMode::Absolute)
 }
 
 pub fn rol_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return rol(cpu, AddressingMode::AbsoluteX);
+    rol(cpu, AddressingMode::AbsoluteX)
 }
 
 fn ror(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-    let addr_tasks = get_addressing_tasks(&cpu, addr_mode);
-    return Box::new(ModifyMemoryTasks::new_rotate_right(addr_tasks));
+    let addr_tasks = get_addressing_tasks(cpu, addr_mode);
+    Box::new(ModifyMemoryTasks::new_rotate_right(addr_tasks))
 }
 
 pub fn ror_acc(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(ModifyRegisterTasks::new_rotate_right(
+    Box::new(ModifyRegisterTasks::new_rotate_right(
         Registers::Accumulator,
-    ));
+    ))
 }
 
 pub fn ror_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ror(cpu, AddressingMode::ZeroPage);
+    ror(cpu, AddressingMode::ZeroPage)
 }
 
 pub fn ror_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ror(cpu, AddressingMode::ZeroPageX);
+    ror(cpu, AddressingMode::ZeroPageX)
 }
 
 pub fn ror_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ror(cpu, AddressingMode::Absolute);
+    ror(cpu, AddressingMode::Absolute)
 }
 
 pub fn ror_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-    return ror(cpu, AddressingMode::AbsoluteX);
+    ror(cpu, AddressingMode::AbsoluteX)
 }
 
 #[cfg(test)]

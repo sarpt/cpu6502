@@ -7,11 +7,11 @@ pub struct Address {
 
 impl Address {
     pub fn new() -> Self {
-        return Address { val: None };
+        Address { val: None }
     }
 
     pub fn value(&self) -> Option<Word> {
-        return self.val;
+        self.val
     }
 
     pub fn set<T: Into<Word>>(&mut self, val: T) {

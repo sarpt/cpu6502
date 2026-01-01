@@ -38,35 +38,35 @@ pub trait AddressingTasks: Tasks {
 pub fn get_addressing_tasks(cpu: &CPU, addr_mode: AddressingMode) -> Box<dyn AddressingTasks> {
     match addr_mode {
         AddressingMode::ZeroPage => {
-            return Box::new(ZeroPageAddressingTasks::new());
+            Box::new(ZeroPageAddressingTasks::new())
         }
         AddressingMode::ZeroPageX => {
-            return Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x());
+            Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x())
         }
         AddressingMode::ZeroPageY => {
-            return Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_y());
+            Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_y())
         }
         AddressingMode::Absolute => {
-            return Box::new(AbsoluteAddressingTasks::new());
+            Box::new(AbsoluteAddressingTasks::new())
         }
         AddressingMode::AbsoluteX => {
-            return Box::new(AbsoluteOffsetAddressingTasks::new_offset_by_x());
+            Box::new(AbsoluteOffsetAddressingTasks::new_offset_by_x())
         }
         AddressingMode::AbsoluteY => {
-            return Box::new(AbsoluteOffsetAddressingTasks::new_offset_by_y());
+            Box::new(AbsoluteOffsetAddressingTasks::new_offset_by_y())
         }
         AddressingMode::Indirect => {
             if cpu.chip_variant == ChipVariant::NMOS {
-                return Box::new(IndirectAddressingTasks::new_incorrect_addressing());
+                Box::new(IndirectAddressingTasks::new_incorrect_addressing())
             } else {
-                return Box::new(IndirectAddressingTasks::new_fixed_addressing());
+                Box::new(IndirectAddressingTasks::new_fixed_addressing())
             }
         }
         AddressingMode::IndexIndirectX => {
-            return Box::new(IndexIndirectXAddressingTasks::new());
+            Box::new(IndexIndirectXAddressingTasks::new())
         }
         AddressingMode::IndirectIndexY => {
-            return Box::new(IndirectIndexYAddressingTasks::new());
+            Box::new(IndirectIndexYAddressingTasks::new())
         }
     }
 }

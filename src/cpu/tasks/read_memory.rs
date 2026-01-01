@@ -25,24 +25,24 @@ pub struct AddressingReadMemoryTasks {
 
 impl AddressingReadMemoryTasks {
     pub fn new_with_access_during_addressing(addressing_tasks: Box<dyn AddressingTasks>) -> Self {
-        return AddressingReadMemoryTasks {
+        AddressingReadMemoryTasks {
             addressing_tasks,
             access_during_addressing: true,
             step: AddressingReadMemoryStep::AddressCalculation,
             value: None,
-        };
+        }
     }
 
     pub fn new_with_access_in_separate_cycle(addressing_tasks: Box<dyn AddressingTasks>) -> Self {
-        return AddressingReadMemoryTasks {
+        AddressingReadMemoryTasks {
             addressing_tasks,
             access_during_addressing: false,
             step: AddressingReadMemoryStep::AddressCalculation,
             value: None,
-        };
+        }
     }
 
-    fn access_memory(&mut self, cpu: &CPU) -> () {
+    fn access_memory(&mut self, cpu: &CPU) {
         self.value = Some(
             cpu.access_memory(
                 self.addressing_tasks
@@ -55,7 +55,7 @@ impl AddressingReadMemoryTasks {
 
 impl ReadMemoryTasks for AddressingReadMemoryTasks {
     fn value(&self) -> Option<Byte> {
-        return self.value;
+        self.value
     }
 }
 
@@ -84,16 +84,16 @@ impl Tasks for AddressingReadMemoryTasks {
                 self.access_memory(cpu);
                 self.step = AddressingReadMemoryStep::Done;
 
-                return addressing_done;
+                addressing_done
             }
             AddressingReadMemoryStep::SeparateMemoryAccess => {
                 self.access_memory(cpu);
                 self.step = AddressingReadMemoryStep::Done;
 
-                return true;
+                true
             }
             AddressingReadMemoryStep::Done => {
-                return true;
+                true
             }
         }
     }
@@ -106,16 +106,16 @@ pub struct ImmediateReadMemoryTasks {
 
 impl ImmediateReadMemoryTasks {
     pub fn new() -> Self {
-        return ImmediateReadMemoryTasks {
+        ImmediateReadMemoryTasks {
             done: false,
             value: None,
-        };
+        }
     }
 }
 
 impl Tasks for ImmediateReadMemoryTasks {
     fn done(&self) -> bool {
-        return self.done;
+        self.done
     }
 
     fn tick(&mut self, cpu: &mut CPU) -> bool {
@@ -127,13 +127,13 @@ impl Tasks for ImmediateReadMemoryTasks {
         cpu.increment_program_counter();
         self.done = true;
 
-        return true;
+        true
     }
 }
 
 impl ReadMemoryTasks for ImmediateReadMemoryTasks {
     fn value(&self) -> Option<Byte> {
-        return self.value;
+        self.value
     }
 }
 

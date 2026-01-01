@@ -33,63 +33,63 @@ pub struct ModifyMemoryTasks {
 
 impl ModifyMemoryTasks {
     pub fn new_inc(addr_tasks: Box<dyn AddressingTasks>) -> Self {
-        return ModifyMemoryTasks {
+        ModifyMemoryTasks {
             variant: ModificationVariant::Inc,
             addr_tasks,
             step: ModifyMemoryStep::Addressing,
             previous_value: Byte::default(),
             value: Byte::default(),
-        };
+        }
     }
 
     pub fn new_dec(addr_tasks: Box<dyn AddressingTasks>) -> Self {
-        return ModifyMemoryTasks {
+        ModifyMemoryTasks {
             variant: ModificationVariant::Dec,
             addr_tasks,
             step: ModifyMemoryStep::Addressing,
             previous_value: Byte::default(),
             value: Byte::default(),
-        };
+        }
     }
 
     pub fn new_shift_left(addr_tasks: Box<dyn AddressingTasks>) -> Self {
-        return ModifyMemoryTasks {
+        ModifyMemoryTasks {
             variant: ModificationVariant::ShiftLeft,
             addr_tasks,
             step: ModifyMemoryStep::Addressing,
             previous_value: Byte::default(),
             value: Byte::default(),
-        };
+        }
     }
 
     pub fn new_shift_right(addr_tasks: Box<dyn AddressingTasks>) -> Self {
-        return ModifyMemoryTasks {
+        ModifyMemoryTasks {
             variant: ModificationVariant::ShiftRight,
             addr_tasks,
             step: ModifyMemoryStep::Addressing,
             previous_value: Byte::default(),
             value: Byte::default(),
-        };
+        }
     }
 
     pub fn new_rotate_left(addr_tasks: Box<dyn AddressingTasks>) -> Self {
-        return ModifyMemoryTasks {
+        ModifyMemoryTasks {
             variant: ModificationVariant::RotateLeft,
             addr_tasks,
             step: ModifyMemoryStep::Addressing,
             previous_value: Byte::default(),
             value: Byte::default(),
-        };
+        }
     }
 
     pub fn new_rotate_right(addr_tasks: Box<dyn AddressingTasks>) -> Self {
-        return ModifyMemoryTasks {
+        ModifyMemoryTasks {
             variant: ModificationVariant::RotateRight,
             addr_tasks,
             step: ModifyMemoryStep::Addressing,
             previous_value: Byte::default(),
             value: Byte::default(),
-        };
+        }
     }
 }
 
@@ -106,7 +106,7 @@ impl Tasks for ModifyMemoryTasks {
                     self.step = ModifyMemoryStep::MemoryAccess
                 }
 
-                return false;
+                false
             }
             ModifyMemoryStep::MemoryAccess => {
                 self.value = cpu.access_memory(
@@ -116,7 +116,7 @@ impl Tasks for ModifyMemoryTasks {
                 );
 
                 self.step = ModifyMemoryStep::ValueModification;
-                return false;
+                false
             }
             ModifyMemoryStep::ValueModification => {
                 self.previous_value = self.value;
@@ -125,10 +125,10 @@ impl Tasks for ModifyMemoryTasks {
                     ModificationVariant::Inc => self.value = self.value.wrapping_add(1),
                     ModificationVariant::Dec => self.value = self.value.wrapping_sub(1),
                     ModificationVariant::ShiftLeft => {
-                        self.value = self.value << 1;
+                        self.value <<= 1;
                     }
                     ModificationVariant::ShiftRight => {
-                        self.value = self.value >> 1;
+                        self.value >>= 1;
                     }
                     ModificationVariant::RotateLeft => {
                         let mod_value = self.value << 1;
@@ -149,7 +149,7 @@ impl Tasks for ModifyMemoryTasks {
                 }
 
                 self.step = ModifyMemoryStep::MemoryAndStatusWrite;
-                return false;
+                false
             }
             ModifyMemoryStep::MemoryAndStatusWrite => {
                 cpu.put_into_memory(
@@ -173,7 +173,7 @@ impl Tasks for ModifyMemoryTasks {
                 };
 
                 self.step = ModifyMemoryStep::Done;
-                return true;
+                true
             }
             ModifyMemoryStep::Done => {
                 panic!("tick mustn't be called when done")

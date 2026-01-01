@@ -12,16 +12,16 @@ pub struct ZeroPageAddressingTasks {
 
 impl ZeroPageAddressingTasks {
     pub fn new() -> Self {
-        return ZeroPageAddressingTasks {
+        ZeroPageAddressingTasks {
             done: false,
             addr: Address::new(),
-        };
+        }
     }
 }
 
 impl Tasks for ZeroPageAddressingTasks {
     fn done(&self) -> bool {
-        return self.done;
+        self.done
     }
 
     fn tick(&mut self, cpu: &mut super::CPU) -> bool {
@@ -34,7 +34,7 @@ impl Tasks for ZeroPageAddressingTasks {
         cpu.increment_program_counter();
         self.done = true;
 
-        return self.done;
+        self.done
     }
 }
 
@@ -58,27 +58,27 @@ pub struct ZeroPageOffsetAddressingTasks {
 
 impl ZeroPageOffsetAddressingTasks {
     pub fn new_offset_by_x() -> Self {
-        return ZeroPageOffsetAddressingTasks {
+        ZeroPageOffsetAddressingTasks {
             addr: Address::new(),
             done: false,
             step: ZeroPageOffsetStep::ZeroPageAccess,
             variant: OffsetVariant::X,
-        };
+        }
     }
 
     pub fn new_offset_by_y() -> Self {
-        return ZeroPageOffsetAddressingTasks {
+        ZeroPageOffsetAddressingTasks {
             addr: Address::new(),
             done: false,
             step: ZeroPageOffsetStep::ZeroPageAccess,
             variant: OffsetVariant::Y,
-        };
+        }
     }
 }
 
 impl Tasks for ZeroPageOffsetAddressingTasks {
     fn done(&self) -> bool {
-        return self.done;
+        self.done
     }
 
     fn tick(&mut self, cpu: &mut super::CPU) -> bool {
@@ -93,12 +93,12 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
                 cpu.increment_program_counter();
                 self.step = ZeroPageOffsetStep::Offset;
 
-                return false;
+                false
             }
             ZeroPageOffsetStep::Offset => {
                 let offset: Byte = match self.variant {
-                    OffsetVariant::X => cpu.index_register_x.into(),
-                    OffsetVariant::Y => cpu.index_register_y.into(),
+                    OffsetVariant::X => cpu.index_register_x,
+                    OffsetVariant::Y => cpu.index_register_y,
                 };
                 let addr_output = self
                     .addr
@@ -109,7 +109,7 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
                 self.addr.set(final_address);
 
                 self.done = true;
-                return self.done;
+                self.done
             }
         }
     }

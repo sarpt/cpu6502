@@ -8,11 +8,11 @@ pub struct TransferRegistersTasks {
 
 impl TransferRegistersTasks {
     pub fn new(src: Registers, tgt: Registers) -> Self {
-        return TransferRegistersTasks {
+        TransferRegistersTasks {
             src,
             tgt,
             done: false,
-        };
+        }
     }
 }
 
@@ -29,6 +29,6 @@ impl Tasks for TransferRegistersTasks {
         cpu.transfer_registers(self.src, self.tgt);
 
         self.done = true;
-        return self.done;
+        self.done
     }
 }

@@ -19,11 +19,11 @@ struct BranchTasks {
 
 impl BranchTasks {
     pub fn new(condition: fn(&CPU) -> bool) -> Self {
-        return BranchTasks {
+        BranchTasks {
             condition,
             step: BranchStep::ConditionExecution,
             offset: 0,
-        };
+        }
     }
 }
 
@@ -44,7 +44,7 @@ impl Tasks for BranchTasks {
                 }
 
                 self.step = BranchStep::Done;
-                return true;
+                true
             }
             BranchStep::OffsetProgramCounterLo => {
                 let [program_counter_lo, program_counter_hi] = cpu.program_counter.to_le_bytes();
@@ -74,7 +74,7 @@ impl Tasks for BranchTasks {
                 }
 
                 self.step = BranchStep::OffsetProgramCounterHi;
-                return false;
+                false
             }
             BranchStep::OffsetProgramCounterHi => {
                 let negative_offset_direction = 0b10000000 & self.offset > 0;
@@ -89,59 +89,59 @@ impl Tasks for BranchTasks {
                     Word::from_le_bytes([program_counter_lo, offset_program_counter_hi]);
 
                 self.step = BranchStep::Done;
-                return true;
+                true
             }
-            BranchStep::Done => return true,
+            BranchStep::Done => true,
         }
     }
 }
 
 pub fn bcc(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
-        return !cpu.processor_status.get_carry_flag();
-    }));
+    Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
+        !cpu.processor_status.get_carry_flag()
+    }))
 }
 
 pub fn bcs(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
-        return cpu.processor_status.get_carry_flag();
-    }));
+    Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
+        cpu.processor_status.get_carry_flag()
+    }))
 }
 
 pub fn beq(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
-        return cpu.processor_status.get_zero_flag();
-    }));
+    Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
+        cpu.processor_status.get_zero_flag()
+    }))
 }
 
 pub fn bmi(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
-        return cpu.processor_status.get_negative_flag();
-    }));
+    Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
+        cpu.processor_status.get_negative_flag()
+    }))
 }
 
 pub fn bne(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
-        return !cpu.processor_status.get_zero_flag();
-    }));
+    Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
+        !cpu.processor_status.get_zero_flag()
+    }))
 }
 
 pub fn bpl(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
-        return !cpu.processor_status.get_negative_flag();
-    }));
+    Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
+        !cpu.processor_status.get_negative_flag()
+    }))
 }
 
 pub fn bvs(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
-        return cpu.processor_status.get_overflow_flag();
-    }));
+    Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
+        cpu.processor_status.get_overflow_flag()
+    }))
 }
 
 pub fn bvc(_cpu: &mut CPU) -> Box<dyn Tasks> {
-    return Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
-        return !cpu.processor_status.get_overflow_flag();
-    }));
+    Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
+        !cpu.processor_status.get_overflow_flag()
+    }))
 }
 
 #[cfg(test)]
