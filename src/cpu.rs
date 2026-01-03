@@ -1,17 +1,17 @@
 use std::collections::HashMap;
 use std::fmt::Display;
 
-use ringbuffer::{AllocRingBuffer, RingBuffer};
 
 use addressing::{get_addressing_tasks, AddressingMode};
 use tasks::read_memory::{AddressingReadMemoryTasks, ImmediateReadMemoryTasks, ReadMemoryTasks};
 use tasks::Tasks;
 
 use super::consts::{Byte, Word};
-use crate::consts::{DEFAULT_INSTRUCTION_HISTORY_CAPACITY, RESET_VECTOR};
+use crate::consts::RESET_VECTOR;
 use crate::{consts::STACK_PAGE_HI, memory::Memory};
 
 mod addressing;
+mod debugger;
 mod instructions;
 mod opcodes;
 mod processor_status;
@@ -38,7 +38,6 @@ type OpcodeHandler = fn(&mut CPU) -> Box<dyn Tasks>;
 pub struct CPU {
     chip_variant: ChipVariant,
     current_instruction: Option<InstructionExecution>,
-    instruction_history: AllocRingBuffer<InstructionExecution>,
     cycle: usize,
     program_counter: Word,
     stack_pointer: Byte,
@@ -55,7 +54,6 @@ impl CPU {
         CPU {
             chip_variant,
             current_instruction: None,
-            instruction_history: AllocRingBuffer::new(DEFAULT_INSTRUCTION_HISTORY_CAPACITY),
             cycle: 0,
             program_counter: RESET_VECTOR,
             stack_pointer: 0x00,
@@ -119,7 +117,6 @@ impl CPU {
                 let tasks_done = current_instruction.tasks.tick(self, memory);
                 self.cycle += 1;
                 if tasks_done {
-                    self.instruction_history.push(current_instruction);
                     return;
                 }
 
@@ -132,12 +129,8 @@ impl CPU {
         }
     }
 
-    pub fn sync(&mut self) -> bool {
+    pub fn sync(&self) -> bool {
         self.sync
-    }
-
-    pub fn get_last_instruction(&self) -> Option<&InstructionExecution> {
-        self.instruction_history.back()
     }
 
     fn increment_program_counter(&mut self) {
@@ -284,7 +277,7 @@ impl CPU {
     }
 
     fn dummy_fetch(&mut self, memory: &dyn Memory) {
-        memory[self.program_counter]; // fetch and discard
+        let _ = memory[self.program_counter]; // fetch and discard
     }
 
     fn schedule_instruction(&mut self, memory: &dyn Memory) -> InstructionExecution {
@@ -315,16 +308,6 @@ pub struct InstructionExecution {
     pub opcode: Byte,
     pub starting_cycle: usize,
     tasks: Box<dyn Tasks>,
-}
-
-impl Display for InstructionExecution {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}@{:#04X}: {:#04X}",
-            self.starting_cycle, self.addr, self.opcode
-        )
-    }
 }
 
 #[cfg(test)]
