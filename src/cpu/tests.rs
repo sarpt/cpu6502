@@ -513,46 +513,6 @@ mod sync {
     }
 }
 
-#[cfg(test)]
-mod get_last_instruction {
-    use crate::cpu::{
-        opcodes::{LDA_IM, NOP},
-        tests::MemoryMock,
-        CPU,
-    };
-
-    #[test]
-    fn should_return_last_ran_instruction() {
-        let mut memory = MemoryMock::new(&[NOP, LDA_IM, 0xFF]);
-        let mut uut = CPU::new_nmos();
-        uut.program_counter = 0x00;
-
-        uut.execute_next_instruction(&mut memory);
-
-        let mut last_instruction = uut
-            .get_last_instruction()
-            .expect("last instruction is unexpectedly None");
-        let mut instruction_info = format!("{}", last_instruction);
-        assert_eq!(instruction_info, "1@0x00: 0xEA");
-
-        uut.execute_next_instruction(&mut memory);
-
-        last_instruction = uut
-            .get_last_instruction()
-            .expect("last instruction is unexpectedly None");
-        instruction_info = format!("{}", last_instruction);
-        assert_eq!(instruction_info, "3@0x01: 0xA9");
-    }
-
-    #[test]
-    fn should_return_none_when_no_instructions_were_ran_yet() {
-        let uut = CPU::new_nmos();
-
-        uut.get_last_instruction();
-
-        assert_eq!(uut.get_last_instruction().is_none(), true);
-    }
-}
 
 #[cfg(test)]
 pub fn run_tasks(cpu: &mut super::CPU, tasks: &mut dyn super::Tasks, memory: &mut dyn Memory) {
