@@ -63,49 +63,52 @@ impl Display for DebugInstructionInfo {
 #[cfg(test)]
 mod tests {
 
-  #[cfg(test)]
-  mod get_last_instruction {
-      use crate::cpu::{
-          CPU, debugger::Debugger, opcodes::{LDA_IM, NOP}, tests::MemoryMock
-      };
+    #[cfg(test)]
+    mod get_last_instruction {
+        use crate::cpu::{
+            debugger::Debugger,
+            instructions::{LDA_IM, NOP},
+            tests::MemoryMock,
+            CPU,
+        };
 
-      #[test]
-      fn should_return_last_ran_instruction() {
-          let mut memory = MemoryMock::new(&[NOP, LDA_IM, 0xFF]);
-          let mut cpu = CPU::new_nmos();
-          cpu.program_counter = 0x00;
+        #[test]
+        fn should_return_last_ran_instruction() {
+            let mut memory = MemoryMock::new(&[NOP, LDA_IM, 0xFF]);
+            let mut cpu = CPU::new_nmos();
+            cpu.program_counter = 0x00;
 
-          let mut uut = Debugger::new();
+            let mut uut = Debugger::new();
 
-          cpu.tick(&mut memory);
-          uut.probe(&cpu);
+            cpu.tick(&mut memory);
+            uut.probe(&cpu);
 
-          let mut last_instruction = uut
-              .get_last_instruction()
-              .expect("last instruction is unexpectedly None");
-          let mut instruction_info = format!("{}", last_instruction);
-          assert_eq!(instruction_info, "1@0x00: 0xEA");
+            let mut last_instruction = uut
+                .get_last_instruction()
+                .expect("last instruction is unexpectedly None");
+            let mut instruction_info = format!("{}", last_instruction);
+            assert_eq!(instruction_info, "1@0x00: 0xEA");
 
-          cpu.tick(&mut memory);
-          uut.probe(&cpu);
-          cpu.tick(&mut memory);
-          uut.probe(&cpu);
+            cpu.tick(&mut memory);
+            uut.probe(&cpu);
+            cpu.tick(&mut memory);
+            uut.probe(&cpu);
 
-          last_instruction = uut
-              .get_last_instruction()
-              .expect("last instruction is unexpectedly None");
-          instruction_info = format!("{}", last_instruction);
-          assert_eq!(instruction_info, "3@0x01: 0xA9");
-      }
+            last_instruction = uut
+                .get_last_instruction()
+                .expect("last instruction is unexpectedly None");
+            instruction_info = format!("{}", last_instruction);
+            assert_eq!(instruction_info, "3@0x01: 0xA9");
+        }
 
-      #[test]
-      fn should_return_none_when_no_instructions_were_ran_yet() {
-          let cpu = CPU::new_nmos();
-          let mut uut = Debugger::new();
+        #[test]
+        fn should_return_none_when_no_instructions_were_ran_yet() {
+            let cpu = CPU::new_nmos();
+            let mut uut = Debugger::new();
 
-          uut.probe(&cpu);
+            uut.probe(&cpu);
 
-          assert!(uut.get_last_instruction().is_none());
-      }
-  }
+            assert!(uut.get_last_instruction().is_none());
+        }
+    }
 }

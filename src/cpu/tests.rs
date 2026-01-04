@@ -513,7 +513,6 @@ mod sync {
     }
 }
 
-
 #[cfg(test)]
 pub fn run_tasks(cpu: &mut super::CPU, tasks: &mut dyn super::Tasks, memory: &mut dyn Memory) {
     while !tasks.done() {

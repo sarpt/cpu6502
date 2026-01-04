@@ -1,19 +1,15 @@
-use std::collections::HashMap;
-use std::fmt::Display;
-
-
 use addressing::{get_addressing_tasks, AddressingMode};
 use tasks::read_memory::{AddressingReadMemoryTasks, ImmediateReadMemoryTasks, ReadMemoryTasks};
 use tasks::Tasks;
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
+use crate::cpu::instructions::INSTRUCTIONS;
 use crate::{consts::STACK_PAGE_HI, memory::Memory};
 
 mod addressing;
 mod debugger;
 mod instructions;
-mod opcodes;
 mod processor_status;
 mod tasks;
 
@@ -45,7 +41,6 @@ pub struct CPU {
     index_register_x: Byte,
     index_register_y: Byte,
     processor_status: processor_status::ProcessorStatus,
-    opcode_handlers: HashMap<Byte, OpcodeHandler>,
     sync: bool,
 }
 
@@ -61,7 +56,6 @@ impl CPU {
             index_register_x: 0,
             index_register_y: 0,
             processor_status: processor_status::ProcessorStatus::default(),
-            opcode_handlers: instructions::get_instructions(),
             sync: false,
         }
     }
@@ -133,6 +127,7 @@ impl CPU {
         self.sync
     }
 
+    #[inline]
     fn increment_program_counter(&mut self) {
         self.program_counter = self.program_counter.wrapping_add(1);
     }
@@ -282,9 +277,9 @@ impl CPU {
 
     fn schedule_instruction(&mut self, memory: &dyn Memory) -> InstructionExecution {
         let (opcode, addr) = self.fetch_opcode(memory);
-        let handler = self.opcode_handlers.get(&opcode);
-        let tasks = match handler {
-            Some(cb) => cb(self),
+        let instruction = INSTRUCTIONS.get(&opcode);
+        let tasks = match instruction {
+            Some(inst) => (inst.handler)(self),
             None => panic!("illegal opcode found: {:#04X}", opcode),
         };
 
