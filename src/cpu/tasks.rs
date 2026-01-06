@@ -8,6 +8,6 @@ pub mod read_memory;
 pub mod transfer_register;
 
 pub trait Tasks {
-    fn done(&self) -> bool;
-    fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool;
+  fn done(&self) -> bool;
+  fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool;
 }

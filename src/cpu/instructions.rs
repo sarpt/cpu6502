@@ -3,6 +3,8 @@
 use phf::phf_map;
 
 use crate::consts::Byte;
+use crate::cpu::tasks::Tasks;
+use crate::cpu::CPU;
 
 use self::arithmetic::*;
 use self::branches::*;
@@ -16,11 +18,11 @@ use self::stack_operations::*;
 use self::status_flag_changes::*;
 use self::system_functions::*;
 
-use super::OpcodeHandler;
+type OpcodeHandler = fn(&mut CPU) -> Box<dyn Tasks>;
 
 pub struct Instruction {
-    pub handler: OpcodeHandler,
-    pub name: &'static str,
+  pub handler: OpcodeHandler,
+  pub name: &'static str,
 }
 
 macro_rules! instructions {
