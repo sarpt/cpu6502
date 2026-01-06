@@ -12,6 +12,7 @@ mod debugger;
 mod instructions;
 mod processor_status;
 mod tasks;
+pub mod utils;
 
 #[derive(Copy, Clone, PartialEq)]
 enum ChipVariant {
@@ -84,23 +85,6 @@ impl CPU {
 
     pub fn get_processor_status(&self) -> Byte {
         self.processor_status.into()
-    }
-
-    pub fn execute_next_instruction(&mut self, memory: &mut dyn Memory) {
-        loop {
-            self.tick(memory);
-            if self.current_instruction.is_none() {
-                break;
-            }
-        }
-    }
-
-    pub fn execute_until_break(&mut self, memory: &mut dyn Memory) -> usize {
-        while !self.processor_status.get_break_flag() {
-            self.execute_next_instruction(memory);
-        }
-
-        self.cycle
     }
 
     pub fn tick(&mut self, memory: &mut dyn Memory) {
