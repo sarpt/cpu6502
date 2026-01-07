@@ -1,13 +1,14 @@
-use crate::consts::{Byte, Word};
+use crate::{consts::{Byte, Word}, cpu::addressing::AddressingMode};
 
 #[derive(Default)]
 pub struct Address {
   val: Option<Word>,
+  mode: Option<AddressingMode>,
 }
 
 impl Address {
   pub fn new() -> Self {
-    Address { val: None }
+    Address { val: None, mode: None }
   }
 
   pub fn value(&self) -> Option<Word> {
@@ -34,5 +35,10 @@ impl Address {
     };
 
     self.val = Some(Word::from_le_bytes([lo, hi]));
+  }
+
+  pub fn reset(&mut self, mode: AddressingMode) {
+    self.val = Some(0u16);
+    self.mode = Some(mode);
   }
 }
