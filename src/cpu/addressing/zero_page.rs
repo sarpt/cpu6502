@@ -22,6 +22,7 @@ impl Tasks for ZeroPageAddressingTasks {
       return self.done;
     }
 
+    cpu.addr.reset(super::AddressingMode::ZeroPage);
     let addr: Byte = memory[cpu.program_counter];
     cpu.addr.set(addr);
     cpu.increment_program_counter();
@@ -72,6 +73,11 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
 
     match self.step {
       ZeroPageOffsetStep::ZeroPageAccess => {
+        match self.variant {
+            OffsetVariant::X => cpu.addr.reset(super::AddressingMode::ZeroPageX),
+            OffsetVariant::Y => cpu.addr.reset(super::AddressingMode::ZeroPageY),
+        }
+
         let addr: Byte = memory[cpu.program_counter];
         cpu.addr.set(addr);
         cpu.increment_program_counter();

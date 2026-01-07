@@ -45,6 +45,11 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
 
     match self.step {
       AbsoluteOffsetStep::MemoryAccessLo => {
+        match self.variant {
+            OffsetVariant::X => cpu.addr.reset(crate::cpu::addressing::AddressingMode::AbsoluteX),
+            OffsetVariant::Y => cpu.addr.reset(crate::cpu::addressing::AddressingMode::AbsoluteY),
+        }
+
         let addr_lo = memory[cpu.program_counter];
         cpu.addr.set_lo(addr_lo);
         cpu.increment_program_counter();
@@ -126,6 +131,7 @@ impl Tasks for AbsoluteAddressingTasks {
 
     match self.step {
       AbsoluteStep::MemoryLo => {
+        cpu.addr.reset(super::AddressingMode::Absolute);
         let addr_lo = memory[cpu.program_counter];
         cpu.addr.set_lo(addr_lo);
         cpu.increment_program_counter();

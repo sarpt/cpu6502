@@ -1,6 +1,6 @@
 use crate::{
   consts::{Byte, Word},
-  cpu::tasks::Tasks,
+  cpu::{addressing::AddressingMode, tasks::Tasks},
   memory::Memory,
 };
 
@@ -40,6 +40,7 @@ impl Tasks for IndirectIndexYAddressingTasks {
 
     match self.step {
       IndirectIndexYStep::MemoryAccess => {
+        cpu.addr.reset(AddressingMode::IndirectIndexY);
         let addr: Byte = memory[cpu.program_counter];
         self.tgt_addr = addr.into();
         cpu.increment_program_counter();
@@ -126,6 +127,7 @@ impl Tasks for IndexIndirectXAddressingTasks {
 
     match self.step {
       IndexIndirectXStep::IndirectAccess => {
+        cpu.addr.reset(AddressingMode::IndexIndirectX);
         let addr: Byte = memory[cpu.program_counter];
         cpu.addr.set(addr);
         cpu.increment_program_counter();
@@ -212,6 +214,7 @@ impl Tasks for IndirectAddressingTasks {
 
     match self.step {
       IndirectStep::IndirectFetchLo => {
+        cpu.addr.reset(AddressingMode::Indirect);
         self.tgt_addr_lo = memory[cpu.program_counter];
         cpu.increment_program_counter();
         self.step = IndirectStep::IndirectFetchHi;
