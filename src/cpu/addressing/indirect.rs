@@ -4,8 +4,6 @@ use crate::{
   memory::Memory,
 };
 
-use super::{address::Address, AddressingTasks};
-
 enum IndirectIndexYStep {
   MemoryAccess,
   IndirectAccessLo,
@@ -15,7 +13,6 @@ enum IndirectIndexYStep {
 }
 
 pub struct IndirectIndexYAddressingTasks {
-  addr: Address,
   done: bool,
   step: IndirectIndexYStep,
   tgt_addr: Word,
@@ -24,7 +21,6 @@ pub struct IndirectIndexYAddressingTasks {
 impl IndirectIndexYAddressingTasks {
   pub fn new() -> Self {
     IndirectIndexYAddressingTasks {
-      addr: Address::new(),
       done: false,
       step: IndirectIndexYStep::MemoryAccess,
       tgt_addr: Word::default(),
@@ -53,26 +49,26 @@ impl Tasks for IndirectIndexYAddressingTasks {
       }
       IndirectIndexYStep::IndirectAccessLo => {
         let addr_lo = memory[self.tgt_addr];
-        self.addr.set_lo(addr_lo);
+        cpu.addr.set_lo(addr_lo);
         self.step = IndirectIndexYStep::IndirectAccessHi;
 
         false
       }
       IndirectIndexYStep::IndirectAccessHi => {
         let addr_hi = memory[self.tgt_addr.wrapping_add(1)];
-        self.addr.set_hi(addr_hi);
+        cpu.addr.set_hi(addr_hi);
         self.step = IndirectIndexYStep::OffsetLo;
 
         false
       }
       IndirectIndexYStep::OffsetLo => {
-        let [lo, hi] = self
+        let [lo, hi] = cpu
           .addr
           .value()
           .expect("unexpected lack of address in OffsetLo step")
           .to_le_bytes();
         let (new_lo, carry) = lo.overflowing_add(cpu.index_register_y);
-        self.addr.set(Word::from_le_bytes([new_lo, hi]));
+        cpu.addr.set(Word::from_le_bytes([new_lo, hi]));
         self.step = IndirectIndexYStep::OffsetHi;
 
         if !carry {
@@ -81,24 +77,18 @@ impl Tasks for IndirectIndexYAddressingTasks {
         self.done
       }
       IndirectIndexYStep::OffsetHi => {
-        let [lo, hi] = self
+        let [lo, hi] = cpu
           .addr
           .value()
           .expect("unexpected lack of address in OffsetHi step")
           .to_le_bytes();
         let new_hi = hi.wrapping_add(1);
-        self.addr.set(Word::from_le_bytes([lo, new_hi]));
+        cpu.addr.set(Word::from_le_bytes([lo, new_hi]));
 
         self.done = true;
         self.done
       }
     }
-  }
-}
-
-impl AddressingTasks for IndirectIndexYAddressingTasks {
-  fn address(&self) -> Option<Word> {
-    self.addr.value()
   }
 }
 
@@ -109,7 +99,6 @@ enum IndexIndirectXStep {
   MemoryAccessHi,
 }
 pub struct IndexIndirectXAddressingTasks {
-  addr: Address,
   done: bool,
   step: IndexIndirectXStep,
   tgt_addr: Word,
@@ -118,7 +107,6 @@ pub struct IndexIndirectXAddressingTasks {
 impl IndexIndirectXAddressingTasks {
   pub fn new() -> Self {
     IndexIndirectXAddressingTasks {
-      addr: Address::new(),
       done: false,
       step: IndexIndirectXStep::IndirectAccess,
       tgt_addr: Word::default(),
@@ -139,14 +127,14 @@ impl Tasks for IndexIndirectXAddressingTasks {
     match self.step {
       IndexIndirectXStep::IndirectAccess => {
         let addr: Byte = memory[cpu.program_counter];
-        self.addr.set(addr);
+        cpu.addr.set(addr);
         cpu.increment_program_counter();
         self.step = IndexIndirectXStep::SumWithX;
 
         false
       }
       IndexIndirectXStep::SumWithX => {
-        let addr_output = self
+        let addr_output = cpu
           .addr
           .value()
           .expect("unexpected lack of address in SumWithX step");
@@ -157,25 +145,19 @@ impl Tasks for IndexIndirectXAddressingTasks {
       }
       IndexIndirectXStep::MemoryAccessLo => {
         let addr_lo = memory[self.tgt_addr];
-        self.addr.set_lo(addr_lo);
+        cpu.addr.set_lo(addr_lo);
         self.step = IndexIndirectXStep::MemoryAccessHi;
 
         false
       }
       IndexIndirectXStep::MemoryAccessHi => {
         let addr_hi = memory[self.tgt_addr.wrapping_add(1)];
-        self.addr.set_hi(addr_hi);
+        cpu.addr.set_hi(addr_hi);
 
         self.done = true;
         self.done
       }
     }
-  }
-}
-
-impl AddressingTasks for IndexIndirectXAddressingTasks {
-  fn address(&self) -> Option<Word> {
-    self.addr.value()
   }
 }
 
@@ -189,7 +171,6 @@ enum IndirectStep {
 }
 
 pub struct IndirectAddressingTasks {
-  addr: Address,
   fixed_addressing: bool,
   done: bool,
   step: IndirectStep,
@@ -200,7 +181,6 @@ pub struct IndirectAddressingTasks {
 impl IndirectAddressingTasks {
   pub fn new_fixed_addressing() -> Self {
     IndirectAddressingTasks {
-      addr: Address::new(),
       fixed_addressing: true,
       done: false,
       step: IndirectStep::IndirectFetchLo,
@@ -211,7 +191,6 @@ impl IndirectAddressingTasks {
 
   pub fn new_incorrect_addressing() -> Self {
     IndirectAddressingTasks {
-      addr: Address::new(),
       fixed_addressing: false,
       done: false,
       step: IndirectStep::IndirectFetchLo,
@@ -258,7 +237,7 @@ impl Tasks for IndirectAddressingTasks {
       IndirectStep::MemoryAccessLo => {
         let addr = Word::from_le_bytes([self.tgt_addr_lo, self.tgt_addr_hi]);
         let addr_lo = memory[addr];
-        self.addr.set_lo(addr_lo);
+        cpu.addr.set_lo(addr_lo);
 
         if self.fixed_addressing {
           self.step = IndirectStep::FixedMemoryAccessHi;
@@ -271,7 +250,7 @@ impl Tasks for IndirectAddressingTasks {
       IndirectStep::FixedMemoryAccessHi => {
         let addr = Word::from_le_bytes([self.tgt_addr_lo, self.tgt_addr_hi]);
         let addr_hi = memory[addr + 1];
-        self.addr.set_hi(addr_hi);
+        cpu.addr.set_hi(addr_hi);
 
         self.done = true;
         self.done
@@ -284,17 +263,11 @@ impl Tasks for IndirectAddressingTasks {
           target_addr = addr & 0xFF00;
         };
         let addr_hi = memory[target_addr];
-        self.addr.set_hi(addr_hi);
+        cpu.addr.set_hi(addr_hi);
 
         self.done = true;
         self.done
       }
     }
-  }
-}
-
-impl AddressingTasks for IndirectAddressingTasks {
-  fn address(&self) -> Option<Word> {
-    self.addr.value()
   }
 }

@@ -4,6 +4,7 @@ use tasks::Tasks;
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
+use crate::cpu::addressing::address::Address;
 use crate::cpu::instructions::INSTRUCTIONS;
 use crate::{consts::STACK_PAGE_HI, memory::Memory};
 
@@ -31,6 +32,7 @@ enum Registers {
 }
 
 pub struct CPU {
+  addr: Address,
   chip_variant: ChipVariant,
   current_instruction: Option<InstructionExecution>,
   cycle: usize,
@@ -46,6 +48,7 @@ pub struct CPU {
 impl CPU {
   fn new(chip_variant: ChipVariant) -> Self {
     CPU {
+      addr: Address::new(),
       chip_variant,
       current_instruction: None,
       cycle: 0,

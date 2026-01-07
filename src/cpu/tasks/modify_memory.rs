@@ -1,8 +1,4 @@
-use crate::{
-  consts::Byte,
-  cpu::{addressing::AddressingTasks, CPU},
-  memory::Memory,
-};
+use crate::{consts::Byte, cpu::CPU, memory::Memory};
 
 use super::Tasks;
 
@@ -26,14 +22,14 @@ enum ModifyMemoryStep {
 
 pub struct ModifyMemoryTasks {
   variant: ModificationVariant,
-  addr_tasks: Box<dyn AddressingTasks>,
+  addr_tasks: Box<dyn Tasks>,
   step: ModifyMemoryStep,
   previous_value: Byte,
   value: Byte,
 }
 
 impl ModifyMemoryTasks {
-  pub fn new_inc(addr_tasks: Box<dyn AddressingTasks>) -> Self {
+  pub fn new_inc(addr_tasks: Box<dyn Tasks>) -> Self {
     ModifyMemoryTasks {
       variant: ModificationVariant::Inc,
       addr_tasks,
@@ -43,7 +39,7 @@ impl ModifyMemoryTasks {
     }
   }
 
-  pub fn new_dec(addr_tasks: Box<dyn AddressingTasks>) -> Self {
+  pub fn new_dec(addr_tasks: Box<dyn Tasks>) -> Self {
     ModifyMemoryTasks {
       variant: ModificationVariant::Dec,
       addr_tasks,
@@ -53,7 +49,7 @@ impl ModifyMemoryTasks {
     }
   }
 
-  pub fn new_shift_left(addr_tasks: Box<dyn AddressingTasks>) -> Self {
+  pub fn new_shift_left(addr_tasks: Box<dyn Tasks>) -> Self {
     ModifyMemoryTasks {
       variant: ModificationVariant::ShiftLeft,
       addr_tasks,
@@ -63,7 +59,7 @@ impl ModifyMemoryTasks {
     }
   }
 
-  pub fn new_shift_right(addr_tasks: Box<dyn AddressingTasks>) -> Self {
+  pub fn new_shift_right(addr_tasks: Box<dyn Tasks>) -> Self {
     ModifyMemoryTasks {
       variant: ModificationVariant::ShiftRight,
       addr_tasks,
@@ -73,7 +69,7 @@ impl ModifyMemoryTasks {
     }
   }
 
-  pub fn new_rotate_left(addr_tasks: Box<dyn AddressingTasks>) -> Self {
+  pub fn new_rotate_left(addr_tasks: Box<dyn Tasks>) -> Self {
     ModifyMemoryTasks {
       variant: ModificationVariant::RotateLeft,
       addr_tasks,
@@ -83,7 +79,7 @@ impl ModifyMemoryTasks {
     }
   }
 
-  pub fn new_rotate_right(addr_tasks: Box<dyn AddressingTasks>) -> Self {
+  pub fn new_rotate_right(addr_tasks: Box<dyn Tasks>) -> Self {
     ModifyMemoryTasks {
       variant: ModificationVariant::RotateRight,
       addr_tasks,
@@ -110,9 +106,9 @@ impl Tasks for ModifyMemoryTasks {
         false
       }
       ModifyMemoryStep::MemoryAccess => {
-        self.value = memory[self
-          .addr_tasks
-          .address()
+        self.value = memory[cpu
+          .addr
+          .value()
           .expect("unexpected lack of address in MemoryAccess step")];
 
         self.step = ModifyMemoryStep::ValueModification;
@@ -152,9 +148,9 @@ impl Tasks for ModifyMemoryTasks {
         false
       }
       ModifyMemoryStep::MemoryAndStatusWrite => {
-        memory[self
-          .addr_tasks
-          .address()
+        memory[cpu
+          .addr
+          .value()
           .expect("unexpected lack of address in MemoryAndStatusWrite step")] = self.value;
         cpu.set_status_of_value(self.value);
 
