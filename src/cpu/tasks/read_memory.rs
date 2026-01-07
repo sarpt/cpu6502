@@ -1,8 +1,4 @@
-use crate::{
-  consts::Byte,
-  cpu::{addressing::AddressingTasks, CPU},
-  memory::Memory,
-};
+use crate::{consts::Byte, cpu::CPU, memory::Memory};
 
 use super::Tasks;
 
@@ -18,14 +14,14 @@ enum AddressingReadMemoryStep {
 }
 
 pub struct AddressingReadMemoryTasks {
-  addressing_tasks: Box<dyn AddressingTasks>,
+  addressing_tasks: Box<dyn Tasks>,
   access_during_addressing: bool,
   step: AddressingReadMemoryStep,
   value: Option<Byte>,
 }
 
 impl AddressingReadMemoryTasks {
-  pub fn new_with_access_during_addressing(addressing_tasks: Box<dyn AddressingTasks>) -> Self {
+  pub fn new_with_access_during_addressing(addressing_tasks: Box<dyn Tasks>) -> Self {
     AddressingReadMemoryTasks {
       addressing_tasks,
       access_during_addressing: true,
@@ -34,7 +30,7 @@ impl AddressingReadMemoryTasks {
     }
   }
 
-  pub fn new_with_access_in_separate_cycle(addressing_tasks: Box<dyn AddressingTasks>) -> Self {
+  pub fn new_with_access_in_separate_cycle(addressing_tasks: Box<dyn Tasks>) -> Self {
     AddressingReadMemoryTasks {
       addressing_tasks,
       access_during_addressing: false,
@@ -43,11 +39,11 @@ impl AddressingReadMemoryTasks {
     }
   }
 
-  fn access_memory(&mut self, _: &CPU, memory: &dyn Memory) {
+  fn access_memory(&mut self, cpu: &CPU, memory: &dyn Memory) {
     self.value = Some(
-      memory[self
-        .addressing_tasks
-        .address()
+      memory[cpu
+        .addr
+        .value()
         .expect("unexpected lack of address during access")],
     );
   }

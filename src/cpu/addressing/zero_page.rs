@@ -1,22 +1,14 @@
-use crate::{
-  consts::{Byte, Word},
-  cpu::tasks::Tasks,
-  memory::Memory,
-};
+use crate::{consts::Byte, cpu::tasks::Tasks, memory::Memory};
 
-use super::{address::Address, AddressingTasks, OffsetVariant};
+use super::OffsetVariant;
 
 pub struct ZeroPageAddressingTasks {
   done: bool,
-  addr: Address,
 }
 
 impl ZeroPageAddressingTasks {
   pub fn new() -> Self {
-    ZeroPageAddressingTasks {
-      done: false,
-      addr: Address::new(),
-    }
+    ZeroPageAddressingTasks { done: false }
   }
 }
 
@@ -31,17 +23,11 @@ impl Tasks for ZeroPageAddressingTasks {
     }
 
     let addr: Byte = memory[cpu.program_counter];
-    self.addr.set(addr);
+    cpu.addr.set(addr);
     cpu.increment_program_counter();
     self.done = true;
 
     self.done
-  }
-}
-
-impl AddressingTasks for ZeroPageAddressingTasks {
-  fn address(&self) -> Option<Word> {
-    self.addr.value()
   }
 }
 
@@ -51,7 +37,6 @@ enum ZeroPageOffsetStep {
 }
 
 pub struct ZeroPageOffsetAddressingTasks {
-  addr: Address,
   done: bool,
   step: ZeroPageOffsetStep,
   variant: OffsetVariant,
@@ -60,7 +45,6 @@ pub struct ZeroPageOffsetAddressingTasks {
 impl ZeroPageOffsetAddressingTasks {
   pub fn new_offset_by_x() -> Self {
     ZeroPageOffsetAddressingTasks {
-      addr: Address::new(),
       done: false,
       step: ZeroPageOffsetStep::ZeroPageAccess,
       variant: OffsetVariant::X,
@@ -69,7 +53,6 @@ impl ZeroPageOffsetAddressingTasks {
 
   pub fn new_offset_by_y() -> Self {
     ZeroPageOffsetAddressingTasks {
-      addr: Address::new(),
       done: false,
       step: ZeroPageOffsetStep::ZeroPageAccess,
       variant: OffsetVariant::Y,
@@ -90,7 +73,7 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
     match self.step {
       ZeroPageOffsetStep::ZeroPageAccess => {
         let addr: Byte = memory[cpu.program_counter];
-        self.addr.set(addr);
+        cpu.addr.set(addr);
         cpu.increment_program_counter();
         self.step = ZeroPageOffsetStep::Offset;
 
@@ -101,22 +84,16 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
           OffsetVariant::X => cpu.index_register_x,
           OffsetVariant::Y => cpu.index_register_y,
         };
-        let addr_output = self
+        let addr_output = cpu
           .addr
           .value()
           .expect("unexpected lack of address at Offset step") as Byte;
         let final_address = addr_output.wrapping_add(offset);
-        self.addr.set(final_address);
+        cpu.addr.set(final_address);
 
         self.done = true;
         self.done
       }
     }
-  }
-}
-
-impl AddressingTasks for ZeroPageOffsetAddressingTasks {
-  fn address(&self) -> Option<crate::consts::Word> {
-    self.addr.value()
   }
 }

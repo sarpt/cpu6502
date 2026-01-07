@@ -1,5 +1,5 @@
 mod absolute;
-mod address;
+pub mod address;
 mod indirect;
 mod zero_page;
 
@@ -8,8 +8,6 @@ use indirect::{
   IndexIndirectXAddressingTasks, IndirectAddressingTasks, IndirectIndexYAddressingTasks,
 };
 use zero_page::{ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks};
-
-use crate::consts::Word;
 
 use super::{tasks::Tasks, ChipVariant, CPU};
 
@@ -31,11 +29,7 @@ enum OffsetVariant {
   Y,
 }
 
-pub trait AddressingTasks: Tasks {
-  fn address(&self) -> Option<Word>;
-}
-
-pub fn get_addressing_tasks(cpu: &CPU, addr_mode: AddressingMode) -> Box<dyn AddressingTasks> {
+pub fn get_addressing_tasks(cpu: &CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
   match addr_mode {
     AddressingMode::ZeroPage => Box::new(ZeroPageAddressingTasks::new()),
     AddressingMode::ZeroPageX => Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x()),
@@ -74,7 +68,7 @@ mod get_addressing_tasks {
       let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Absolute);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(tasks.address(), Some(0xCBFF));
+      assert_eq!(cpu.addr.value(), Some(0xCBFF));
     }
 
     #[test]
@@ -122,7 +116,7 @@ mod get_addressing_tasks {
       let mut tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteX);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(tasks.address(), Some(0x52CC));
+      assert_eq!(cpu.addr.value(), Some(0x52CC));
     }
 
     #[test]
@@ -188,7 +182,7 @@ mod get_addressing_tasks {
       let mut tasks = get_addressing_tasks(&cpu, AddressingMode::AbsoluteY);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(tasks.address(), Some(0x52CC));
+      assert_eq!(cpu.addr.value(), Some(0x52CC));
     }
 
     #[test]
@@ -254,7 +248,7 @@ mod get_addressing_tasks {
       let mut tasks = get_addressing_tasks(&cpu, AddressingMode::IndexIndirectX);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(tasks.address(), Some(0xDD03));
+      assert_eq!(cpu.addr.value(), Some(0xDD03));
     }
 
     #[test]
@@ -303,7 +297,7 @@ mod get_addressing_tasks {
       let mut tasks = get_addressing_tasks(&cpu, AddressingMode::IndirectIndexY);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(tasks.address(), Some(0xDD05));
+      assert_eq!(cpu.addr.value(), Some(0xDD05));
     }
 
     #[test]
@@ -367,7 +361,7 @@ mod get_addressing_tasks {
       let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPage);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(tasks.address(), Some(0x00CB));
+      assert_eq!(cpu.addr.value(), Some(0x00CB));
     }
 
     #[test]
@@ -415,7 +409,7 @@ mod get_addressing_tasks {
       let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageX);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(tasks.address(), Some(0x00CE));
+      assert_eq!(cpu.addr.value(), Some(0x00CE));
     }
 
     #[test]
@@ -465,7 +459,7 @@ mod get_addressing_tasks {
       let mut tasks = get_addressing_tasks(&cpu, AddressingMode::ZeroPageY);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(tasks.address(), Some(0x0055));
+      assert_eq!(cpu.addr.value(), Some(0x0055));
     }
 
     #[test]
@@ -516,7 +510,7 @@ mod get_addressing_tasks {
         let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
         run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-        assert_eq!(tasks.address(), Some(0x0001));
+        assert_eq!(cpu.addr.value(), Some(0x0001));
       }
 
       #[test]
@@ -580,7 +574,7 @@ mod get_addressing_tasks {
         let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
         run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-        assert_eq!(tasks.address(), Some(0x09A5));
+        assert_eq!(cpu.addr.value(), Some(0x09A5));
       }
     }
 
@@ -630,7 +624,7 @@ mod get_addressing_tasks {
         let mut tasks = get_addressing_tasks(&cpu, AddressingMode::Indirect);
         run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-        assert_eq!(tasks.address(), Some(0xCCA5));
+        assert_eq!(cpu.addr.value(), Some(0xCCA5));
       }
     }
   }

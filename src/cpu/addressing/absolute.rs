@@ -1,6 +1,6 @@
 use crate::{consts::Word, cpu::tasks::Tasks, memory::Memory};
 
-use super::{address::Address, AddressingTasks, OffsetVariant};
+use super::OffsetVariant;
 
 enum AbsoluteOffsetStep {
   MemoryAccessLo,
@@ -10,7 +10,6 @@ enum AbsoluteOffsetStep {
 }
 
 pub struct AbsoluteOffsetAddressingTasks {
-  addr: Address,
   done: bool,
   step: AbsoluteOffsetStep,
   variant: OffsetVariant,
@@ -19,7 +18,6 @@ pub struct AbsoluteOffsetAddressingTasks {
 impl AbsoluteOffsetAddressingTasks {
   pub fn new_offset_by_x() -> Self {
     AbsoluteOffsetAddressingTasks {
-      addr: Address::new(),
       done: false,
       step: AbsoluteOffsetStep::MemoryAccessLo,
       variant: OffsetVariant::X,
@@ -28,7 +26,6 @@ impl AbsoluteOffsetAddressingTasks {
 
   pub fn new_offset_by_y() -> Self {
     AbsoluteOffsetAddressingTasks {
-      addr: Address::new(),
       done: false,
       step: AbsoluteOffsetStep::MemoryAccessLo,
       variant: OffsetVariant::Y,
@@ -49,7 +46,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
     match self.step {
       AbsoluteOffsetStep::MemoryAccessLo => {
         let addr_lo = memory[cpu.program_counter];
-        self.addr.set_lo(addr_lo);
+        cpu.addr.set_lo(addr_lo);
         cpu.increment_program_counter();
         self.step = AbsoluteOffsetStep::MemoryAccessHi;
 
@@ -57,7 +54,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
       }
       AbsoluteOffsetStep::MemoryAccessHi => {
         let addr_hi = memory[cpu.program_counter];
-        self.addr.set_hi(addr_hi);
+        cpu.addr.set_hi(addr_hi);
         cpu.increment_program_counter();
         self.step = AbsoluteOffsetStep::OffsetLo;
 
@@ -68,13 +65,13 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
           OffsetVariant::X => cpu.index_register_x,
           OffsetVariant::Y => cpu.index_register_y,
         };
-        let [lo, hi] = self
+        let [lo, hi] = cpu
           .addr
           .value()
           .expect("unexpected lack of address in OffsetLo step")
           .to_le_bytes();
         let (new_lo, carry) = lo.overflowing_add(offset);
-        self.addr.set(Word::from_le_bytes([new_lo, hi]));
+        cpu.addr.set(Word::from_le_bytes([new_lo, hi]));
         self.step = AbsoluteOffsetStep::OffsetHi;
 
         if !carry {
@@ -83,24 +80,18 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
         self.done
       }
       AbsoluteOffsetStep::OffsetHi => {
-        let [lo, hi] = self
+        let [lo, hi] = cpu
           .addr
           .value()
           .expect("unexpected lack of address in OffsetHi step")
           .to_le_bytes();
         let new_hi = hi.wrapping_add(1);
-        self.addr.set(Word::from_le_bytes([lo, new_hi]));
+        cpu.addr.set(Word::from_le_bytes([lo, new_hi]));
 
         self.done = true;
         self.done
       }
     }
-  }
-}
-
-impl AddressingTasks for AbsoluteOffsetAddressingTasks {
-  fn address(&self) -> Option<Word> {
-    self.addr.value()
   }
 }
 
@@ -110,7 +101,6 @@ enum AbsoluteStep {
 }
 
 pub struct AbsoluteAddressingTasks {
-  addr: Address,
   done: bool,
   step: AbsoluteStep,
 }
@@ -118,7 +108,6 @@ pub struct AbsoluteAddressingTasks {
 impl AbsoluteAddressingTasks {
   pub fn new() -> Self {
     AbsoluteAddressingTasks {
-      addr: Address::new(),
       done: false,
       step: AbsoluteStep::MemoryLo,
     }
@@ -138,7 +127,7 @@ impl Tasks for AbsoluteAddressingTasks {
     match self.step {
       AbsoluteStep::MemoryLo => {
         let addr_lo = memory[cpu.program_counter];
-        self.addr.set_lo(addr_lo);
+        cpu.addr.set_lo(addr_lo);
         cpu.increment_program_counter();
         self.step = AbsoluteStep::MemoryHi;
 
@@ -146,18 +135,12 @@ impl Tasks for AbsoluteAddressingTasks {
       }
       AbsoluteStep::MemoryHi => {
         let addr_hi = memory[cpu.program_counter];
-        self.addr.set_hi(addr_hi);
+        cpu.addr.set_hi(addr_hi);
         cpu.increment_program_counter();
 
         self.done = true;
         self.done
       }
     }
-  }
-}
-
-impl AddressingTasks for AbsoluteAddressingTasks {
-  fn address(&self) -> Option<Word> {
-    self.addr.value()
   }
 }
