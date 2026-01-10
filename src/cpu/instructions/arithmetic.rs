@@ -4,11 +4,7 @@ use crate::{
   memory::Memory,
 };
 
-fn compare(
-  cpu: &mut CPU,
-  addr_mode: Option<AddressingMode>,
-  register: Registers,
-) -> Box<dyn Tasks> {
+fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Box<dyn Tasks> {
   let read_memory_tasks = cpu.read_memory(addr_mode);
   Box::new(CompareTasks::new(read_memory_tasks, register))
 }
@@ -55,67 +51,59 @@ impl Tasks for CompareTasks {
 }
 
 pub fn cmp_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, None, Registers::Accumulator)
+  compare(cpu, AddressingMode::Immediate, Registers::Accumulator)
 }
 
 pub fn cmp_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, Some(AddressingMode::ZeroPage), Registers::Accumulator)
+  compare(cpu, AddressingMode::ZeroPage, Registers::Accumulator)
 }
 
 pub fn cmp_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, Some(AddressingMode::ZeroPageX), Registers::Accumulator)
+  compare(cpu, AddressingMode::ZeroPageX, Registers::Accumulator)
 }
 
 pub fn cmp_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, Some(AddressingMode::Absolute), Registers::Accumulator)
+  compare(cpu, AddressingMode::Absolute, Registers::Accumulator)
 }
 
 pub fn cmp_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, Some(AddressingMode::AbsoluteX), Registers::Accumulator)
+  compare(cpu, AddressingMode::AbsoluteX, Registers::Accumulator)
 }
 
 pub fn cmp_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, Some(AddressingMode::AbsoluteY), Registers::Accumulator)
+  compare(cpu, AddressingMode::AbsoluteY, Registers::Accumulator)
 }
 
 pub fn cmp_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(
-    cpu,
-    Some(AddressingMode::IndexIndirectX),
-    Registers::Accumulator,
-  )
+  compare(cpu, AddressingMode::IndexIndirectX, Registers::Accumulator)
 }
 
 pub fn cmp_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(
-    cpu,
-    Some(AddressingMode::IndirectIndexY),
-    Registers::Accumulator,
-  )
+  compare(cpu, AddressingMode::IndirectIndexY, Registers::Accumulator)
 }
 
 pub fn cpx_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, None, Registers::IndexX)
+  compare(cpu, AddressingMode::Immediate, Registers::IndexX)
 }
 
 pub fn cpx_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, Some(AddressingMode::ZeroPage), Registers::IndexX)
+  compare(cpu, AddressingMode::ZeroPage, Registers::IndexX)
 }
 
 pub fn cpx_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, Some(AddressingMode::Absolute), Registers::IndexX)
+  compare(cpu, AddressingMode::Absolute, Registers::IndexX)
 }
 
 pub fn cpy_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, None, Registers::IndexY)
+  compare(cpu, AddressingMode::Immediate, Registers::IndexY)
 }
 
 pub fn cpy_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, Some(AddressingMode::ZeroPage), Registers::IndexY)
+  compare(cpu, AddressingMode::ZeroPage, Registers::IndexY)
 }
 
 pub fn cpy_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, Some(AddressingMode::Absolute), Registers::IndexY)
+  compare(cpu, AddressingMode::Absolute, Registers::IndexY)
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -221,7 +209,7 @@ impl Tasks for OperationsWithCarryTasks {
 
 pub fn operations_with_carry(
   cpu: &mut CPU,
-  addr_mode: Option<AddressingMode>,
+  addr_mode: AddressingMode,
   op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
 ) -> Box<dyn Tasks> {
   let read_memory_tasks = cpu.read_memory(addr_mode);
@@ -229,67 +217,67 @@ pub fn operations_with_carry(
 }
 
 pub fn adc_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, None, adc)
+  operations_with_carry(cpu, AddressingMode::Immediate, adc)
 }
 
 pub fn adc_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::ZeroPage), adc)
+  operations_with_carry(cpu, AddressingMode::ZeroPage, adc)
 }
 
 pub fn adc_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::ZeroPageX), adc)
+  operations_with_carry(cpu, AddressingMode::ZeroPageX, adc)
 }
 
 pub fn adc_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::Absolute), adc)
+  operations_with_carry(cpu, AddressingMode::Absolute, adc)
 }
 
 pub fn adc_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::AbsoluteX), adc)
+  operations_with_carry(cpu, AddressingMode::AbsoluteX, adc)
 }
 
 pub fn adc_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::AbsoluteY), adc)
+  operations_with_carry(cpu, AddressingMode::AbsoluteY, adc)
 }
 
 pub fn adc_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::IndexIndirectX), adc)
+  operations_with_carry(cpu, AddressingMode::IndexIndirectX, adc)
 }
 
 pub fn adc_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::IndirectIndexY), adc)
+  operations_with_carry(cpu, AddressingMode::IndirectIndexY, adc)
 }
 
 pub fn sbc_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, None, sbc)
+  operations_with_carry(cpu, AddressingMode::Immediate, sbc)
 }
 
 pub fn sbc_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::ZeroPage), sbc)
+  operations_with_carry(cpu, AddressingMode::ZeroPage, sbc)
 }
 
 pub fn sbc_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::ZeroPageX), sbc)
+  operations_with_carry(cpu, AddressingMode::ZeroPageX, sbc)
 }
 
 pub fn sbc_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::Absolute), sbc)
+  operations_with_carry(cpu, AddressingMode::Absolute, sbc)
 }
 
 pub fn sbc_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::AbsoluteX), sbc)
+  operations_with_carry(cpu, AddressingMode::AbsoluteX, sbc)
 }
 
 pub fn sbc_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::AbsoluteY), sbc)
+  operations_with_carry(cpu, AddressingMode::AbsoluteY, sbc)
 }
 
 pub fn sbc_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::IndexIndirectX), sbc)
+  operations_with_carry(cpu, AddressingMode::IndexIndirectX, sbc)
 }
 
 pub fn sbc_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
-  operations_with_carry(cpu, Some(AddressingMode::IndirectIndexY), sbc)
+  operations_with_carry(cpu, AddressingMode::IndirectIndexY, sbc)
 }
 
 #[cfg(test)]

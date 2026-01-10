@@ -4,13 +4,14 @@ use ringbuffer::{AllocRingBuffer, RingBuffer};
 
 use crate::{
   consts::{Byte, Word, DEFAULT_INSTRUCTION_HISTORY_CAPACITY},
-  cpu::CPU,
+  cpu::{addressing::address::Address, CPU},
 };
 
 pub struct DebugInstructionInfo {
   pub addr: Word,
   pub opcode: Byte,
   pub starting_cycle: usize,
+  pub target_addr: Address,
 }
 
 pub struct Debugger {
@@ -34,6 +35,7 @@ impl Debugger {
         addr: instruction.addr,
         opcode: instruction.opcode,
         starting_cycle: instruction.starting_cycle,
+        target_addr: cpu.addr,
       }),
       None => todo!(),
     }
@@ -54,8 +56,8 @@ impl Display for DebugInstructionInfo {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(
       f,
-      "{}@{:#04X}: {:#04X}",
-      self.starting_cycle, self.addr, self.opcode
+      "{}@{:#04X}: {:#04X} [{}]",
+      self.starting_cycle, self.addr, self.opcode, self.target_addr
     )
   }
 }
@@ -66,6 +68,7 @@ mod tests {
   #[cfg(test)]
   mod get_last_instruction {
     use crate::cpu::{
+      addressing::{address::Address, AddressingMode},
       debugger::Debugger,
       instructions::{LDA_IM, NOP},
       tests::MemoryMock,
@@ -77,6 +80,7 @@ mod tests {
       let mut memory = MemoryMock::new(&[NOP, LDA_IM, 0xFF]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
+      cpu.addr = Address::new();
 
       let mut uut = Debugger::new();
 
@@ -87,18 +91,20 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       let mut instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "1@0x00: 0xEA");
+      assert_eq!(instruction_info, "1@0x00: 0xEA [None->0x00]");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu);
       cpu.tick(&mut memory);
+      cpu.addr.reset(AddressingMode::Immediate);
+      cpu.addr.set(0x02u8);
       uut.probe(&cpu);
 
       last_instruction = uut
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "3@0x01: 0xA9");
+      assert_eq!(instruction_info, "3@0x01: 0xA9 [IM->0x02]");
     }
 
     #[test]

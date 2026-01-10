@@ -1,6 +1,11 @@
-use crate::{consts::{Byte, Word}, cpu::addressing::AddressingMode};
+use std::fmt::Display;
 
-#[derive(Default)]
+use crate::{
+  consts::{Byte, Word},
+  cpu::addressing::AddressingMode,
+};
+
+#[derive(Default, Clone, Copy)]
 pub struct Address {
   val: Option<Word>,
   mode: Option<AddressingMode>,
@@ -8,7 +13,10 @@ pub struct Address {
 
 impl Address {
   pub fn new() -> Self {
-    Address { val: None, mode: None }
+    Address {
+      val: None,
+      mode: None,
+    }
   }
 
   pub fn value(&self) -> Option<Word> {
@@ -40,5 +48,18 @@ impl Address {
   pub fn reset(&mut self, mode: AddressingMode) {
     self.val = Some(0u16);
     self.mode = Some(mode);
+  }
+}
+
+impl Display for Address {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(
+      f,
+      "{}->{:#04X}",
+      self
+        .mode
+        .map_or(String::from("None"), |mode| mode.to_string()),
+      self.val.unwrap_or(0)
+    )
   }
 }
