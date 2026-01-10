@@ -74,8 +74,8 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
     match self.step {
       ZeroPageOffsetStep::ZeroPageAccess => {
         match self.variant {
-            OffsetVariant::X => cpu.addr.reset(super::AddressingMode::ZeroPageX),
-            OffsetVariant::Y => cpu.addr.reset(super::AddressingMode::ZeroPageY),
+          OffsetVariant::X => cpu.addr.reset(super::AddressingMode::ZeroPageX),
+          OffsetVariant::Y => cpu.addr.reset(super::AddressingMode::ZeroPageY),
         }
 
         let addr: Byte = memory[cpu.program_counter];

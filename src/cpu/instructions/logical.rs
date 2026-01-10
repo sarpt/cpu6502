@@ -95,128 +95,128 @@ impl Tasks for LogicalTasks {
   }
 }
 
-pub fn and(cpu: &mut CPU, addr_mode: Option<AddressingMode>) -> Box<dyn Tasks> {
+pub fn and(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
   let read_memory_tasks = cpu.read_memory(addr_mode);
   Box::new(LogicalTasks::new_and(read_memory_tasks))
 }
 
 pub fn and_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  and(cpu, None)
+  and(cpu, AddressingMode::Immediate)
 }
 
 pub fn and_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  and(cpu, Some(AddressingMode::ZeroPage))
+  and(cpu, AddressingMode::ZeroPage)
 }
 
 pub fn and_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  and(cpu, Some(AddressingMode::ZeroPageX))
+  and(cpu, AddressingMode::ZeroPageX)
 }
 
 pub fn and_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  and(cpu, Some(AddressingMode::Absolute))
+  and(cpu, AddressingMode::Absolute)
 }
 
 pub fn and_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-  and(cpu, Some(AddressingMode::AbsoluteX))
+  and(cpu, AddressingMode::AbsoluteX)
 }
 
 pub fn and_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-  and(cpu, Some(AddressingMode::AbsoluteY))
+  and(cpu, AddressingMode::AbsoluteY)
 }
 
 pub fn and_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  and(cpu, Some(AddressingMode::IndexIndirectX))
+  and(cpu, AddressingMode::IndexIndirectX)
 }
 
 pub fn and_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
-  and(cpu, Some(AddressingMode::IndirectIndexY))
+  and(cpu, AddressingMode::IndirectIndexY)
 }
 
-pub fn eor(cpu: &mut CPU, addr_mode: Option<AddressingMode>) -> Box<dyn Tasks> {
+pub fn eor(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
   let read_memory_tasks = cpu.read_memory(addr_mode);
   Box::new(LogicalTasks::new_eor(read_memory_tasks))
 }
 
 pub fn eor_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  eor(cpu, None)
+  eor(cpu, AddressingMode::Immediate)
 }
 
 pub fn eor_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  eor(cpu, Some(AddressingMode::ZeroPage))
+  eor(cpu, AddressingMode::ZeroPage)
 }
 
 pub fn eor_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  eor(cpu, Some(AddressingMode::ZeroPageX))
+  eor(cpu, AddressingMode::ZeroPageX)
 }
 
 pub fn eor_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  eor(cpu, Some(AddressingMode::Absolute))
+  eor(cpu, AddressingMode::Absolute)
 }
 
 pub fn eor_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-  eor(cpu, Some(AddressingMode::AbsoluteX))
+  eor(cpu, AddressingMode::AbsoluteX)
 }
 
 pub fn eor_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-  eor(cpu, Some(AddressingMode::AbsoluteY))
+  eor(cpu, AddressingMode::AbsoluteY)
 }
 
 pub fn eor_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  eor(cpu, Some(AddressingMode::IndexIndirectX))
+  eor(cpu, AddressingMode::IndexIndirectX)
 }
 
 pub fn eor_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
-  eor(cpu, Some(AddressingMode::IndirectIndexY))
+  eor(cpu, AddressingMode::IndirectIndexY)
 }
 
-pub fn ora(cpu: &mut CPU, addr_mode: Option<AddressingMode>) -> Box<dyn Tasks> {
+pub fn ora(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
   let read_memory_tasks = cpu.read_memory(addr_mode);
   Box::new(LogicalTasks::new_ora(read_memory_tasks))
 }
 
 pub fn ora_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  ora(cpu, None)
+  ora(cpu, AddressingMode::Immediate)
 }
 
 pub fn ora_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  ora(cpu, Some(AddressingMode::ZeroPage))
+  ora(cpu, AddressingMode::ZeroPage)
 }
 
 pub fn ora_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  ora(cpu, Some(AddressingMode::ZeroPageX))
+  ora(cpu, AddressingMode::ZeroPageX)
 }
 
 pub fn ora_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  ora(cpu, Some(AddressingMode::Absolute))
+  ora(cpu, AddressingMode::Absolute)
 }
 
 pub fn ora_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-  ora(cpu, Some(AddressingMode::AbsoluteX))
+  ora(cpu, AddressingMode::AbsoluteX)
 }
 
 pub fn ora_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-  ora(cpu, Some(AddressingMode::AbsoluteY))
+  ora(cpu, AddressingMode::AbsoluteY)
 }
 
 pub fn ora_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  ora(cpu, Some(AddressingMode::IndexIndirectX))
+  ora(cpu, AddressingMode::IndexIndirectX)
 }
 
 pub fn ora_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
-  ora(cpu, Some(AddressingMode::IndirectIndexY))
+  ora(cpu, AddressingMode::IndirectIndexY)
 }
 
-pub fn bit(cpu: &mut CPU, addr_mode: Option<AddressingMode>) -> Box<dyn Tasks> {
+pub fn bit(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
   let read_memory_tasks = cpu.read_memory(addr_mode);
   Box::new(LogicalTasks::new_bit(read_memory_tasks))
 }
 
 pub fn bit_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  bit(cpu, Some(AddressingMode::ZeroPage))
+  bit(cpu, AddressingMode::ZeroPage)
 }
 
 pub fn bit_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  bit(cpu, Some(AddressingMode::Absolute))
+  bit(cpu, AddressingMode::Absolute)
 }
 
 #[cfg(test)]

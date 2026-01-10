@@ -1,5 +1,5 @@
 use addressing::{get_addressing_tasks, AddressingMode};
-use tasks::read_memory::{AddressingReadMemoryTasks, ImmediateReadMemoryTasks, ReadMemoryTasks};
+use tasks::read_memory::{AddressingReadMemoryTasks, ReadMemoryTasks};
 use tasks::Tasks;
 
 use super::consts::{Byte, Word};
@@ -220,17 +220,12 @@ impl CPU {
     memory[stack_addr]
   }
 
-  fn read_memory(&self, addr_mode: Option<AddressingMode>) -> Box<dyn ReadMemoryTasks> {
-    match addr_mode {
-      Some(mode) => {
-        let addressing_tasks = get_addressing_tasks(self, mode);
-        if access_cycle_has_been_done_during_addressing(mode) {
-          Box::new(AddressingReadMemoryTasks::new_with_access_during_addressing(addressing_tasks))
-        } else {
-          Box::new(AddressingReadMemoryTasks::new_with_access_in_separate_cycle(addressing_tasks))
-        }
-      }
-      None => Box::new(ImmediateReadMemoryTasks::new()),
+  fn read_memory(&self, addr_mode: AddressingMode) -> Box<dyn ReadMemoryTasks> {
+    let addressing_tasks = get_addressing_tasks(self, addr_mode);
+    if access_cycle_has_been_done_during_addressing(addr_mode) {
+      Box::new(AddressingReadMemoryTasks::new_with_access_during_addressing(addressing_tasks))
+    } else {
+      Box::new(AddressingReadMemoryTasks::new_with_access_in_separate_cycle(addressing_tasks))
     }
   }
 
@@ -276,10 +271,12 @@ impl CPU {
   }
 }
 
+#[inline]
 fn access_cycle_has_been_done_during_addressing(addr_mode: AddressingMode) -> bool {
   addr_mode == AddressingMode::AbsoluteX
     || addr_mode == AddressingMode::AbsoluteY
     || addr_mode == AddressingMode::IndirectIndexY
+    || addr_mode == AddressingMode::Immediate
 }
 
 pub struct InstructionExecution {

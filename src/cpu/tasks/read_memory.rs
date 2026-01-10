@@ -1,4 +1,8 @@
-use crate::{consts::Byte, cpu::CPU, memory::Memory};
+use crate::{
+  consts::Byte,
+  cpu::{addressing::AddressingMode, CPU},
+  memory::Memory,
+};
 
 use super::Tasks;
 
@@ -117,6 +121,8 @@ impl Tasks for ImmediateReadMemoryTasks {
       panic!("tick shouldn't be called when tasks are done")
     }
 
+    cpu.addr.reset(AddressingMode::Immediate);
+    cpu.addr.set(cpu.program_counter);
     self.value = Some(memory[cpu.program_counter]);
     cpu.increment_program_counter();
     self.done = true;

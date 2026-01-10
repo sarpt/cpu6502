@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 phf = { version = "0.13.1", features = ["macros"] }
 ringbuffer = "0.15.0"
+strum = { version = "0.27.2", features = ["derive"] }
 
 [[test]]
 name = "to_lower_test"
