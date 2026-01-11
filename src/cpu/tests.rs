@@ -128,7 +128,7 @@ mod fetch_instruction {
 
 #[cfg(test)]
 mod get_register {
-  use crate::cpu::{Registers, CPU};
+  use crate::cpu::{CPU, Registers};
 
   #[test]
   fn should_return_accumulator() {
@@ -163,7 +163,7 @@ mod get_register {
 
 #[cfg(test)]
 mod set_register {
-  use crate::cpu::{Registers, CPU};
+  use crate::cpu::{CPU, Registers};
 
   #[test]
   fn should_set_accumulator() {
@@ -329,7 +329,7 @@ mod pop_byte_from_stack {
 
 #[cfg(test)]
 mod set_status_of_register {
-  use crate::cpu::{Registers, CPU};
+  use crate::cpu::{CPU, Registers};
 
   #[test]
   fn should_set_zero_flag_on_processor_status_when_register_is_zero() {
@@ -382,7 +382,7 @@ mod set_status_of_register {
 
 #[cfg(test)]
 mod set_cmp_status {
-  use crate::cpu::{Registers, CPU};
+  use crate::cpu::{CPU, Registers};
 
   #[test]
   fn should_set_zero_flag_on_processor_status_when_register_is_the_same_as_provided_value() {
@@ -450,8 +450,8 @@ mod set_cmp_status {
   }
 
   #[test]
-  fn should_set_negative_flag_on_processor_status_when_difference_with_provided_value_has_most_significant_byte_set(
-  ) {
+  fn should_set_negative_flag_on_processor_status_when_difference_with_provided_value_has_most_significant_byte_set()
+   {
     let mut uut = CPU::new_nmos();
     uut.processor_status.set(0b00000000);
     uut.accumulator = 0xd3;
@@ -464,8 +464,8 @@ mod set_cmp_status {
   }
 
   #[test]
-  fn should_clear_negative_flag_on_processor_status_when_difference_with_provided_value_has_most_significant_byte_clear(
-  ) {
+  fn should_clear_negative_flag_on_processor_status_when_difference_with_provided_value_has_most_significant_byte_clear()
+   {
     let mut uut = CPU::new_nmos();
     uut.processor_status.set(0b00000010);
     uut.accumulator = 0xd5;

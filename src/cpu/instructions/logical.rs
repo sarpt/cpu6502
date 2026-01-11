@@ -1,5 +1,5 @@
 use crate::{
-  cpu::{tasks::read_memory::ReadMemoryTasks, AddressingMode, Registers, Tasks, CPU},
+  cpu::{AddressingMode, CPU, Registers, Tasks, tasks::read_memory::ReadMemoryTasks},
   memory::Memory,
 };
 
@@ -225,9 +225,9 @@ mod ora {
   mod ora_im {
 
     use crate::cpu::{
-      instructions::ora_im,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::ora_im,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -275,9 +275,9 @@ mod ora {
   mod ora_zp {
 
     use crate::cpu::{
-      instructions::ora_zp,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::ora_zp,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZERO_PAGE_ADDR: Byte = 0x03;
@@ -328,9 +328,9 @@ mod ora {
   mod ora_zpx {
 
     use crate::cpu::{
-      instructions::ora_zpx,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::ora_zpx,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -384,9 +384,9 @@ mod ora {
   mod ora_a {
 
     use crate::cpu::{
-      instructions::ora_a,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::ora_a,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ADDR_LO: Byte = 0x04;
@@ -438,9 +438,9 @@ mod ora {
   mod ora_ax {
 
     use crate::cpu::{
-      instructions::ora_ax,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::ora_ax,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ADDR_LO: Byte = 0x02;
@@ -450,8 +450,8 @@ mod ora {
     const ADDR_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
 
     #[test]
-    fn should_or_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_x(
-    ) {
+    fn should_or_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0x16;
@@ -520,9 +520,9 @@ mod ora {
   mod ora_ay {
 
     use crate::cpu::{
-      instructions::ora_ay,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::ora_ay,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ADDR_LO: Byte = 0x02;
@@ -532,8 +532,8 @@ mod ora {
     const ADDR_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
 
     #[test]
-    fn should_or_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_y(
-    ) {
+    fn should_or_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0x16;
@@ -602,9 +602,9 @@ mod ora {
   mod ora_inx {
 
     use crate::cpu::{
-      instructions::ora_inx,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::ora_inx,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZP_ADDRESS: Byte = 0x02;
@@ -614,8 +614,8 @@ mod ora {
     const VALUE: Byte = 0x22;
 
     #[test]
-    fn should_or_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x(
-    ) {
+    fn should_or_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[
         ZP_ADDRESS,
         0x00,
@@ -685,9 +685,9 @@ mod ora {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::ora_iny,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::ora_iny,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -698,8 +698,8 @@ mod ora {
     const VALUE: Byte = 0x22;
 
     #[test]
-    fn should_or_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
-    ) {
+    fn should_or_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[
         INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
         ADDRESS_LO,
@@ -794,9 +794,9 @@ mod bit {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::bit_zp,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::bit_zp,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -816,8 +816,8 @@ mod bit {
     }
 
     #[test]
-    fn should_set_carry_flag_when_logic_and_on_accumulator_and_value_from_zero_page_is_has_seventh_bit_set(
-    ) {
+    fn should_set_carry_flag_when_logic_and_on_accumulator_and_value_from_zero_page_is_has_seventh_bit_set()
+     {
       let mut memory = MemoryMock::new(&[ZERO_PAGE_ADDR_LO, 0b01000000]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -830,8 +830,8 @@ mod bit {
     }
 
     #[test]
-    fn should_set_negative_flag_when_logic_and_on_accumulator_and_value_from_zero_page_is_has_eight_bit_set(
-    ) {
+    fn should_set_negative_flag_when_logic_and_on_accumulator_and_value_from_zero_page_is_has_eight_bit_set()
+     {
       let mut memory = MemoryMock::new(&[ZERO_PAGE_ADDR_LO, 0b10000000]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -863,9 +863,9 @@ mod bit {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::bit_a,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::bit_a,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -887,8 +887,8 @@ mod bit {
     }
 
     #[test]
-    fn should_set_carry_flag_when_logic_and_on_accumulator_and_value_from_absolute_address_is_has_seventh_bit_set(
-    ) {
+    fn should_set_carry_flag_when_logic_and_on_accumulator_and_value_from_absolute_address_is_has_seventh_bit_set()
+     {
       let mut memory = MemoryMock::new(&[ABSOLUTE_ADDR_LO, ABSOLUTE_ADDR_HI, 0x00, 0b01000000]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -901,8 +901,8 @@ mod bit {
     }
 
     #[test]
-    fn should_set_negative_flag_when_logic_and_on_accumulator_and_value_from_absolute_address_is_has_eight_bit_set(
-    ) {
+    fn should_set_negative_flag_when_logic_and_on_accumulator_and_value_from_absolute_address_is_has_eight_bit_set()
+     {
       let mut memory = MemoryMock::new(&[ABSOLUTE_ADDR_LO, ABSOLUTE_ADDR_HI, 0x00, 0b10000000]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -937,9 +937,9 @@ mod and {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::and_im,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::and_im,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -990,9 +990,9 @@ mod and {
   mod and_zp {
 
     use crate::cpu::{
-      instructions::and_zp,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::and_zp,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZERO_PAGE_ADDR: Byte = 0x03;
@@ -1043,9 +1043,9 @@ mod and {
   mod and_zpx {
 
     use crate::cpu::{
-      instructions::and_zpx,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::and_zpx,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -1099,9 +1099,9 @@ mod and {
   mod and_a {
 
     use crate::cpu::{
-      instructions::and_a,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::and_a,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ADDR_LO: Byte = 0x04;
@@ -1153,9 +1153,9 @@ mod and {
   mod and_ax {
 
     use crate::cpu::{
-      instructions::and_ax,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::and_ax,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ADDR_LO: Byte = 0x02;
@@ -1165,8 +1165,8 @@ mod and {
     const ADDR_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
 
     #[test]
-    fn should_and_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_x(
-    ) {
+    fn should_and_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0x07;
@@ -1235,9 +1235,9 @@ mod and {
   mod and_ay {
 
     use crate::cpu::{
-      instructions::and_ay,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::and_ay,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ADDR_LO: Byte = 0x02;
@@ -1247,8 +1247,8 @@ mod and {
     const ADDR_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
 
     #[test]
-    fn should_and_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_y(
-    ) {
+    fn should_and_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0x07;
@@ -1317,9 +1317,9 @@ mod and {
   mod and_inx {
 
     use crate::cpu::{
-      instructions::and_inx,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::and_inx,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZP_ADDRESS: Byte = 0x02;
@@ -1329,8 +1329,8 @@ mod and {
     const VALUE: Byte = 0x82;
 
     #[test]
-    fn should_and_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x(
-    ) {
+    fn should_and_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[
         ZP_ADDRESS,
         0x00,
@@ -1400,9 +1400,9 @@ mod and {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::and_iny,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::and_iny,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1413,8 +1413,8 @@ mod and {
     const VALUE: Byte = 0x82;
 
     #[test]
-    fn should_and_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
-    ) {
+    fn should_and_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[
         INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
         ADDRESS_LO,
@@ -1509,9 +1509,9 @@ mod eor {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::eor_im,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::eor_im,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1562,9 +1562,9 @@ mod eor {
   mod eor_zp {
 
     use crate::cpu::{
-      instructions::eor_zp,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::eor_zp,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZERO_PAGE_ADDR: Byte = 0x03;
@@ -1615,9 +1615,9 @@ mod eor {
   mod eor_zpx {
 
     use crate::cpu::{
-      instructions::eor_zpx,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::eor_zpx,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -1671,9 +1671,9 @@ mod eor {
   mod eor_a {
 
     use crate::cpu::{
-      instructions::eor_a,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::eor_a,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ADDR_LO: Byte = 0x04;
@@ -1725,9 +1725,9 @@ mod eor {
   mod eor_ax {
 
     use crate::cpu::{
-      instructions::eor_ax,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::eor_ax,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ADDR_LO: Byte = 0x02;
@@ -1737,8 +1737,8 @@ mod eor {
     const ADDR_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
 
     #[test]
-    fn should_eor_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_x(
-    ) {
+    fn should_eor_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0x07;
@@ -1807,9 +1807,9 @@ mod eor {
   mod eor_ay {
 
     use crate::cpu::{
-      instructions::eor_ay,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::eor_ay,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ADDR_LO: Byte = 0x02;
@@ -1819,8 +1819,8 @@ mod eor {
     const ADDR_LO_ON_ZERO_PAGE_BOUNDARY: Byte = 0xFF;
 
     #[test]
-    fn should_eor_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_y(
-    ) {
+    fn should_eor_accumulator_with_a_value_in_memory_at_an_absolute_address_offset_by_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[ADDR_LO, ADDR_HI, 0x00, 0x00, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0x07;
@@ -1889,9 +1889,9 @@ mod eor {
   mod eor_inx {
 
     use crate::cpu::{
-      instructions::eor_inx,
-      tests::{run_tasks, MemoryMock},
       Byte, CPU,
+      instructions::eor_inx,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZP_ADDRESS: Byte = 0x02;
@@ -1901,8 +1901,8 @@ mod eor {
     const VALUE: Byte = 0x85;
 
     #[test]
-    fn should_eor_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x(
-    ) {
+    fn should_eor_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[
         ZP_ADDRESS,
         0x00,
@@ -1972,9 +1972,9 @@ mod eor {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::eor_iny,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::eor_iny,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1985,8 +1985,8 @@ mod eor {
     const VALUE: Byte = 0x85;
 
     #[test]
-    fn should_eor_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
-    ) {
+    fn should_eor_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[
         INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
         ADDRESS_LO,

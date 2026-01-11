@@ -1,6 +1,6 @@
 use crate::{
   consts::Byte,
-  cpu::{Registers, CPU},
+  cpu::{CPU, Registers},
   memory::Memory,
 };
 

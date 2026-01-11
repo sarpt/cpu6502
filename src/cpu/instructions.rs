@@ -3,8 +3,8 @@
 use phf::phf_map;
 
 use crate::consts::Byte;
-use crate::cpu::tasks::Tasks;
 use crate::cpu::CPU;
+use crate::cpu::tasks::Tasks;
 
 use self::arithmetic::*;
 use self::branches::*;

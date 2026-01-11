@@ -1,4 +1,4 @@
-use crate::cpu::{tasks::transfer_register::TransferRegistersTasks, Registers, Tasks, CPU};
+use crate::cpu::{CPU, Registers, Tasks, tasks::transfer_register::TransferRegistersTasks};
 
 pub fn tax(_cpu: &mut CPU) -> Box<dyn Tasks> {
   Box::new(TransferRegistersTasks::new(
@@ -32,9 +32,9 @@ pub fn tya(_cpu: &mut CPU) -> Box<dyn Tasks> {
 mod tax {
 
   use crate::cpu::{
-    instructions::tax,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::tax,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -80,9 +80,9 @@ mod tax {
 mod txa {
 
   use crate::cpu::{
-    instructions::txa,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::txa,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -128,9 +128,9 @@ mod txa {
 mod tay {
 
   use crate::cpu::{
-    instructions::tay,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::tay,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -176,9 +176,9 @@ mod tay {
 mod tya {
 
   use crate::cpu::{
-    instructions::tya,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::tya,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]

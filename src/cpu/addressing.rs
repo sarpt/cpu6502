@@ -12,7 +12,7 @@ use zero_page::{ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks};
 
 use crate::cpu::tasks::read_memory::ImmediateReadMemoryTasks;
 
-use super::{tasks::Tasks, ChipVariant, CPU};
+use super::{CPU, ChipVariant, tasks::Tasks};
 
 #[derive(Copy, Clone, PartialEq, Display)]
 pub enum AddressingMode {
@@ -69,9 +69,9 @@ mod get_addressing_tasks {
   #[cfg(test)]
   mod absolute_addressing {
     use crate::cpu::{
-      addressing::{get_addressing_tasks, AddressingMode},
-      tests::{run_tasks, MemoryMock},
       CPU,
+      addressing::{AddressingMode, get_addressing_tasks},
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -115,14 +115,14 @@ mod get_addressing_tasks {
   #[cfg(test)]
   mod absolute_x_addressing {
     use crate::cpu::{
-      addressing::{get_addressing_tasks, AddressingMode},
-      tests::{run_tasks, MemoryMock},
       CPU,
+      addressing::{AddressingMode, get_addressing_tasks},
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_return_address_offset_by_index_register_x_from_next_word_in_memory_relative_to_program_counter(
-    ) {
+    fn should_return_address_offset_by_index_register_x_from_next_word_in_memory_relative_to_program_counter()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x02;
@@ -148,8 +148,8 @@ mod get_addressing_tasks {
     }
 
     #[test]
-    fn should_take_three_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
-    ) {
+    fn should_take_three_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x02;
@@ -163,8 +163,8 @@ mod get_addressing_tasks {
     }
 
     #[test]
-    fn should_take_four_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
-    ) {
+    fn should_take_four_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x02;
@@ -181,14 +181,14 @@ mod get_addressing_tasks {
   #[cfg(test)]
   mod absolute_y_addressing {
     use crate::cpu::{
-      addressing::{get_addressing_tasks, AddressingMode},
-      tests::{run_tasks, MemoryMock},
       CPU,
+      addressing::{AddressingMode, get_addressing_tasks},
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_return_address_offset_by_index_register_y_from_next_word_in_memory_relative_to_program_counter(
-    ) {
+    fn should_return_address_offset_by_index_register_y_from_next_word_in_memory_relative_to_program_counter()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
       let mut cpu = CPU::new_nmos();
       cpu.index_register_y = 0x01;
@@ -214,8 +214,8 @@ mod get_addressing_tasks {
     }
 
     #[test]
-    fn should_take_three_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
-    ) {
+    fn should_take_three_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x02;
@@ -229,8 +229,8 @@ mod get_addressing_tasks {
     }
 
     #[test]
-    fn should_take_four_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
-    ) {
+    fn should_take_four_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x02;
@@ -247,14 +247,14 @@ mod get_addressing_tasks {
   #[cfg(test)]
   mod index_indirect_x_addressing {
     use crate::cpu::{
-      addressing::{get_addressing_tasks, AddressingMode},
-      tests::{run_tasks, MemoryMock},
       CPU,
+      addressing::{AddressingMode, get_addressing_tasks},
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_return_address_stored_in_place_pointed_by_zero_page_address_in_next_byte_relative_to_program_counter_summed_with_index_register_x(
-    ) {
+    fn should_return_address_stored_in_place_pointed_by_zero_page_address_in_next_byte_relative_to_program_counter_summed_with_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[0x01, 0xFF, 0x03, 0xDD, 0x25]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -297,9 +297,9 @@ mod get_addressing_tasks {
   #[cfg(test)]
   mod indirect_index_y_addressing {
     use crate::cpu::{
-      addressing::{get_addressing_tasks, AddressingMode},
-      tests::{run_tasks, MemoryMock},
       CPU,
+      addressing::{AddressingMode, get_addressing_tasks},
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -329,8 +329,8 @@ mod get_addressing_tasks {
     }
 
     #[test]
-    fn should_take_four_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
-    ) {
+    fn should_take_four_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
       let mut memory = MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]);
       let mut cpu = CPU::new_nmos();
       cpu.index_register_y = 0x02;
@@ -344,8 +344,8 @@ mod get_addressing_tasks {
     }
 
     #[test]
-    fn should_take_five_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address(
-    ) {
+    fn should_take_five_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
       let mut memory = MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]);
       let mut cpu = CPU::new_nmos();
       cpu.index_register_y = 0xFF;
@@ -362,9 +362,9 @@ mod get_addressing_tasks {
   #[cfg(test)]
   mod zero_page_addressing {
     use crate::cpu::{
-      addressing::{get_addressing_tasks, AddressingMode},
-      tests::{run_tasks, MemoryMock},
       CPU,
+      addressing::{AddressingMode, get_addressing_tasks},
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -408,14 +408,14 @@ mod get_addressing_tasks {
   #[cfg(test)]
   mod zero_page_x_addressing {
     use crate::cpu::{
-      addressing::{get_addressing_tasks, AddressingMode},
-      tests::{run_tasks, MemoryMock},
       CPU,
+      addressing::{AddressingMode, get_addressing_tasks},
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter_summed_with_index_register_x(
-    ) {
+    fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter_summed_with_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x02;
@@ -458,14 +458,14 @@ mod get_addressing_tasks {
   #[cfg(test)]
   mod zero_page_y_addressing {
     use crate::cpu::{
-      addressing::{get_addressing_tasks, AddressingMode},
-      tests::{run_tasks, MemoryMock},
       CPU,
+      addressing::{AddressingMode, get_addressing_tasks},
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter_summed_with_index_register_y(
-    ) {
+    fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter_summed_with_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x03;
@@ -510,14 +510,14 @@ mod get_addressing_tasks {
     #[cfg(test)]
     mod common {
       use crate::cpu::{
-        addressing::{get_addressing_tasks, AddressingMode},
-        tests::{run_tasks, MemoryMock},
         CPU,
+        addressing::{AddressingMode, get_addressing_tasks},
+        tests::{MemoryMock, run_tasks},
       };
 
       #[test]
-      fn should_return_address_from_place_in_memory_stored_in_next_word_relative_to_program_counter(
-      ) {
+      fn should_return_address_from_place_in_memory_stored_in_next_word_relative_to_program_counter()
+       {
         let mut memory = MemoryMock::new(&[0x02, 0x00, 0x01, 0x00]);
         let mut cpu = CPU::new_nmos();
         cpu.program_counter = 0x00;
@@ -546,9 +546,9 @@ mod get_addressing_tasks {
       use crate::{
         consts::Byte,
         cpu::{
-          addressing::{get_addressing_tasks, AddressingMode},
-          tests::{run_tasks, MemoryMock},
           CPU,
+          addressing::{AddressingMode, get_addressing_tasks},
+          tests::{MemoryMock, run_tasks},
         },
       };
 
@@ -566,8 +566,8 @@ mod get_addressing_tasks {
       }
 
       #[test]
-      fn should_incorrectly_fetch_target_address_when_indirect_address_is_falling_on_a_page_boundary_and_take_lo_from_correct_address_but_use_indirect_address_for_hi(
-      ) {
+      fn should_incorrectly_fetch_target_address_when_indirect_address_is_falling_on_a_page_boundary_and_take_lo_from_correct_address_but_use_indirect_address_for_hi()
+       {
         const INDIRECT_ADDR_LO: Byte = 0xFF;
         const INDIRECT_ADDR_HI: Byte = 0x00;
         const TARGET_ADDR_LO: Byte = 0xA5;
@@ -598,9 +598,9 @@ mod get_addressing_tasks {
       use crate::{
         consts::Byte,
         cpu::{
-          addressing::{get_addressing_tasks, AddressingMode},
-          tests::{run_tasks, MemoryMock},
           CPU,
+          addressing::{AddressingMode, get_addressing_tasks},
+          tests::{MemoryMock, run_tasks},
         },
       };
 

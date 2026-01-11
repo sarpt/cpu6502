@@ -1,6 +1,6 @@
 use crate::{
   consts::Byte,
-  cpu::{addressing::AddressingMode, CPU},
+  cpu::{CPU, addressing::AddressingMode},
   memory::Memory,
 };
 
@@ -142,12 +142,12 @@ mod read_memory_tasks {
   #[cfg(test)]
   mod immediate_addressing {
     use crate::cpu::{
+      CPU,
       tasks::{
-        read_memory::{ImmediateReadMemoryTasks, ReadMemoryTasks},
         Tasks,
+        read_memory::{ImmediateReadMemoryTasks, ReadMemoryTasks},
       },
       tests::MemoryMock,
-      CPU,
     };
 
     #[test]

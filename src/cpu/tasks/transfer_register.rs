@@ -1,5 +1,5 @@
 use crate::{
-  cpu::{Registers, Tasks, CPU},
+  cpu::{CPU, Registers, Tasks},
   memory::Memory,
 };
 

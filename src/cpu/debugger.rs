@@ -3,15 +3,15 @@ use std::fmt::Display;
 use ringbuffer::{AllocRingBuffer, RingBuffer};
 
 use crate::{
-  consts::{Byte, Word, DEFAULT_INSTRUCTION_HISTORY_CAPACITY},
-  cpu::{addressing::address::Address, CPU},
+  consts::{Byte, DEFAULT_INSTRUCTION_HISTORY_CAPACITY, Word},
+  cpu::{CPU, addressing::address::Address},
 };
 
 pub struct DebugInstructionInfo {
   pub addr: Word,
   pub opcode: Byte,
   pub starting_cycle: usize,
-  pub target_addr: Address,
+  pub target_addr: Option<Address>,
 }
 
 pub struct Debugger {
@@ -26,18 +26,22 @@ impl Debugger {
   }
 
   pub fn probe(&mut self, cpu: &CPU) {
-    if !cpu.sync() {
-      return;
-    }
-
-    match &cpu.current_instruction {
-      Some(instruction) => self.instructions.push(DebugInstructionInfo {
+    if cpu.sync()
+      && let Some(instruction) = &cpu.current_instruction
+    {
+      self.instructions.push(DebugInstructionInfo {
         addr: instruction.addr,
         opcode: instruction.opcode,
         starting_cycle: instruction.starting_cycle,
-        target_addr: cpu.addr,
-      }),
-      None => todo!(),
+        target_addr: None,
+      })
+    }
+
+    let last_instruction = self.instructions.back_mut();
+    if let Some(inst) = last_instruction
+      && cpu.addr.value().is_some()
+    {
+      inst.target_addr = Some(cpu.addr);
     }
   }
 
@@ -57,7 +61,12 @@ impl Display for DebugInstructionInfo {
     write!(
       f,
       "{}@{:#04X}: {:#04X} [{}]",
-      self.starting_cycle, self.addr, self.opcode, self.target_addr
+      self.starting_cycle,
+      self.addr,
+      self.opcode,
+      self
+        .target_addr
+        .map_or(String::from("?"), |addr| addr.to_string())
     )
   }
 }
@@ -68,15 +77,15 @@ mod tests {
   #[cfg(test)]
   mod get_last_instruction {
     use crate::cpu::{
-      addressing::{address::Address, AddressingMode},
+      CPU,
+      addressing::{AddressingMode, address::Address},
       debugger::Debugger,
       instructions::{LDA_IM, NOP},
       tests::MemoryMock,
-      CPU,
     };
 
     #[test]
-    fn should_return_last_ran_instruction() {
+    fn should_return_last_ran_instruction_and_update_its_target_address() {
       let mut memory = MemoryMock::new(&[NOP, LDA_IM, 0xFF]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -91,10 +100,26 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       let mut instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "1@0x00: 0xEA [None->0x00]");
+      assert_eq!(instruction_info, "1@0x00: 0xEA [?]");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu);
+      last_instruction = uut
+        .get_last_instruction()
+        .expect("last instruction is unexpectedly None");
+      instruction_info = format!("{}", last_instruction);
+      // second cycle of NOP
+      assert_eq!(instruction_info, "1@0x00: 0xEA [?]");
+
+      cpu.tick(&mut memory);
+      uut.probe(&cpu);
+
+      last_instruction = uut
+        .get_last_instruction()
+        .expect("last instruction is unexpectedly None");
+      instruction_info = format!("{}", last_instruction);
+      assert_eq!(instruction_info, "3@0x01: 0xA9 [?]");
+
       cpu.tick(&mut memory);
       cpu.addr.reset(AddressingMode::Immediate);
       cpu.addr.set(0x02u8);

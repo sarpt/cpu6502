@@ -1,6 +1,6 @@
-use addressing::{get_addressing_tasks, AddressingMode};
-use tasks::read_memory::{AddressingReadMemoryTasks, ReadMemoryTasks};
+use addressing::{AddressingMode, get_addressing_tasks};
 use tasks::Tasks;
+use tasks::read_memory::{AddressingReadMemoryTasks, ReadMemoryTasks};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;

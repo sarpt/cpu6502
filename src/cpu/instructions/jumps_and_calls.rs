@@ -1,5 +1,5 @@
 use crate::{
-  cpu::{addressing::get_addressing_tasks, AddressingMode, Tasks, CPU},
+  cpu::{AddressingMode, CPU, Tasks, addressing::get_addressing_tasks},
   memory::Memory,
 };
 
@@ -196,9 +196,9 @@ pub fn jmp_in(cpu: &mut CPU) -> Box<dyn Tasks> {
 mod jsr_a {
 
   use crate::cpu::{
-    instructions::jsr_a,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::jsr_a,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -259,9 +259,9 @@ mod jsr_a {
 mod rts {
 
   use crate::cpu::{
-    instructions::rts,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::rts,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -315,9 +315,9 @@ mod rts {
 mod jmp_a {
 
   use crate::cpu::{
-    instructions::jmp_a,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::jmp_a,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -352,9 +352,9 @@ mod jmp_in {
   mod common {
 
     use crate::cpu::{
-      instructions::jmp_in,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::jmp_in,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -374,9 +374,9 @@ mod jmp_in {
   mod nmos {
 
     use crate::cpu::{
-      instructions::jmp_in,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::jmp_in,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -397,9 +397,9 @@ mod jmp_in {
   mod cmos {
 
     use crate::cpu::{
-      instructions::jmp_in,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::jmp_in,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
