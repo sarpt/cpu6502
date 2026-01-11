@@ -1,5 +1,5 @@
 use crate::{
-  cpu::{processor_status::Flags, Tasks, CPU},
+  cpu::{CPU, Tasks, processor_status::Flags},
   memory::Memory,
 };
 
@@ -71,9 +71,9 @@ pub fn sei(cpu: &mut CPU) -> Box<dyn Tasks> {
 mod clc {
 
   use crate::cpu::{
-    instructions::clc,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::clc,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -106,9 +106,9 @@ mod clc {
 mod cld {
 
   use crate::cpu::{
-    instructions::cld,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::cld,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -141,9 +141,9 @@ mod cld {
 mod cli {
 
   use crate::cpu::{
-    instructions::cli,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::cli,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -176,9 +176,9 @@ mod cli {
 mod clv {
 
   use crate::cpu::{
-    instructions::clv,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::clv,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -211,9 +211,9 @@ mod clv {
 mod sec {
 
   use crate::cpu::{
-    instructions::sec,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::sec,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -246,9 +246,9 @@ mod sec {
 mod sed {
 
   use crate::cpu::{
-    instructions::sed,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::sed,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -281,9 +281,9 @@ mod sed {
 mod sei {
 
   use crate::cpu::{
-    instructions::sei,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::sei,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]

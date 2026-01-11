@@ -1,7 +1,7 @@
 use crate::cpu::{
+  AddressingMode, CPU, Registers, Tasks,
   addressing::get_addressing_tasks,
   tasks::{modify_memory::ModifyMemoryTasks, modify_register::ModifyRegisterTasks},
-  AddressingMode, Registers, Tasks, CPU,
 };
 
 fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
@@ -79,9 +79,9 @@ pub fn iny_im(cpu: &mut CPU) -> Box<dyn Tasks> {
 #[cfg(test)]
 mod inx_im {
   use crate::cpu::{
-    instructions::inx_im,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::inx_im,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -125,9 +125,9 @@ mod inx_im {
 #[cfg(test)]
 mod iny_im {
   use crate::cpu::{
-    instructions::iny_im,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::iny_im,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -171,9 +171,9 @@ mod iny_im {
 #[cfg(test)]
 mod inc_zp {
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::inc_zp,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const VALUE: Byte = 0x02;
@@ -221,9 +221,9 @@ mod inc_zp {
 #[cfg(test)]
 mod inc_zpx {
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::inc_zpx,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const VALUE: Byte = 0x09;
@@ -275,9 +275,9 @@ mod inc_zpx {
 #[cfg(test)]
 mod inc_a {
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::inc_a,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const VALUE: Byte = 0x09;
@@ -327,9 +327,9 @@ mod inc_a {
 #[cfg(test)]
 mod inc_ax {
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::inc_ax,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const VALUE: Byte = 0x09;
@@ -383,9 +383,9 @@ mod inc_ax {
 #[cfg(test)]
 mod dex_im {
   use crate::cpu::{
-    instructions::dex_im,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::dex_im,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -429,9 +429,9 @@ mod dex_im {
 #[cfg(test)]
 mod dey_im {
   use crate::cpu::{
-    instructions::dey_im,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::dey_im,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -475,9 +475,9 @@ mod dey_im {
 #[cfg(test)]
 mod dec_zp {
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::dec_zp,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const VALUE: Byte = 0x02;
@@ -525,9 +525,9 @@ mod dec_zp {
 #[cfg(test)]
 mod dec_zpx {
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::dec_zpx,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const VALUE: Byte = 0x09;
@@ -579,9 +579,9 @@ mod dec_zpx {
 #[cfg(test)]
 mod dec_a {
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::dec_a,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const VALUE: Byte = 0x09;
@@ -631,9 +631,9 @@ mod dec_a {
 #[cfg(test)]
 mod dec_ax {
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::dec_ax,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const VALUE: Byte = 0x09;

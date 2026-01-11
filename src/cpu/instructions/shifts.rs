@@ -1,7 +1,7 @@
 use crate::cpu::{
+  AddressingMode, CPU, Registers, Tasks,
   addressing::get_addressing_tasks,
   tasks::{modify_memory::ModifyMemoryTasks, modify_register::ModifyRegisterTasks},
-  AddressingMode, Registers, Tasks, CPU,
 };
 
 fn asl(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
@@ -113,9 +113,9 @@ mod asl {
     mod acc {
 
       use crate::cpu::{
-        instructions::shifts::asl_acc,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::asl_acc,
+        tests::{MemoryMock, run_tasks},
       };
 
       #[test]
@@ -180,9 +180,9 @@ mod asl {
       use crate::{
         consts::Byte,
         cpu::{
-          instructions::shifts::asl_zp,
-          tests::{run_tasks, MemoryMock},
           CPU,
+          instructions::shifts::asl_zp,
+          tests::{MemoryMock, run_tasks},
         },
       };
 
@@ -256,9 +256,9 @@ mod asl {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::shifts::asl_acc,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::asl_acc,
+        tests::{MemoryMock, run_tasks},
       },
     };
     const VALUE: Byte = 0x02;
@@ -297,9 +297,9 @@ mod asl {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::asl_zp,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::asl_zp,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -338,9 +338,9 @@ mod asl {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::asl_zpx,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::asl_zpx,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -382,9 +382,9 @@ mod asl {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::asl_a,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::asl_a,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -424,9 +424,9 @@ mod asl {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::asl_ax,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::asl_ax,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -471,9 +471,9 @@ mod lsr {
     mod acc {
 
       use crate::cpu::{
-        instructions::shifts::lsr_acc,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::lsr_acc,
+        tests::{MemoryMock, run_tasks},
       };
 
       #[test]
@@ -524,9 +524,9 @@ mod lsr {
       use crate::{
         consts::Byte,
         cpu::{
-          instructions::shifts::lsr_zp,
-          tests::{run_tasks, MemoryMock},
           CPU,
+          instructions::shifts::lsr_zp,
+          tests::{MemoryMock, run_tasks},
         },
       };
 
@@ -585,9 +585,9 @@ mod lsr {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::shifts::lsr_acc,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::lsr_acc,
+        tests::{MemoryMock, run_tasks},
       },
     };
     const VALUE: Byte = 0x02;
@@ -626,9 +626,9 @@ mod lsr {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::lsr_zp,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::lsr_zp,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -667,9 +667,9 @@ mod lsr {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::lsr_zpx,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::lsr_zpx,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -711,9 +711,9 @@ mod lsr {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::lsr_a,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::lsr_a,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -753,9 +753,9 @@ mod lsr {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::lsr_ax,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::lsr_ax,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -800,9 +800,9 @@ mod rol {
     mod acc {
 
       use crate::cpu::{
-        instructions::shifts::rol_acc,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::rol_acc,
+        tests::{MemoryMock, run_tasks},
       };
 
       #[test]
@@ -853,9 +853,9 @@ mod rol {
       use crate::{
         consts::Byte,
         cpu::{
-          instructions::shifts::rol_zp,
-          tests::{run_tasks, MemoryMock},
           CPU,
+          instructions::shifts::rol_zp,
+          tests::{MemoryMock, run_tasks},
         },
       };
 
@@ -914,9 +914,9 @@ mod rol {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::shifts::rol_acc,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::rol_acc,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -981,9 +981,9 @@ mod rol {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::rol_zp,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::rol_zp,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1048,9 +1048,9 @@ mod rol {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::rol_zpx,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::rol_zpx,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1120,9 +1120,9 @@ mod rol {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::rol_a,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::rol_a,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1188,9 +1188,9 @@ mod rol {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::rol_ax,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::rol_ax,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1263,9 +1263,9 @@ mod ror {
     mod acc {
 
       use crate::cpu::{
-        instructions::shifts::ror_acc,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::ror_acc,
+        tests::{MemoryMock, run_tasks},
       };
 
       #[test]
@@ -1316,9 +1316,9 @@ mod ror {
       use crate::{
         consts::Byte,
         cpu::{
-          instructions::shifts::ror_zp,
-          tests::{run_tasks, MemoryMock},
           CPU,
+          instructions::shifts::ror_zp,
+          tests::{MemoryMock, run_tasks},
         },
       };
 
@@ -1377,9 +1377,9 @@ mod ror {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::shifts::ror_acc,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::ror_acc,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1444,9 +1444,9 @@ mod ror {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::ror_zp,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::ror_zp,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1511,9 +1511,9 @@ mod ror {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::ror_zpx,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::ror_zpx,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1583,9 +1583,9 @@ mod ror {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::ror_a,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::ror_a,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1651,9 +1651,9 @@ mod ror {
     use crate::{
       consts::{Byte, Word},
       cpu::{
-        instructions::shifts::ror_ax,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::shifts::ror_ax,
+        tests::{MemoryMock, run_tasks},
       },
     };
 

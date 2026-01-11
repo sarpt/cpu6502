@@ -1,5 +1,5 @@
 use crate::{
-  cpu::{tasks::transfer_register::TransferRegistersTasks, Registers, Tasks, CPU},
+  cpu::{CPU, Registers, Tasks, tasks::transfer_register::TransferRegistersTasks},
   memory::Memory,
 };
 
@@ -149,9 +149,9 @@ pub fn txs(_cpu: &mut CPU) -> Box<dyn Tasks> {
 mod pha {
 
   use crate::cpu::{
-    instructions::pha,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::pha,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -186,9 +186,9 @@ mod pha {
 mod pla {
 
   use crate::cpu::{
-    instructions::pla,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::pla,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -238,9 +238,9 @@ mod pla {
 mod php {
 
   use crate::cpu::{
-    instructions::php,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::php,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -275,9 +275,9 @@ mod php {
 mod plp {
 
   use crate::cpu::{
-    instructions::plp,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::plp,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -314,9 +314,9 @@ mod plp {
 mod txs {
 
   use crate::cpu::{
-    instructions::txs,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::txs,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -349,9 +349,9 @@ mod txs {
 mod tsx {
 
   use crate::cpu::{
-    instructions::tsx,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::tsx,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]

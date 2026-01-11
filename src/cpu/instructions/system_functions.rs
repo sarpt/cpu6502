@@ -1,6 +1,6 @@
 use crate::{
   consts::BRK_INTERRUPT_VECTOR,
-  cpu::{ChipVariant, Tasks, CPU},
+  cpu::{CPU, ChipVariant, Tasks},
   memory::Memory,
 };
 
@@ -189,9 +189,9 @@ mod brk {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::brk,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::brk,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -257,7 +257,7 @@ mod brk {
 
   #[cfg(test)]
   mod cmos {
-    use crate::cpu::{instructions::brk, tests::MemoryMock, CPU};
+    use crate::cpu::{CPU, instructions::brk, tests::MemoryMock};
 
     #[cfg(test)]
     mod rockwell {
@@ -303,9 +303,9 @@ mod brk {
   #[cfg(test)]
   mod nmos {
     use crate::cpu::{
-      instructions::brk,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::brk,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -326,9 +326,9 @@ mod brk {
 #[cfg(test)]
 mod rti {
   use crate::cpu::{
-    instructions::rti,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::rti,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]
@@ -367,9 +367,9 @@ mod rti {
 #[cfg(test)]
 mod nop {
   use crate::cpu::{
-    instructions::nop,
-    tests::{run_tasks, MemoryMock},
     CPU,
+    instructions::nop,
+    tests::{MemoryMock, run_tasks},
   };
 
   #[test]

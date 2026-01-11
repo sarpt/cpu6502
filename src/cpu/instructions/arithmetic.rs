@@ -1,6 +1,6 @@
 use crate::{
   consts::Byte,
-  cpu::{tasks::read_memory::ReadMemoryTasks, AddressingMode, Registers, Tasks, CPU},
+  cpu::{AddressingMode, CPU, Registers, Tasks, tasks::read_memory::ReadMemoryTasks},
   memory::Memory,
 };
 
@@ -285,9 +285,9 @@ mod cmp {
   #[cfg(test)]
   mod cmp_im {
     use crate::cpu::{
-      instructions::cmp_im,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::cmp_im,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -322,9 +322,9 @@ mod cmp {
   #[cfg(test)]
   mod cmp_zp {
     use crate::cpu::{
-      instructions::cmp_zp,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::cmp_zp,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -359,9 +359,9 @@ mod cmp {
   #[cfg(test)]
   mod cmp_zpx {
     use crate::cpu::{
-      instructions::cmp_zpx,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::cmp_zpx,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -398,9 +398,9 @@ mod cmp {
   #[cfg(test)]
   mod cmp_a {
     use crate::cpu::{
-      instructions::cmp_a,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::cmp_a,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -437,9 +437,9 @@ mod cmp {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::cmp_ax,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::cmp_ax,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -506,9 +506,9 @@ mod cmp {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::cmp_ay,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::cmp_ay,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -576,9 +576,9 @@ mod cmp {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::cmp_iny,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::cmp_iny,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -589,8 +589,8 @@ mod cmp {
     const VALUE: Byte = 0x03;
 
     #[test]
-    fn should_compare_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
-    ) {
+    fn should_compare_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[
         INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
         ADDRESS_LO,
@@ -663,9 +663,9 @@ mod cpy {
   mod cpy_im {
 
     use crate::cpu::{
-      instructions::cpy_im,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::cpy_im,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -701,9 +701,9 @@ mod cpy {
   mod cpy_zp {
 
     use crate::cpu::{
-      instructions::cpy_zp,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::cpy_zp,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -739,9 +739,9 @@ mod cpy {
   mod cpy_a {
 
     use crate::cpu::{
-      instructions::cpy_a,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::cpy_a,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -780,9 +780,9 @@ mod cpx {
   mod cpx_im {
 
     use crate::cpu::{
-      instructions::cpx_im,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::cpx_im,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -818,9 +818,9 @@ mod cpx {
   mod cpx_zp {
 
     use crate::cpu::{
-      instructions::cpx_zp,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::cpx_zp,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -856,9 +856,9 @@ mod cpx {
   mod cpx_a {
 
     use crate::cpu::{
-      instructions::cpx_a,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::cpx_a,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -895,7 +895,7 @@ mod cpx {
 mod adc {
   #[cfg(test)]
   mod common {
-    use crate::cpu::instructions::{arithmetic::adc, FlagOp};
+    use crate::cpu::instructions::{FlagOp, arithmetic::adc};
 
     #[test]
     fn should_return_sum_with_carry_as_unchanged_when_sum_does_not_overflows_a_byte() {
@@ -931,8 +931,8 @@ mod adc {
     }
 
     #[test]
-    fn should_return_sum_with_overflow_as_unchanged_when_sum_result_is_unsigned_and_one_of_the_inputs_is_signed(
-    ) {
+    fn should_return_sum_with_overflow_as_unchanged_when_sum_result_is_unsigned_and_one_of_the_inputs_is_signed()
+     {
       let memory_value = 0x50;
       let acc_value = 0xd0;
       let initial_carry = false;
@@ -943,8 +943,8 @@ mod adc {
     }
 
     #[test]
-    fn should_return_sum_with_overflow_as_unchanged_when_sum_result_is_signed_and_one_of_the_inputs_is_unsigned(
-    ) {
+    fn should_return_sum_with_overflow_as_unchanged_when_sum_result_is_signed_and_one_of_the_inputs_is_unsigned()
+     {
       let memory_value = 0x50;
       let acc_value = 0x90;
       let initial_carry = false;
@@ -966,8 +966,8 @@ mod adc {
     }
 
     #[test]
-    fn should_return_sum_with_overflow_as_set_when_sum_result_is_signed_but_both_inputs_are_unsigned(
-    ) {
+    fn should_return_sum_with_overflow_as_set_when_sum_result_is_signed_but_both_inputs_are_unsigned()
+     {
       let memory_value = 0x50;
       let acc_value = 0x50;
       let initial_carry = false;
@@ -978,8 +978,8 @@ mod adc {
     }
 
     #[test]
-    fn should_return_sum_with_overflow_as_set_when_sum_result_is_unsigned_but_both_inputs_are_signed(
-    ) {
+    fn should_return_sum_with_overflow_as_set_when_sum_result_is_unsigned_but_both_inputs_are_signed()
+     {
       let memory_value = 0xd0;
       let acc_value = 0x90;
       let initial_carry = false;
@@ -996,10 +996,10 @@ mod adc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::adc_im,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
     const VALUE: Byte = 0x03;
@@ -1053,10 +1053,10 @@ mod adc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::adc_zp,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
     const VALUE: Byte = 0x03;
@@ -1109,10 +1109,10 @@ mod adc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::adc_zpx,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
     const VALUE: Byte = 0x03;
@@ -1169,10 +1169,10 @@ mod adc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::adc_a,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
     const VALUE: Byte = 0x03;
@@ -1226,10 +1226,10 @@ mod adc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::adc_ax,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1310,10 +1310,10 @@ mod adc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::adc_ay,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1393,10 +1393,10 @@ mod adc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::adc_iny,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1407,8 +1407,8 @@ mod adc {
     const VALUE: Byte = 0x03;
 
     #[test]
-    fn should_sum_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
-    ) {
+    fn should_sum_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[
         INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
         ADDRESS_LO,
@@ -1500,10 +1500,10 @@ mod adc {
   mod adc_inx {
 
     use crate::cpu::{
+      Byte, CPU,
       instructions::adc_inx,
       processor_status::ProcessorStatus,
-      tests::{run_tasks, MemoryMock},
-      Byte, CPU,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZP_ADDRESS: Byte = 0x02;
@@ -1513,8 +1513,8 @@ mod adc {
     const VALUE: Byte = 0x03;
 
     #[test]
-    fn should_sum_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x(
-    ) {
+    fn should_sum_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[
         ZP_ADDRESS,
         0x00,
@@ -1585,7 +1585,7 @@ mod adc {
 mod sbc {
   #[cfg(test)]
   mod common {
-    use crate::cpu::instructions::{arithmetic::sbc, FlagOp};
+    use crate::cpu::instructions::{FlagOp, arithmetic::sbc};
 
     #[test]
     fn should_return_subtraction_with_carry_as_clear_when_subtraction_overflows_a_byte() {
@@ -1611,8 +1611,8 @@ mod sbc {
     }
 
     #[test]
-    fn should_return_subtraction_with_overflow_unchanged_when_result_with_accumulator_and_ones_complement_of_value_are_unsigned(
-    ) {
+    fn should_return_subtraction_with_overflow_unchanged_when_result_with_accumulator_and_ones_complement_of_value_are_unsigned()
+     {
       let acc_value = 0x50;
       let memory_value = 0xf0;
       let initial_carry = true;
@@ -1623,8 +1623,8 @@ mod sbc {
     }
 
     #[test]
-    fn should_return_subtraction_with_overflow_unchanged_when_result_is_unsigned_with_ones_complement_of_value_unsigned_and_accumulator_is_signed(
-    ) {
+    fn should_return_subtraction_with_overflow_unchanged_when_result_is_unsigned_with_ones_complement_of_value_unsigned_and_accumulator_is_signed()
+     {
       let acc_value = 0xd0;
       let memory_value = 0xf0;
       let initial_carry = true;
@@ -1635,8 +1635,8 @@ mod sbc {
     }
 
     #[test]
-    fn should_return_subtraction_with_overflow_unchanged_when_result_is_signed_with_ones_complement_of_value_signed_and_accumulator_is_unsigned(
-    ) {
+    fn should_return_subtraction_with_overflow_unchanged_when_result_is_signed_with_ones_complement_of_value_signed_and_accumulator_is_unsigned()
+     {
       let acc_value = 0x50;
       let memory_value = 0x70;
       let initial_carry = false;
@@ -1647,8 +1647,8 @@ mod sbc {
     }
 
     #[test]
-    fn should_return_subtraction_with_overflow_set_as_unchanged_when_result_with_accumulator_and_ones_complement_of_value_are_signed(
-    ) {
+    fn should_return_subtraction_with_overflow_set_as_unchanged_when_result_with_accumulator_and_ones_complement_of_value_are_signed()
+     {
       let acc_value = 0xd0;
       let memory_value = 0x30;
       let initial_carry = true;
@@ -1659,8 +1659,8 @@ mod sbc {
     }
 
     #[test]
-    fn should_return_subtraction_with_overflow_set_when_result_is_signed_but_both_accumulator_and_ones_complement_of_value_are_unsigned(
-    ) {
+    fn should_return_subtraction_with_overflow_set_when_result_is_signed_but_both_accumulator_and_ones_complement_of_value_are_unsigned()
+     {
       let acc_value = 0x50;
       let memory_value = 0xb0;
       let initial_carry = false;
@@ -1671,8 +1671,8 @@ mod sbc {
     }
 
     #[test]
-    fn should_return_subtraction_with_overflow_set_when_result_is_unsigned_but_both_accumulator_and_ones_complement_of_value_are_signed(
-    ) {
+    fn should_return_subtraction_with_overflow_set_when_result_is_unsigned_but_both_accumulator_and_ones_complement_of_value_are_signed()
+     {
       let acc_value = 0xd0;
       let memory_value = 0x70;
       let initial_carry = true;
@@ -1689,10 +1689,10 @@ mod sbc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::sbc_im,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
     const VALUE: Byte = 0x30;
@@ -1748,10 +1748,10 @@ mod sbc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::sbc_zp,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
     const VALUE: Byte = 0x30;
@@ -1807,10 +1807,10 @@ mod sbc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::sbc_zpx,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
     const VALUE: Byte = 0x30;
@@ -1868,10 +1868,10 @@ mod sbc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::sbc_a,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
     const VALUE: Byte = 0x30;
@@ -1927,10 +1927,10 @@ mod sbc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::sbc_ax,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -2014,10 +2014,10 @@ mod sbc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::sbc_ay,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -2100,10 +2100,10 @@ mod sbc {
     use crate::{
       consts::Byte,
       cpu::{
+        CPU,
         instructions::sbc_iny,
         processor_status::ProcessorStatus,
-        tests::{run_tasks, MemoryMock},
-        CPU,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -2114,8 +2114,8 @@ mod sbc {
     const VALUE: Byte = 0x30;
 
     #[test]
-    fn should_sub_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
-    ) {
+    fn should_sub_accumulator_with_a_value_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[
         INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
         ADDRESS_LO,
@@ -2210,10 +2210,10 @@ mod sbc {
   mod sbc_inx {
 
     use crate::cpu::{
+      Byte, CPU,
       instructions::sbc_inx,
       processor_status::ProcessorStatus,
-      tests::{run_tasks, MemoryMock},
-      Byte, CPU,
+      tests::{MemoryMock, run_tasks},
     };
 
     const ZP_ADDRESS: Byte = 0x02;
@@ -2223,8 +2223,8 @@ mod sbc {
     const VALUE: Byte = 0x30;
 
     #[test]
-    fn should_sub_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x(
-    ) {
+    fn should_sub_accumulator_with_a_value_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[
         ZP_ADDRESS,
         0x00,

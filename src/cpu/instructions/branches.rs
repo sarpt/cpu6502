@@ -1,6 +1,6 @@
 use crate::{
   consts::{Byte, Word},
-  cpu::{Tasks, CPU},
+  cpu::{CPU, Tasks},
   memory::Memory,
 };
 
@@ -148,10 +148,10 @@ mod common_branching_tasks {
   use crate::{
     consts::Byte,
     cpu::{
+      CPU,
       instructions::branches::BranchTasks,
       tasks::Tasks,
-      tests::{run_tasks, MemoryMock},
-      CPU,
+      tests::{MemoryMock, run_tasks},
     },
   };
 
@@ -183,8 +183,8 @@ mod common_branching_tasks {
   }
 
   #[test]
-  fn should_take_branch_and_offset_program_counter_backwards_by_negative_operand_in_twos_complement_when_condition_is_true(
-  ) {
+  fn should_take_branch_and_offset_program_counter_backwards_by_negative_operand_in_twos_complement_when_condition_is_true()
+   {
     const OFFSET: Byte = 0x03;
     const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
     let mut memory = MemoryMock::new(&[0x22, 0x00, NEGATIVE_OFFSET_TWOS_COMPLEMENT, 0x00]);
@@ -215,8 +215,8 @@ mod common_branching_tasks {
   }
 
   #[test]
-  fn should_take_branch_and_offset_program_counter_backwards_over_page_flip_by_negative_operand_in_twos_complement_when_condition_is_true(
-  ) {
+  fn should_take_branch_and_offset_program_counter_backwards_over_page_flip_by_negative_operand_in_twos_complement_when_condition_is_true()
+   {
     const OFFSET: Byte = 0x03;
     const NEGATIVE_OFFSET_TWOS_COMPLEMENT: Byte = (OFFSET ^ 0xFF) + 1;
     let mut memory = MemoryMock::new(&[NEGATIVE_OFFSET_TWOS_COMPLEMENT, 0x00, 0x00, 0x00]);
@@ -283,9 +283,9 @@ mod bcc {
   use crate::{
     consts::Byte,
     cpu::{
-      instructions::bcc,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::bcc,
+      tests::{MemoryMock, run_tasks},
     },
   };
 
@@ -323,9 +323,9 @@ mod bcs {
   use crate::{
     consts::Byte,
     cpu::{
-      instructions::bcs,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::bcs,
+      tests::{MemoryMock, run_tasks},
     },
   };
 
@@ -363,9 +363,9 @@ mod beq {
   use crate::{
     consts::Byte,
     cpu::{
-      instructions::beq,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::beq,
+      tests::{MemoryMock, run_tasks},
     },
   };
 
@@ -403,9 +403,9 @@ mod bmi {
   use crate::{
     consts::Byte,
     cpu::{
-      instructions::bmi,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::bmi,
+      tests::{MemoryMock, run_tasks},
     },
   };
 
@@ -443,9 +443,9 @@ mod bne {
   use crate::{
     consts::Byte,
     cpu::{
-      instructions::bne,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::bne,
+      tests::{MemoryMock, run_tasks},
     },
   };
 
@@ -483,9 +483,9 @@ mod bpl {
   use crate::{
     consts::Byte,
     cpu::{
-      instructions::bpl,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::bpl,
+      tests::{MemoryMock, run_tasks},
     },
   };
 
@@ -523,9 +523,9 @@ mod bvc {
   use crate::{
     consts::Byte,
     cpu::{
-      instructions::bvc,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::bvc,
+      tests::{MemoryMock, run_tasks},
     },
   };
 
@@ -563,9 +563,9 @@ mod bvs {
   use crate::{
     consts::Byte,
     cpu::{
-      instructions::bvs,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::bvs,
+      tests::{MemoryMock, run_tasks},
     },
   };
 

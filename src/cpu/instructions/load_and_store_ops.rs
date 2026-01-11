@@ -1,7 +1,7 @@
 use crate::{
   cpu::{
-    addressing::get_addressing_tasks, tasks::read_memory::ReadMemoryTasks, AddressingMode,
-    Registers, Tasks, CPU,
+    AddressingMode, CPU, Registers, Tasks, addressing::get_addressing_tasks,
+    tasks::read_memory::ReadMemoryTasks,
   },
   memory::Memory,
 };
@@ -230,9 +230,9 @@ mod lda {
   mod lda_im {
 
     use crate::cpu::{
-      instructions::lda_im,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::lda_im,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -278,14 +278,14 @@ mod lda {
   mod lda_zp {
 
     use crate::cpu::{
-      instructions::lda_zp,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::lda_zp,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_fetch_byte_from_a_zero_page_address_stored_in_a_place_pointed_by_program_counter_into_accumulator(
-    ) {
+    fn should_fetch_byte_from_a_zero_page_address_stored_in_a_place_pointed_by_program_counter_into_accumulator()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0x00, 0x45]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -327,14 +327,14 @@ mod lda {
   mod lda_zpx {
 
     use crate::cpu::{
-      instructions::lda_zpx,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::lda_zpx,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_fetch_byte_from_an_address_stored_in_program_counter_pointed_place_summed_with_index_register_x_into_accumulator(
-    ) {
+    fn should_fetch_byte_from_an_address_stored_in_program_counter_pointed_place_summed_with_index_register_x_into_accumulator()
+     {
       let mut memory = MemoryMock::new(&[0x01, 0x00, 0x00, 0x55]);
       let mut cpu = CPU::new_nmos();
       cpu.index_register_x = 0x02;
@@ -392,14 +392,14 @@ mod lda {
   mod lda_a {
 
     use crate::cpu::{
-      instructions::lda_a,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::lda_a,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_fetch_byte_from_an_absolute_address_stored_in_a_place_pointed_by_program_counter_into_accumulator(
-    ) {
+    fn should_fetch_byte_from_an_absolute_address_stored_in_a_place_pointed_by_program_counter_into_accumulator()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0x00, 0x00, 0x45]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -443,9 +443,9 @@ mod lda {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::lda_ax,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::lda_ax,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -523,9 +523,9 @@ mod lda {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::lda_ay,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::lda_ay,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -602,9 +602,9 @@ mod lda {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::lda_iny,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::lda_iny,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -615,8 +615,8 @@ mod lda {
     const VALUE: Byte = 0xDB;
 
     #[test]
-    fn should_fetch_byte_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y(
-    ) {
+    fn should_fetch_byte_from_an_indirect_adress_stored_in_memory_at_zero_page_and_offset_with_value_from_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[
         INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
         ADDRESS_LO,
@@ -706,9 +706,9 @@ mod ldx {
   mod ldx_im {
 
     use crate::cpu::{
-      instructions::ldx_im,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::ldx_im,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -754,14 +754,14 @@ mod ldx {
   mod ldx_zp {
 
     use crate::cpu::{
-      instructions::ldx_zp,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::ldx_zp,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_fetch_byte_from_a_zero_page_address_stored_in_a_place_pointed_by_program_counter_into_index_register_x(
-    ) {
+    fn should_fetch_byte_from_a_zero_page_address_stored_in_a_place_pointed_by_program_counter_into_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0x00, 0x45]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -803,14 +803,14 @@ mod ldx {
   mod ldx_zpy {
 
     use crate::cpu::{
-      instructions::ldx_zpy,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::ldx_zpy,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_fetch_byte_from_an_address_stored_in_program_counter_pointed_place_summed_with_index_register_y_into_index_register_x(
-    ) {
+    fn should_fetch_byte_from_an_address_stored_in_program_counter_pointed_place_summed_with_index_register_y_into_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[0x01, 0x00, 0x00, 0x55]);
       let mut cpu = CPU::new_nmos();
       cpu.index_register_y = 0x02;
@@ -868,14 +868,14 @@ mod ldx {
   mod ldx_a {
 
     use crate::cpu::{
-      instructions::ldx_a,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::ldx_a,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_fetch_byte_from_an_absolute_address_stored_in_a_place_pointed_by_program_counter_into_index_register_x(
-    ) {
+    fn should_fetch_byte_from_an_absolute_address_stored_in_a_place_pointed_by_program_counter_into_index_register_x()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0x00, 0x00, 0x45]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -919,9 +919,9 @@ mod ldx {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::ldx_ay,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::ldx_ay,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1001,9 +1001,9 @@ mod ldy {
   mod ldy_im {
 
     use crate::cpu::{
-      instructions::ldy_im,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::ldy_im,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
@@ -1049,14 +1049,14 @@ mod ldy {
   mod ldy_zp {
 
     use crate::cpu::{
-      instructions::ldy_zp,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::ldy_zp,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_fetch_byte_from_a_zero_page_address_stored_in_a_place_pointed_by_program_counter_into_index_register_y(
-    ) {
+    fn should_fetch_byte_from_a_zero_page_address_stored_in_a_place_pointed_by_program_counter_into_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0x00, 0x45]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -1098,14 +1098,14 @@ mod ldy {
   mod ldy_zpx {
 
     use crate::cpu::{
-      instructions::ldy_zpx,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::ldy_zpx,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_fetch_byte_from_an_address_stored_in_program_counter_pointed_place_summed_with_index_register_x_into_index_register_y(
-    ) {
+    fn should_fetch_byte_from_an_address_stored_in_program_counter_pointed_place_summed_with_index_register_x_into_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[0x01, 0x00, 0x00, 0x55]);
       let mut cpu = CPU::new_nmos();
       cpu.index_register_x = 0x02;
@@ -1163,14 +1163,14 @@ mod ldy {
   mod ldy_a {
 
     use crate::cpu::{
-      instructions::ldy_a,
-      tests::{run_tasks, MemoryMock},
       CPU,
+      instructions::ldy_a,
+      tests::{MemoryMock, run_tasks},
     };
 
     #[test]
-    fn should_fetch_byte_from_an_absolute_address_stored_in_a_place_pointed_by_program_counter_into_index_register_y(
-    ) {
+    fn should_fetch_byte_from_an_absolute_address_stored_in_a_place_pointed_by_program_counter_into_index_register_y()
+     {
       let mut memory = MemoryMock::new(&[0x03, 0x00, 0x00, 0x45]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -1214,9 +1214,9 @@ mod ldy {
     use crate::{
       consts::Byte,
       cpu::{
-        instructions::ldy_ax,
-        tests::{run_tasks, MemoryMock},
         CPU,
+        instructions::ldy_ax,
+        tests::{MemoryMock, run_tasks},
       },
     };
 
@@ -1294,9 +1294,9 @@ mod ldy {
 mod sta_zp {
 
   use crate::cpu::{
-    instructions::sta_zp,
-    tests::{run_tasks, MemoryMock},
     Byte, CPU,
+    instructions::sta_zp,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ZERO_PAGE_ADDR: Byte = 0x03;
@@ -1333,9 +1333,9 @@ mod sta_zp {
 mod sta_zpx {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::sta_zpx,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -1375,9 +1375,9 @@ mod sta_zpx {
 mod sta_a {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::sta_a,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ADDR_LO: Byte = 0x04;
@@ -1416,9 +1416,9 @@ mod sta_a {
 mod sta_ax {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::sta_ax,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ADDR_LO: Byte = 0x02;
@@ -1460,9 +1460,9 @@ mod sta_ax {
 mod sta_ay {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::sta_ay,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ADDR_LO: Byte = 0x02;
@@ -1504,9 +1504,9 @@ mod sta_ay {
 mod sta_inx {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::sta_inx,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ZP_ADDRESS: Byte = 0x02;
@@ -1516,8 +1516,8 @@ mod sta_inx {
   const EFFECTIVE_ADDRESS: Word = 0x0005;
 
   #[test]
-  fn should_store_accumulator_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x(
-  ) {
+  fn should_store_accumulator_in_an_indirect_adress_stored_in_zero_page_offset_with_index_register_x()
+   {
     let mut memory = MemoryMock::new(&[
       ZP_ADDRESS,
       0x00,
@@ -1566,9 +1566,9 @@ mod sta_inx {
 mod sta_iny {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::sta_iny,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ZP_ADDRESS: Byte = 0x01;
@@ -1612,9 +1612,9 @@ mod sta_iny {
 mod stx_zp {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::stx_zp,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ZERO_PAGE_ADDR: Byte = 0x03;
@@ -1651,9 +1651,9 @@ mod stx_zp {
 mod stx_zpy {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::stx_zpy,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -1693,9 +1693,9 @@ mod stx_zpy {
 mod stx_a {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::stx_a,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ADDR_LO: Byte = 0x04;
@@ -1734,9 +1734,9 @@ mod stx_a {
 mod sty_zp {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::sty_zp,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ZERO_PAGE_ADDR: Byte = 0x03;
@@ -1773,9 +1773,9 @@ mod sty_zp {
 mod sty_zpx {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::sty_zpx,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ZERO_PAGE_ADDR: Byte = 0x01;
@@ -1815,9 +1815,9 @@ mod sty_zpx {
 mod sty_a {
 
   use crate::cpu::{
+    Byte, CPU, Word,
     instructions::sty_a,
-    tests::{run_tasks, MemoryMock},
-    Byte, Word, CPU,
+    tests::{MemoryMock, run_tasks},
   };
 
   const ADDR_LO: Byte = 0x04;

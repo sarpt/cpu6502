@@ -1,5 +1,5 @@
-use cpu6502::cpu::utils::execute_until_break;
 use cpu6502::cpu::CPU;
+use cpu6502::cpu::utils::execute_until_break;
 use cpu6502::memory::Generic64kMem;
 use std::str;
 
