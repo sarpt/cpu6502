@@ -9,7 +9,7 @@ use crate::cpu::instructions::INSTRUCTIONS;
 use crate::{consts::STACK_PAGE_HI, memory::Memory};
 
 mod addressing;
-mod debugger;
+pub mod debugger;
 mod instructions;
 mod processor_status;
 mod tasks;
