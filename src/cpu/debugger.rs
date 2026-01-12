@@ -10,6 +10,7 @@ use crate::{
 pub struct DebugInstructionInfo {
   pub addr: Word,
   pub opcode: Byte,
+  pub name: &'static str,
   pub starting_cycle: usize,
   pub target_addr: Option<Address>,
 }
@@ -32,6 +33,7 @@ impl Debugger {
       self.instructions.push(DebugInstructionInfo {
         addr: instruction.addr,
         opcode: instruction.opcode,
+        name: instruction.name,
         starting_cycle: instruction.starting_cycle,
         target_addr: None,
       })
@@ -60,9 +62,10 @@ impl Display for DebugInstructionInfo {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(
       f,
-      "{}@{:#04X}: {:#04X} [{}]",
+      "{}@{:#04X}: {} ({:#04X}) [{}]",
       self.starting_cycle,
       self.addr,
+      self.name,
       self.opcode,
       self
         .target_addr
@@ -100,7 +103,7 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       let mut instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "1@0x00: 0xEA [?]");
+      assert_eq!(instruction_info, "1@0x00: NOP (0xEA) [?]");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu);
@@ -109,7 +112,7 @@ mod tests {
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
       // second cycle of NOP
-      assert_eq!(instruction_info, "1@0x00: 0xEA [?]");
+      assert_eq!(instruction_info, "1@0x00: NOP (0xEA) [?]");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu);
@@ -118,7 +121,7 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "3@0x01: 0xA9 [?]");
+      assert_eq!(instruction_info, "3@0x01: LDA_IM (0xA9) [?]");
 
       cpu.tick(&mut memory);
       cpu.addr.reset(AddressingMode::Immediate);
@@ -129,7 +132,7 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "3@0x01: 0xA9 [IM->0x02]");
+      assert_eq!(instruction_info, "3@0x01: LDA_IM (0xA9) [IM->0x02]");
     }
 
     #[test]
