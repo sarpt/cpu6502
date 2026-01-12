@@ -256,16 +256,18 @@ impl CPU {
 
   fn schedule_instruction(&mut self, memory: &dyn Memory) -> InstructionExecution {
     let (opcode, addr) = self.fetch_opcode(memory);
-    let instruction = INSTRUCTIONS.get(&opcode);
-    let tasks = match instruction {
-      Some(inst) => (inst.handler)(self),
-      None => panic!("illegal opcode found: {:#04X}", opcode),
-    };
+    let instruction = INSTRUCTIONS
+      .get(&opcode)
+      .unwrap_or_else(|| panic!("illegal opcode found: {:#04X}", opcode));
 
+    self.addr = Address::new();
+
+    let tasks = (instruction.handler)(self);
     InstructionExecution {
       addr,
       tasks,
       opcode,
+      name: instruction.name,
       starting_cycle: self.cycle,
     }
   }
@@ -282,6 +284,7 @@ fn access_cycle_has_been_done_during_addressing(addr_mode: AddressingMode) -> bo
 pub struct InstructionExecution {
   pub addr: Word,
   pub opcode: Byte,
+  pub name: &'static str,
   pub starting_cycle: usize,
   tasks: Box<dyn Tasks>,
 }
