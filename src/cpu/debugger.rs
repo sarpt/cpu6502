@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, ops::RangeInclusive};
 
 use ringbuffer::{AllocRingBuffer, RingBuffer};
 
@@ -15,18 +15,33 @@ pub struct DebugInstructionInfo {
   pub target_addr: Option<Address>,
 }
 
+pub enum Traps {
+  AddressRange(RangeInclusive<Word>, Word),
+}
+
+pub enum ProbeResult {
+  NextInstruction,
+  AddressingDone,
+  TrapHit(Traps),
+  Cycle,
+}
+
 pub struct Debugger {
   instructions: AllocRingBuffer<DebugInstructionInfo>,
+  trap_ranges: Vec<RangeInclusive<Word>>,
 }
 
 impl Debugger {
   pub fn new() -> Self {
     Debugger {
       instructions: AllocRingBuffer::new(DEFAULT_INSTRUCTION_HISTORY_CAPACITY),
+      trap_ranges: Vec::new(),
     }
   }
 
-  pub fn probe(&mut self, cpu: &CPU) {
+  pub fn probe(&mut self, cpu: &CPU) -> ProbeResult {
+    let mut probe_result = ProbeResult::Cycle;
+
     if cpu.sync()
       && let Some(instruction) = &cpu.current_instruction
     {
@@ -36,19 +51,39 @@ impl Debugger {
         name: instruction.name,
         starting_cycle: instruction.starting_cycle,
         target_addr: None,
-      })
+      });
+      probe_result = ProbeResult::NextInstruction;
     }
 
-    let last_instruction = self.instructions.back_mut();
-    if let Some(inst) = last_instruction
+    let mut last_instruction = self.instructions.back_mut();
+    if let Some(inst) = &mut last_instruction
       && cpu.addr.value().is_some()
     {
       inst.target_addr = Some(cpu.addr);
+      probe_result = ProbeResult::AddressingDone;
     }
+
+    if let Some(inst) = last_instruction
+      && let Some(target_addr) = inst.target_addr
+      && let Some(target_addr_val) = target_addr.value()
+    {
+      for trap_range in self.trap_ranges.iter() {
+        if trap_range.contains(&target_addr_val) {
+          probe_result =
+            ProbeResult::TrapHit(Traps::AddressRange(trap_range.clone(), target_addr_val))
+        }
+      }
+    }
+
+    probe_result
   }
 
   pub fn get_last_instruction(&self) -> Option<&DebugInstructionInfo> {
     self.instructions.back()
+  }
+
+  pub fn trap_between_addresses(&mut self, addrs: RangeInclusive<Word>) {
+    self.trap_ranges.push(addrs)
   }
 }
 
