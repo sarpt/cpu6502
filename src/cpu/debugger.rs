@@ -23,7 +23,6 @@ pub enum ProbeResult {
   NextInstruction,
   AddressingDone,
   TrapHit(Traps),
-  Cycle,
 }
 
 pub struct Debugger {
@@ -39,8 +38,8 @@ impl Debugger {
     }
   }
 
-  pub fn probe(&mut self, cpu: &CPU) -> ProbeResult {
-    let mut probe_result = ProbeResult::Cycle;
+  pub fn probe(&mut self, cpu: &CPU) -> Vec<ProbeResult> {
+    let mut probe_results: Vec<ProbeResult> = Vec::new();
 
     if cpu.sync()
       && let Some(instruction) = &cpu.current_instruction
@@ -52,7 +51,7 @@ impl Debugger {
         starting_cycle: instruction.starting_cycle,
         target_addr: None,
       });
-      probe_result = ProbeResult::NextInstruction;
+      probe_results.push(ProbeResult::NextInstruction);
     }
 
     let mut last_instruction = self.instructions.back_mut();
@@ -60,7 +59,7 @@ impl Debugger {
       && cpu.addr.value().is_some()
     {
       inst.target_addr = Some(cpu.addr);
-      probe_result = ProbeResult::AddressingDone;
+      probe_results.push(ProbeResult::AddressingDone);
     }
 
     if let Some(inst) = last_instruction
@@ -69,13 +68,15 @@ impl Debugger {
     {
       for trap_range in self.trap_ranges.iter() {
         if trap_range.contains(&target_addr_val) {
-          probe_result =
-            ProbeResult::TrapHit(Traps::AddressRange(trap_range.clone(), target_addr_val))
+          probe_results.push(ProbeResult::TrapHit(Traps::AddressRange(
+            trap_range.clone(),
+            target_addr_val,
+          )));
         }
       }
     }
 
-    probe_result
+    probe_results
   }
 
   pub fn get_last_instruction(&self) -> Option<&DebugInstructionInfo> {
