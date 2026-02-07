@@ -15,10 +15,12 @@ pub struct DebugInstructionInfo {
   pub target_addr: Option<Address>,
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Traps {
   AddressRange(RangeInclusive<Word>, Word),
 }
 
+#[derive(Debug, PartialEq)]
 pub enum ProbeResult {
   NextInstruction,
   AddressingDone,
@@ -56,6 +58,7 @@ impl Debugger {
 
     let mut last_instruction = self.instructions.back_mut();
     if let Some(inst) = &mut last_instruction
+      && inst.target_addr.is_none()
       && cpu.addr.value().is_some()
     {
       inst.target_addr = Some(cpu.addr);
@@ -179,6 +182,47 @@ mod tests {
       uut.probe(&cpu);
 
       assert!(uut.get_last_instruction().is_none());
+    }
+  }
+
+  #[cfg(test)]
+  mod probe {
+    use crate::cpu::{
+      CPU,
+      addressing::address::Address,
+      debugger::{Debugger, ProbeResult},
+      instructions::{LDA_A, NOP},
+      tests::MemoryMock,
+    };
+
+    #[test]
+    fn should_return_addresing_done_on_first_cycle_when_address_is_known() {
+      let mut memory = MemoryMock::new(&[LDA_A, 0x03, NOP, 0x56]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x00;
+      cpu.addr = Address::new();
+
+      let mut uut = Debugger::new();
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[ProbeResult::NextInstruction]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[ProbeResult::AddressingDone]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[ProbeResult::NextInstruction]);
     }
   }
 }
