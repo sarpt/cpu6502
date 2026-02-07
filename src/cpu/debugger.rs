@@ -57,18 +57,20 @@ impl Debugger {
     }
 
     let mut last_instruction = self.instructions.back_mut();
-    if let Some(inst) = &mut last_instruction
-      && inst.target_addr.is_none()
-      && cpu.addr.value().is_some()
-    {
-      inst.target_addr = Some(cpu.addr);
-      probe_results.push(ProbeResult::AddressingDone);
+    let Some(inst) = &mut last_instruction else {
+      return probe_results;
+    };
+
+    let addressing_done = inst.target_addr.is_none() && cpu.addr.value().is_some();
+    if !addressing_done {
+      return probe_results;
     }
 
-    if let Some(inst) = last_instruction
-      && let Some(target_addr) = inst.target_addr
-      && let Some(target_addr_val) = target_addr.value()
-    {
+    let target_addr = cpu.addr;
+    inst.target_addr = Some(target_addr);
+    probe_results.push(ProbeResult::AddressingDone);
+
+    if let Some(target_addr_val) = target_addr.value() {
       for trap_range in self.trap_ranges.iter() {
         if trap_range.contains(&target_addr_val) {
           probe_results.push(ProbeResult::TrapHit(Traps::AddressRange(
@@ -223,6 +225,70 @@ mod tests {
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
+    }
+
+    #[test]
+    fn should_return_addressing_ranges_when_traps_hit_on_cycles_when_addressing_finished() {
+      let mut memory = MemoryMock::new(&[LDA_A, 0x04, 0x00, LDA_A, 0x22, 0x00, LDA_A, 0x99, 0x00]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x00;
+      cpu.addr = Address::new();
+
+      let mut uut = Debugger::new();
+      uut.trap_between_addresses(0x01..=0x04);
+      uut.trap_between_addresses(0x80..=0xA0);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[ProbeResult::NextInstruction]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(
+        &result,
+        &[
+          ProbeResult::AddressingDone,
+          ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x01..=0x04, 0x04))
+        ]
+      );
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[ProbeResult::NextInstruction]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[ProbeResult::AddressingDone]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[ProbeResult::NextInstruction]);
+
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(
+        &result,
+        &[
+          ProbeResult::AddressingDone,
+          ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x80..=0xA0, 0x99))
+        ]
+      );
     }
   }
 }
