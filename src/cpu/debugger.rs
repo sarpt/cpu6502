@@ -21,6 +21,11 @@ pub enum Traps {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum TrapConditions {
+  AddressRange(RangeInclusive<Word>),
+}
+
+#[derive(Debug, PartialEq)]
 pub enum ProbeResult {
   NextInstruction,
   AddressingDone,
@@ -29,14 +34,14 @@ pub enum ProbeResult {
 
 pub struct Debugger {
   instructions: AllocRingBuffer<DebugInstructionInfo>,
-  trap_ranges: Vec<RangeInclusive<Word>>,
+  traps: Vec<TrapConditions>,
 }
 
 impl Debugger {
   pub fn new() -> Self {
     Debugger {
       instructions: AllocRingBuffer::new(DEFAULT_INSTRUCTION_HISTORY_CAPACITY),
-      trap_ranges: Vec::new(),
+      traps: Vec::new(),
     }
   }
 
@@ -56,27 +61,29 @@ impl Debugger {
       probe_results.push(ProbeResult::NextInstruction);
     }
 
-    let mut last_instruction = self.instructions.back_mut();
-    let Some(inst) = &mut last_instruction else {
+    let Some(last_instruction) = &mut self.instructions.back_mut() else {
       return probe_results;
     };
 
-    let addressing_done = inst.target_addr.is_none() && cpu.addr.value().is_some();
-    if !addressing_done {
-      return probe_results;
+    let target_addr = cpu.addr;
+    let addressing_done = last_instruction.target_addr.is_none() && cpu.addr.value().is_some();
+    if addressing_done {
+      last_instruction.target_addr = Some(target_addr);
+      probe_results.push(ProbeResult::AddressingDone);
     }
 
-    let target_addr = cpu.addr;
-    inst.target_addr = Some(target_addr);
-    probe_results.push(ProbeResult::AddressingDone);
-
-    if let Some(target_addr_val) = target_addr.value() {
-      for trap_range in self.trap_ranges.iter() {
-        if trap_range.contains(&target_addr_val) {
-          probe_results.push(ProbeResult::TrapHit(Traps::AddressRange(
-            trap_range.clone(),
-            target_addr_val,
-          )));
+    for trap in self.traps.iter() {
+      match trap {
+        TrapConditions::AddressRange(rng) => {
+          if addressing_done
+            && let Some(target_addr_val) = target_addr.value()
+            && rng.contains(&target_addr_val)
+          {
+            probe_results.push(ProbeResult::TrapHit(Traps::AddressRange(
+              rng.clone(),
+              target_addr_val,
+            )));
+          }
         }
       }
     }
@@ -89,7 +96,7 @@ impl Debugger {
   }
 
   pub fn trap_between_addresses(&mut self, addrs: RangeInclusive<Word>) {
-    self.trap_ranges.push(addrs)
+    self.traps.push(TrapConditions::AddressRange(addrs))
   }
 }
 
@@ -228,7 +235,7 @@ mod tests {
     }
 
     #[test]
-    fn should_return_addressing_ranges_when_traps_hit_on_cycles_when_addressing_finished() {
+    fn should_return_addressing_ranges_when_traps_hit_after_last_cycle_of_addressing() {
       let mut memory = MemoryMock::new(&[LDA_A, 0x04, 0x00, LDA_A, 0x22, 0x00, LDA_A, 0x99, 0x00]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
