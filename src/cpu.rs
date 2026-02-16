@@ -108,6 +108,7 @@ impl CPU {
     }
   }
 
+  #[inline]
   pub fn sync(&self) -> bool {
     self.sync
   }
@@ -115,14 +116,6 @@ impl CPU {
   #[inline]
   fn increment_program_counter(&mut self) {
     self.program_counter = self.program_counter.wrapping_add(1);
-  }
-
-  fn increment_register(&mut self, register: Registers) {
-    self.set_register(register, self.get_register(register).wrapping_add(1));
-  }
-
-  fn decrement_register(&mut self, register: Registers) {
-    self.set_register(register, self.get_register(register).wrapping_sub(1));
   }
 
   fn set_register(&mut self, register: Registers, value: Byte) {
@@ -211,11 +204,11 @@ impl CPU {
   fn push_byte_to_stack(&mut self, val: Byte, memory: &mut dyn Memory) {
     let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
     memory[stack_addr] = val;
-    self.decrement_register(Registers::StackPointer);
+    self.stack_pointer = self.stack_pointer.wrapping_sub(1);
   }
 
   fn pop_byte_from_stack(&mut self, memory: &dyn Memory) -> Byte {
-    self.increment_register(Registers::StackPointer);
+    self.stack_pointer = self.stack_pointer.wrapping_add(1);
     let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
     memory[stack_addr]
   }
