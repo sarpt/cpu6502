@@ -66,7 +66,7 @@ impl Debugger {
     };
 
     let target_addr = cpu.addr;
-    let addressing_done = last_instruction.target_addr.is_none() && cpu.addr.value().is_some();
+    let addressing_done = last_instruction.target_addr.is_none() && cpu.addr.done;
     if addressing_done {
       last_instruction.target_addr = Some(target_addr);
       probe_results.push(ProbeResult::AddressingDone);
@@ -129,15 +129,15 @@ mod tests {
   mod get_last_instruction {
     use crate::cpu::{
       CPU,
-      addressing::{AddressingMode, address::Address},
+      addressing::address::Address,
       debugger::Debugger,
-      instructions::{LDA_IM, NOP},
+      instructions::{LDA_A, NOP},
       tests::MemoryMock,
     };
 
     #[test]
     fn should_return_last_ran_instruction_and_update_its_target_address() {
-      let mut memory = MemoryMock::new(&[NOP, LDA_IM, 0xFF]);
+      let mut memory = MemoryMock::new(&[NOP, LDA_A, 0x04, 0x00, 0x99]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
       cpu.addr = Address::new();
@@ -169,18 +169,25 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "3@0x01: LDA_IM (0xA9) [?]");
+      assert_eq!(instruction_info, "3@0x01: LDA (0xAD) [?]");
 
       cpu.tick(&mut memory);
-      cpu.addr.reset(AddressingMode::Immediate);
-      cpu.addr.set(0x02u8);
       uut.probe(&cpu);
 
       last_instruction = uut
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "3@0x01: LDA_IM (0xA9) [IM->0x02]");
+      assert_eq!(instruction_info, "3@0x01: LDA (0xAD) [?]");
+
+      cpu.tick(&mut memory);
+      uut.probe(&cpu);
+
+      last_instruction = uut
+        .get_last_instruction()
+        .expect("last instruction is unexpectedly None");
+      instruction_info = format!("{}", last_instruction);
+      assert_eq!(instruction_info, "3@0x01: LDA (0xAD) [$0x04]");
     }
 
     #[test]
@@ -205,7 +212,7 @@ mod tests {
     };
 
     #[test]
-    fn should_return_addresing_done_on_first_cycle_when_address_is_known() {
+    fn should_return_addresing_done_on_first_cycle_when_addressing_is_done() {
       let mut memory = MemoryMock::new(&[LDA_A, 0x03, NOP, 0x56]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
@@ -213,22 +220,27 @@ mod tests {
 
       let mut uut = Debugger::new();
 
+      // fetch of LDA_A
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
 
+      // tick to fetch lo address
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[]);
+
+      // tick to fetch hi address & addressing done
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[ProbeResult::AddressingDone]);
 
+      // fetch of value at address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[]);
 
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
-      assert_eq!(&result, &[]);
-
+      // fetch of NOP
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
@@ -245,10 +257,17 @@ mod tests {
       uut.trap_between_addresses(0x01..=0x04);
       uut.trap_between_addresses(0x80..=0xA0);
 
+      // fetch LDA_A
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
 
+      // fetch lo of address
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[]);
+
+      // fetch hi of address & addressing done
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(
@@ -259,34 +278,42 @@ mod tests {
         ]
       );
 
+      // fetch of value at address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[]);
 
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
-      assert_eq!(&result, &[]);
-
+      // fetch of next LDA_A
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
 
+      // fetch lo of address
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[]);
+
+      // fetch hi of address & addressing done
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[ProbeResult::AddressingDone]);
 
+      // fetch of value at address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[]);
 
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
-      assert_eq!(&result, &[]);
-
+      // fetch of next LDA_A
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
 
+      // fetch lo of address
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu);
+      assert_eq!(&result, &[]);
+
+      // fetch hi of address & addressing done
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu);
       assert_eq!(
