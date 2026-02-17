@@ -15,7 +15,6 @@ enum IndirectIndexYStep {
 pub struct IndirectIndexYAddressingTasks {
   done: bool,
   step: IndirectIndexYStep,
-  tgt_addr: Word,
 }
 
 impl IndirectIndexYAddressingTasks {
@@ -23,7 +22,6 @@ impl IndirectIndexYAddressingTasks {
     IndirectIndexYAddressingTasks {
       done: false,
       step: IndirectIndexYStep::MemoryAccess,
-      tgt_addr: Word::default(),
     }
   }
 }
@@ -42,21 +40,29 @@ impl Tasks for IndirectIndexYAddressingTasks {
       IndirectIndexYStep::MemoryAccess => {
         cpu.addr.reset(AddressingMode::IndirectIndexY);
         let addr: Byte = memory[cpu.program_counter];
-        self.tgt_addr = addr.into();
+        cpu.addr.set_indirect_lo(addr);
         cpu.increment_program_counter();
         self.step = IndirectIndexYStep::IndirectAccessLo;
 
         false
       }
       IndirectIndexYStep::IndirectAccessLo => {
-        let addr_lo = memory[self.tgt_addr];
+        let indirect_addr = cpu
+          .addr
+          .indirect()
+          .expect("indirect address is unexpectedly empty in IndirectAccessLo step");
+        let addr_lo = memory[indirect_addr];
         cpu.addr.set_lo(addr_lo);
         self.step = IndirectIndexYStep::IndirectAccessHi;
 
         false
       }
       IndirectIndexYStep::IndirectAccessHi => {
-        let addr_hi = memory[self.tgt_addr.wrapping_add(1)];
+        let indirect_addr = cpu
+          .addr
+          .indirect()
+          .expect("indirect address is unexpectedly empty in IndirectAccessHi step");
+        let addr_hi = memory[indirect_addr.wrapping_add(1)];
         cpu.addr.set_hi(addr_hi);
         self.step = IndirectIndexYStep::OffsetLo;
 
@@ -73,6 +79,7 @@ impl Tasks for IndirectIndexYAddressingTasks {
         self.step = IndirectIndexYStep::OffsetHi;
 
         if !carry {
+          cpu.addr.done = true;
           self.done = true;
         }
         self.done
@@ -86,6 +93,7 @@ impl Tasks for IndirectIndexYAddressingTasks {
         let new_hi = hi.wrapping_add(1);
         cpu.addr.set(Word::from_le_bytes([lo, new_hi]));
 
+        cpu.addr.done = true;
         self.done = true;
         self.done
       }
@@ -129,7 +137,7 @@ impl Tasks for IndexIndirectXAddressingTasks {
       IndexIndirectXStep::IndirectAccess => {
         cpu.addr.reset(AddressingMode::IndexIndirectX);
         let addr: Byte = memory[cpu.program_counter];
-        cpu.addr.set(addr);
+        cpu.addr.set_indirect_lo(addr);
         cpu.increment_program_counter();
         self.step = IndexIndirectXStep::SumWithX;
 
@@ -138,8 +146,8 @@ impl Tasks for IndexIndirectXAddressingTasks {
       IndexIndirectXStep::SumWithX => {
         let addr_output = cpu
           .addr
-          .value()
-          .expect("unexpected lack of address in SumWithX step");
+          .indirect()
+          .expect("unexpected lack of indirect address in SumWithX step");
         self.tgt_addr = addr_output.wrapping_add(cpu.index_register_x.into());
         self.step = IndexIndirectXStep::MemoryAccessLo;
 
@@ -156,6 +164,7 @@ impl Tasks for IndexIndirectXAddressingTasks {
         let addr_hi = memory[self.tgt_addr.wrapping_add(1)];
         cpu.addr.set_hi(addr_hi);
 
+        cpu.addr.done = true;
         self.done = true;
         self.done
       }
@@ -176,8 +185,6 @@ pub struct IndirectAddressingTasks {
   fixed_addressing: bool,
   done: bool,
   step: IndirectStep,
-  tgt_addr_lo: Byte,
-  tgt_addr_hi: Byte,
 }
 
 impl IndirectAddressingTasks {
@@ -186,8 +193,6 @@ impl IndirectAddressingTasks {
       fixed_addressing: true,
       done: false,
       step: IndirectStep::IndirectFetchLo,
-      tgt_addr_lo: Byte::default(),
-      tgt_addr_hi: Byte::default(),
     }
   }
 
@@ -196,8 +201,6 @@ impl IndirectAddressingTasks {
       fixed_addressing: false,
       done: false,
       step: IndirectStep::IndirectFetchLo,
-      tgt_addr_lo: Byte::default(),
-      tgt_addr_hi: Byte::default(),
     }
   }
 }
@@ -215,14 +218,14 @@ impl Tasks for IndirectAddressingTasks {
     match self.step {
       IndirectStep::IndirectFetchLo => {
         cpu.addr.reset(AddressingMode::Indirect);
-        self.tgt_addr_lo = memory[cpu.program_counter];
+        cpu.addr.set_indirect_lo(memory[cpu.program_counter]);
         cpu.increment_program_counter();
         self.step = IndirectStep::IndirectFetchHi;
 
         false
       }
       IndirectStep::IndirectFetchHi => {
-        self.tgt_addr_hi = memory[cpu.program_counter];
+        cpu.addr.set_indirect_hi(memory[cpu.program_counter]);
         cpu.increment_program_counter();
         if self.fixed_addressing {
           self.step = IndirectStep::AddrFixing;
@@ -238,7 +241,10 @@ impl Tasks for IndirectAddressingTasks {
         false
       }
       IndirectStep::MemoryAccessLo => {
-        let addr = Word::from_le_bytes([self.tgt_addr_lo, self.tgt_addr_hi]);
+        let addr = cpu
+          .addr
+          .indirect()
+          .expect("indirect address is unexpectedly empty");
         let addr_lo = memory[addr];
         cpu.addr.set_lo(addr_lo);
 
@@ -251,16 +257,23 @@ impl Tasks for IndirectAddressingTasks {
         false
       }
       IndirectStep::FixedMemoryAccessHi => {
-        let addr = Word::from_le_bytes([self.tgt_addr_lo, self.tgt_addr_hi]);
+        let addr = cpu
+          .addr
+          .indirect()
+          .expect("indirect address is unexpectedly empty");
         let addr_hi = memory[addr + 1];
         cpu.addr.set_hi(addr_hi);
 
+        cpu.addr.done = true;
         self.done = true;
         self.done
       }
       IndirectStep::IncorrectMemoryAccessHi => {
-        let addr = Word::from_le_bytes([self.tgt_addr_lo, self.tgt_addr_hi]);
-        let should_incorrectly_jump = self.tgt_addr_lo == 0xFF;
+        let addr = cpu
+          .addr
+          .indirect()
+          .expect("indirect address is unexpectedly empty");
+        let should_incorrectly_jump = addr.to_le_bytes()[0] == 0xFF; // self.tgt_addr_lo == 0xFF;
         let mut target_addr = addr + 1;
         if should_incorrectly_jump {
           target_addr = addr & 0xFF00;
@@ -268,6 +281,7 @@ impl Tasks for IndirectAddressingTasks {
         let addr_hi = memory[target_addr];
         cpu.addr.set_hi(addr_hi);
 
+        cpu.addr.done = true;
         self.done = true;
         self.done
       }

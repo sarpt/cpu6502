@@ -16,26 +16,17 @@ use super::{CPU, ChipVariant, tasks::Tasks};
 
 #[derive(Copy, Clone, PartialEq, Display)]
 pub enum AddressingMode {
-  #[strum(to_string = "IM")]
   Immediate,
-  #[strum(to_string = "IN")]
   Indirect,
-  #[strum(to_string = "ZP")]
   ZeroPage,
-  #[strum(to_string = "ZPX")]
   ZeroPageX,
-  #[strum(to_string = "ZPY")]
   ZeroPageY,
-  #[strum(to_string = "A")]
   Absolute,
-  #[strum(to_string = "AX")]
   AbsoluteX,
-  #[strum(to_string = "AY")]
   AbsoluteY,
-  #[strum(to_string = "INX")]
   IndexIndirectX,
-  #[strum(to_string = "INY")]
   IndirectIndexY,
+  Accumulator,
 }
 
 enum OffsetVariant {
@@ -61,6 +52,7 @@ pub fn get_addressing_tasks(cpu: &CPU, addr_mode: AddressingMode) -> Box<dyn Tas
     AddressingMode::IndexIndirectX => Box::new(IndexIndirectXAddressingTasks::new()),
     AddressingMode::IndirectIndexY => Box::new(IndirectIndexYAddressingTasks::new()),
     AddressingMode::Immediate => Box::new(ImmediateReadMemoryTasks::new()),
+    AddressingMode::Accumulator => panic!("addressing tasks for accumulator not available"),
   }
 }
 

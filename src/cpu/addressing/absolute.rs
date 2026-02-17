@@ -97,6 +97,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
         let new_hi = hi.wrapping_add(1);
         cpu.addr.set(Word::from_le_bytes([lo, new_hi]));
 
+        cpu.addr.done = true;
         self.done = true;
         self.done
       }
@@ -148,6 +149,7 @@ impl Tasks for AbsoluteAddressingTasks {
         cpu.addr.set_hi(addr_hi);
         cpu.increment_program_counter();
 
+        cpu.addr.done = true;
         self.done = true;
         self.done
       }

@@ -26,8 +26,9 @@ impl Tasks for ZeroPageAddressingTasks {
     let addr: Byte = memory[cpu.program_counter];
     cpu.addr.set(addr);
     cpu.increment_program_counter();
-    self.done = true;
 
+    cpu.addr.done = true;
+    self.done = true;
     self.done
   }
 }
@@ -97,6 +98,7 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
         let final_address = addr_output.wrapping_add(offset);
         cpu.addr.set(final_address);
 
+        cpu.addr.done = true;
         self.done = true;
         self.done
       }
