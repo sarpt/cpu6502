@@ -151,7 +151,7 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       let mut instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "1@0x00: NOP (0xEA) [?]");
+      assert_eq!(instruction_info, "1@0x00: NOP (0xEA) []");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu);
@@ -160,7 +160,7 @@ mod tests {
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
       // second cycle of NOP
-      assert_eq!(instruction_info, "1@0x00: NOP (0xEA) [?]");
+      assert_eq!(instruction_info, "1@0x00: NOP (0xEA) []");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu);

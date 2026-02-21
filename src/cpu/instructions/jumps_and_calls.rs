@@ -141,7 +141,8 @@ impl Tasks for RtsTasks {
   }
 }
 
-pub fn rts(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn rts(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   Box::new(RtsTasks::new())
 }
 

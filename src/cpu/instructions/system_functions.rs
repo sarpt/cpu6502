@@ -29,7 +29,8 @@ impl Tasks for NopTasks {
   }
 }
 
-pub fn nop(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn nop(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   Box::new(NopTasks::new())
 }
 
@@ -108,7 +109,8 @@ impl Tasks for BrkTasks {
   }
 }
 
-pub fn brk(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn brk(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   Box::new(BrkTasks::new())
 }
 
@@ -178,7 +180,8 @@ impl Tasks for RtiTasks {
   }
 }
 
-pub fn rti(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn rti(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   Box::new(RtiTasks::new())
 }
 

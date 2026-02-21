@@ -15,7 +15,7 @@ enum BranchStep {
 struct BranchTasks {
   condition: fn(&CPU) -> bool,
   step: BranchStep,
-  offset: Byte,
+  negative_offset_direction: bool,
 }
 
 impl BranchTasks {
@@ -23,7 +23,7 @@ impl BranchTasks {
     BranchTasks {
       condition,
       step: BranchStep::ConditionExecution,
-      offset: 0,
+      negative_offset_direction: false,
     }
   }
 }
@@ -36,10 +36,13 @@ impl Tasks for BranchTasks {
   fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
     match self.step {
       BranchStep::ConditionExecution => {
-        self.offset = memory[cpu.program_counter];
+        let offset = memory[cpu.program_counter];
+        cpu.addr.set_indirect_lo(offset);
+        cpu.addr.done = true;
         cpu.increment_program_counter();
 
         if (self.condition)(cpu) {
+          self.negative_offset_direction = 0b10000000 & offset > 0;
           self.step = BranchStep::OffsetProgramCounterLo;
           return false;
         }
@@ -48,17 +51,21 @@ impl Tasks for BranchTasks {
         true
       }
       BranchStep::OffsetProgramCounterLo => {
+        let offset = cpu
+          .addr
+          .indirect()
+          .expect("unexpect lack of indirect address in OffsetProgramCounterLo step")
+          .to_le_bytes()[0];
         let [program_counter_lo, program_counter_hi] = cpu.program_counter.to_le_bytes();
-        let negative_offset_direction = 0b10000000 & self.offset > 0;
-        let directionless_offset = if negative_offset_direction {
-          (self.offset ^ 0b11111111) + 1
+        let directionless_offset = if self.negative_offset_direction {
+          (offset ^ 0b11111111) + 1
         } else {
-          self.offset
+          offset
         };
         let offset_program_counter_lo: Byte;
         let carry: bool;
 
-        if negative_offset_direction {
+        if self.negative_offset_direction {
           (offset_program_counter_lo, carry) =
             program_counter_lo.overflowing_sub(directionless_offset);
         } else {
@@ -77,9 +84,8 @@ impl Tasks for BranchTasks {
         false
       }
       BranchStep::OffsetProgramCounterHi => {
-        let negative_offset_direction = 0b10000000 & self.offset > 0;
         let [program_counter_lo, program_counter_hi] = cpu.program_counter.to_le_bytes();
-        let offset_program_counter_hi: Byte = if negative_offset_direction {
+        let offset_program_counter_hi: Byte = if self.negative_offset_direction {
           program_counter_hi.wrapping_sub(1)
         } else {
           program_counter_hi.wrapping_add(1)
@@ -94,49 +100,73 @@ impl Tasks for BranchTasks {
   }
 }
 
-pub fn bcc(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn bcc(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu
+    .addr
+    .reset(crate::cpu::addressing::AddressingMode::Relative);
   Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
     !cpu.processor_status.get_carry_flag()
   }))
 }
 
-pub fn bcs(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn bcs(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu
+    .addr
+    .reset(crate::cpu::addressing::AddressingMode::Relative);
   Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
     cpu.processor_status.get_carry_flag()
   }))
 }
 
-pub fn beq(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn beq(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu
+    .addr
+    .reset(crate::cpu::addressing::AddressingMode::Relative);
   Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
     cpu.processor_status.get_zero_flag()
   }))
 }
 
-pub fn bmi(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn bmi(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu
+    .addr
+    .reset(crate::cpu::addressing::AddressingMode::Relative);
   Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
     cpu.processor_status.get_negative_flag()
   }))
 }
 
-pub fn bne(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn bne(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu
+    .addr
+    .reset(crate::cpu::addressing::AddressingMode::Relative);
   Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
     !cpu.processor_status.get_zero_flag()
   }))
 }
 
-pub fn bpl(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn bpl(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu
+    .addr
+    .reset(crate::cpu::addressing::AddressingMode::Relative);
   Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
     !cpu.processor_status.get_negative_flag()
   }))
 }
 
-pub fn bvs(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn bvs(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu
+    .addr
+    .reset(crate::cpu::addressing::AddressingMode::Relative);
   Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
     cpu.processor_status.get_overflow_flag()
   }))
 }
 
-pub fn bvc(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn bvc(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu
+    .addr
+    .reset(crate::cpu::addressing::AddressingMode::Relative);
   Box::new(BranchTasks::new(|cpu: &CPU| -> bool {
     !cpu.processor_status.get_overflow_flag()
   }))
