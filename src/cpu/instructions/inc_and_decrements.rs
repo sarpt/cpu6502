@@ -33,10 +33,12 @@ pub fn dec_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 pub fn dex_im(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   decrement_register(cpu, Registers::IndexX)
 }
 
 pub fn dey_im(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   decrement_register(cpu, Registers::IndexY)
 }
 
@@ -69,10 +71,12 @@ pub fn inc_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
 }
 
 pub fn inx_im(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   increment_register(cpu, Registers::IndexX)
 }
 
 pub fn iny_im(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   increment_register(cpu, Registers::IndexY)
 }
 

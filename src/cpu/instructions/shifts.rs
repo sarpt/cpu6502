@@ -10,8 +10,7 @@ fn asl(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
 }
 
 pub fn asl_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
-  cpu.addr.reset(AddressingMode::Accumulator);
-  cpu.addr.done = true;
+  cpu.addr.reset_acc();
   Box::new(ModifyRegisterTasks::new_shift_left(Registers::Accumulator))
 }
 
@@ -37,8 +36,7 @@ fn lsr(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
 }
 
 pub fn lsr_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
-  cpu.addr.reset(AddressingMode::Accumulator);
-  cpu.addr.done = true;
+  cpu.addr.reset_acc();
   Box::new(ModifyRegisterTasks::new_shift_right(Registers::Accumulator))
 }
 
@@ -64,8 +62,7 @@ fn rol(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
 }
 
 pub fn rol_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
-  cpu.addr.reset(AddressingMode::Accumulator);
-  cpu.addr.done = true;
+  cpu.addr.reset_acc();
   Box::new(ModifyRegisterTasks::new_rotate_left(Registers::Accumulator))
 }
 
@@ -91,8 +88,7 @@ fn ror(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
 }
 
 pub fn ror_acc(cpu: &mut CPU) -> Box<dyn Tasks> {
-  cpu.addr.reset(AddressingMode::Accumulator);
-  cpu.addr.done = true;
+  cpu.addr.reset_acc();
   Box::new(ModifyRegisterTasks::new_rotate_right(
     Registers::Accumulator,
   ))

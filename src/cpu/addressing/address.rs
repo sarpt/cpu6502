@@ -77,6 +77,20 @@ impl Address {
     self.mode = Some(mode);
     self.done = false;
   }
+
+  pub fn reset_implicit(&mut self) {
+    self.indirect = None;
+    self.val = None;
+    self.mode = Some(AddressingMode::Implicit);
+    self.done = true;
+  }
+
+  pub fn reset_acc(&mut self) {
+    self.indirect = None;
+    self.val = None;
+    self.mode = Some(AddressingMode::Accumulator);
+    self.done = true;
+  }
 }
 
 impl Display for Address {
@@ -84,7 +98,8 @@ impl Display for Address {
     let val = self
       .mode
       .and_then(|mode| match mode {
-        AddressingMode::Immediate => Some(String::from("")),
+        AddressingMode::Immediate | AddressingMode::Implicit => Some(String::from("")),
+        AddressingMode::Relative => self.indirect.map(|addr_val| format!("*+{addr_val:#02X})")),
         AddressingMode::Indirect => self.indirect.map(|addr_val| format!("(${addr_val:#04X})")),
         AddressingMode::ZeroPage => self.val.map(|addr_val| format!("${addr_val:#02X}")),
         AddressingMode::ZeroPageX => self.val.map(|addr_val| format!("${addr_val:#02X},X")),

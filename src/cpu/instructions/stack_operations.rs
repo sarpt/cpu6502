@@ -56,10 +56,12 @@ fn push_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
 }
 
 pub fn pha(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   push_register(cpu, Registers::Accumulator)
 }
 
 pub fn php(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   push_register(cpu, Registers::ProcessorStatus)
 }
 
@@ -124,21 +126,25 @@ fn pull_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
 }
 
 pub fn pla(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   pull_register(cpu, Registers::Accumulator)
 }
 
 pub fn plp(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   pull_register(cpu, Registers::ProcessorStatus)
 }
 
-pub fn tsx(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn tsx(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   Box::new(TransferRegistersTasks::new(
     Registers::StackPointer,
     Registers::IndexX,
   ))
 }
 
-pub fn txs(_cpu: &mut CPU) -> Box<dyn Tasks> {
+pub fn txs(cpu: &mut CPU) -> Box<dyn Tasks> {
+  cpu.addr.reset_implicit();
   Box::new(TransferRegistersTasks::new(
     Registers::IndexX,
     Registers::StackPointer,
