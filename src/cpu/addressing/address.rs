@@ -99,20 +99,20 @@ impl Display for Address {
       .mode
       .and_then(|mode| match mode {
         AddressingMode::Immediate | AddressingMode::Implicit => Some(String::from("")),
-        AddressingMode::Relative => self.indirect.map(|addr_val| format!("*+{addr_val:#02X})")),
-        AddressingMode::Indirect => self.indirect.map(|addr_val| format!("(${addr_val:#04X})")),
-        AddressingMode::ZeroPage => self.val.map(|addr_val| format!("${addr_val:#02X}")),
-        AddressingMode::ZeroPageX => self.val.map(|addr_val| format!("${addr_val:#02X},X")),
-        AddressingMode::ZeroPageY => self.val.map(|addr_val| format!("${addr_val:#02X},Y")),
-        AddressingMode::Absolute => self.val.map(|addr_val| format!("${addr_val:#04X}")),
-        AddressingMode::AbsoluteX => self.val.map(|addr_val| format!("${addr_val:#04X},X")),
-        AddressingMode::AbsoluteY => self.val.map(|addr_val| format!("${addr_val:#04X},Y")),
-        AddressingMode::IndexIndirectX => self
-          .indirect
-          .map(|addr_val| format!("(${addr_val:#02X},X)")),
-        AddressingMode::IndirectIndexY => self
-          .indirect
-          .map(|addr_val| format!("(${addr_val:#02X}),Y")),
+        AddressingMode::Relative => self.indirect.map(|addr_val| format!("*+{addr_val:X}")),
+        AddressingMode::Indirect => self.indirect.map(|addr_val| format!("(${addr_val:X})")),
+        AddressingMode::ZeroPage => self.val.map(|addr_val| format!("${addr_val:X}")),
+        AddressingMode::ZeroPageX => self.val.map(|addr_val| format!("${addr_val:X},X")),
+        AddressingMode::ZeroPageY => self.val.map(|addr_val| format!("${addr_val:X},Y")),
+        AddressingMode::Absolute => self.val.map(|addr_val| format!("${addr_val:X}")),
+        AddressingMode::AbsoluteX => self.val.map(|addr_val| format!("${addr_val:X},X")),
+        AddressingMode::AbsoluteY => self.val.map(|addr_val| format!("${addr_val:X},Y")),
+        AddressingMode::IndexIndirectX => {
+          self.indirect.map(|addr_val| format!("(${addr_val:X},X)"))
+        }
+        AddressingMode::IndirectIndexY => {
+          self.indirect.map(|addr_val| format!("(${addr_val:X}),Y"))
+        }
         AddressingMode::Accumulator => Some(String::from("A")),
       })
       .unwrap_or_else(|| String::from("?"));

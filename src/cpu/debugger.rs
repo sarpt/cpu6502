@@ -186,7 +186,7 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "3@0x01: LDA $0x04");
+      assert_eq!(instruction_info, "3@0x01: LDA $4");
     }
 
     #[test]
@@ -348,7 +348,149 @@ mod tests {
           target_addr: Some(addr),
         };
 
-        assert_eq!(format!("{uut}"), "3@0x21: LDA $0x5955");
+        assert_eq!(uut.to_string(), "3@0x21: LDA $5955");
+      }
+
+      #[test]
+      fn should_show_absolute_x_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::AbsoluteX);
+        addr.set_lo(0x59u8);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xBD,
+          name: "LDA",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: LDA $59,X");
+      }
+
+      #[test]
+      fn should_show_absolute_y_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::AbsoluteY);
+        addr.set_lo(0x59u8);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xB9,
+          name: "LDA",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: LDA $59,Y");
+      }
+
+      #[test]
+      fn should_show_accumulator_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::Accumulator);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0x4A,
+          name: "LSR",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: LSR A");
+      }
+
+      #[test]
+      fn should_show_immediate_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::Immediate);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xA0,
+          name: "LDY",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: LDY ");
+      }
+
+      #[test]
+      fn should_show_implicit_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::Implicit);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xEA,
+          name: "NOP",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: NOP ");
+      }
+
+      #[test]
+      fn should_show_indirect_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::Indirect);
+        addr.set_indirect_lo(0x59);
+        addr.set_indirect_hi(0x25);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0x6C,
+          name: "JMP",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: JMP ($2559)");
+      }
+
+      #[test]
+      fn should_show_index_indirect_x_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::IndexIndirectX);
+        addr.set_indirect_lo(0x59);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xA1,
+          name: "LDA",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: LDA ($59,X)");
+      }
+
+      #[test]
+      fn should_show_indirect_index_y_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::IndirectIndexY);
+        addr.set_indirect_lo(0x59);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xB1,
+          name: "LDA",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: LDA ($59),Y");
+      }
+
+      #[test]
+      fn should_show_relative_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::Relative);
+        addr.set_indirect_lo(0x4);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0x30,
+          name: "BMI",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: BMI *+4");
       }
 
       #[test]
@@ -364,7 +506,7 @@ mod tests {
           target_addr: Some(addr),
         };
 
-        assert_eq!(format!("{uut}"), "3@0x21: LDA $0x59");
+        assert_eq!(uut.to_string(), "3@0x21: LDA $59");
       }
 
       #[test]
@@ -380,7 +522,7 @@ mod tests {
           target_addr: Some(addr),
         };
 
-        assert_eq!(format!("{uut}"), "3@0x21: LDA $0x59,X");
+        assert_eq!(uut.to_string(), "3@0x21: LDA $59,X");
       }
 
       #[test]
@@ -396,7 +538,7 @@ mod tests {
           target_addr: Some(addr),
         };
 
-        assert_eq!(format!("{uut}"), "3@0x21: LDX $0x59,Y");
+        assert_eq!(uut.to_string(), "3@0x21: LDX $59,Y");
       }
     }
   }
