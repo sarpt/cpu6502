@@ -110,14 +110,13 @@ impl Display for DebugInstructionInfo {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(
       f,
-      "{}@{:#04X}: {} ({:#04X}) [{}]",
+      "{}@{:#04X}: {} {}",
       self.starting_cycle,
       self.addr,
       self.name,
-      self.opcode,
       self
         .target_addr
-        .map_or(String::from("?"), |addr| addr.to_string())
+        .map_or(String::from("?"), |addr| addr.to_string()),
     )
   }
 }
@@ -151,7 +150,7 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       let mut instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "1@0x00: NOP (0xEA) []");
+      assert_eq!(instruction_info, "1@0x00: NOP ");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu);
@@ -160,7 +159,7 @@ mod tests {
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
       // second cycle of NOP
-      assert_eq!(instruction_info, "1@0x00: NOP (0xEA) []");
+      assert_eq!(instruction_info, "1@0x00: NOP ");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu);
@@ -169,7 +168,7 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "3@0x01: LDA (0xAD) [?]");
+      assert_eq!(instruction_info, "3@0x01: LDA ?");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu);
@@ -178,7 +177,7 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "3@0x01: LDA (0xAD) [?]");
+      assert_eq!(instruction_info, "3@0x01: LDA ?");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu);
@@ -187,7 +186,7 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "3@0x01: LDA (0xAD) [$0x04]");
+      assert_eq!(instruction_info, "3@0x01: LDA $0x04");
     }
 
     #[test]
@@ -323,6 +322,82 @@ mod tests {
           ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x80..=0xA0, 0x99))
         ]
       );
+    }
+  }
+
+  #[cfg(test)]
+  mod debug_instruction_info {
+
+    #[cfg(test)]
+    mod display {
+      use crate::cpu::{
+        addressing::{AddressingMode, address::Address},
+        debugger::DebugInstructionInfo,
+      };
+
+      #[test]
+      fn should_show_absolute_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::Absolute);
+        addr.set(0x5955u16);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xAD,
+          name: "LDA",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(format!("{uut}"), "3@0x21: LDA $0x5955");
+      }
+
+      #[test]
+      fn should_show_zero_page_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::ZeroPage);
+        addr.set_lo(0x59u8);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xA5,
+          name: "LDA",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(format!("{uut}"), "3@0x21: LDA $0x59");
+      }
+
+      #[test]
+      fn should_show_zero_page_x_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::ZeroPageX);
+        addr.set_lo(0x59u8);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xB5,
+          name: "LDA",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(format!("{uut}"), "3@0x21: LDA $0x59,X");
+      }
+
+      #[test]
+      fn should_show_zero_page_y_address_instruction() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::ZeroPageY);
+        addr.set_lo(0x59u8);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xB6,
+          name: "LDX",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+        };
+
+        assert_eq!(format!("{uut}"), "3@0x21: LDX $0x59,Y");
+      }
     }
   }
 }
