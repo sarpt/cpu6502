@@ -4,7 +4,11 @@ use ringbuffer::{AllocRingBuffer, RingBuffer};
 
 use crate::{
   consts::{Byte, DEFAULT_INSTRUCTION_HISTORY_CAPACITY, Word},
-  cpu::{CPU, addressing::address::Address},
+  cpu::{
+    CPU,
+    addressing::{AddressingMode, address::Address},
+  },
+  memory::Memory,
 };
 
 pub struct DebugInstructionInfo {
@@ -13,6 +17,7 @@ pub struct DebugInstructionInfo {
   pub name: &'static str,
   pub starting_cycle: usize,
   pub target_addr: Option<Address>,
+  pub target_val: Option<Byte>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -45,7 +50,7 @@ impl Debugger {
     }
   }
 
-  pub fn probe(&mut self, cpu: &CPU) -> Vec<ProbeResult> {
+  pub fn probe(&mut self, cpu: &CPU, memory: &dyn Memory) -> Vec<ProbeResult> {
     let mut probe_results: Vec<ProbeResult> = Vec::new();
 
     if cpu.sync()
@@ -57,6 +62,7 @@ impl Debugger {
         name: instruction.name,
         starting_cycle: instruction.starting_cycle,
         target_addr: None,
+        target_val: None,
       });
       probe_results.push(ProbeResult::NextInstruction);
     }
@@ -68,6 +74,17 @@ impl Debugger {
     let target_addr = cpu.addr;
     let addressing_done = last_instruction.target_addr.is_none() && cpu.addr.done;
     if addressing_done {
+      match target_addr.value() {
+        Some(addr) => last_instruction.target_val = Some(memory[addr]),
+        None => {
+          if let Some(mode) = target_addr.mode
+            && mode == AddressingMode::Immediate
+          {
+            last_instruction.target_val = Some(memory[cpu.program_counter + 1]);
+          }
+        }
+      }
+
       last_instruction.target_addr = Some(target_addr);
       probe_results.push(ProbeResult::AddressingDone);
     }
@@ -108,15 +125,26 @@ impl Default for Debugger {
 
 impl Display for DebugInstructionInfo {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    let target_addr = self.target_addr.map_or(String::from("?"), |addr| {
+      if let Some(mode) = addr.mode
+        && mode == AddressingMode::Immediate
+      {
+        return format!(
+          "{}#{}",
+          addr,
+          self
+            .target_val
+            .map_or("?".to_string(), |tgt| tgt.to_string())
+        );
+      }
+
+      format!("{}", addr)
+    });
+
     write!(
       f,
       "{}@{:#04X}: {} {}",
-      self.starting_cycle,
-      self.addr,
-      self.name,
-      self
-        .target_addr
-        .map_or(String::from("?"), |addr| addr.to_string()),
+      self.starting_cycle, self.addr, self.name, target_addr
     )
   }
 }
@@ -144,7 +172,7 @@ mod tests {
       let mut uut = Debugger::new();
 
       cpu.tick(&mut memory);
-      uut.probe(&cpu);
+      uut.probe(&cpu, &memory);
 
       let mut last_instruction = uut
         .get_last_instruction()
@@ -153,7 +181,7 @@ mod tests {
       assert_eq!(instruction_info, "1@0x00: NOP ");
 
       cpu.tick(&mut memory);
-      uut.probe(&cpu);
+      uut.probe(&cpu, &memory);
       last_instruction = uut
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
@@ -162,7 +190,7 @@ mod tests {
       assert_eq!(instruction_info, "1@0x00: NOP ");
 
       cpu.tick(&mut memory);
-      uut.probe(&cpu);
+      uut.probe(&cpu, &memory);
 
       last_instruction = uut
         .get_last_instruction()
@@ -171,7 +199,7 @@ mod tests {
       assert_eq!(instruction_info, "3@0x01: LDA ?");
 
       cpu.tick(&mut memory);
-      uut.probe(&cpu);
+      uut.probe(&cpu, &memory);
 
       last_instruction = uut
         .get_last_instruction()
@@ -180,7 +208,7 @@ mod tests {
       assert_eq!(instruction_info, "3@0x01: LDA ?");
 
       cpu.tick(&mut memory);
-      uut.probe(&cpu);
+      uut.probe(&cpu, &memory);
 
       last_instruction = uut
         .get_last_instruction()
@@ -191,10 +219,11 @@ mod tests {
 
     #[test]
     fn should_return_none_when_no_instructions_were_ran_yet() {
+      let memory = MemoryMock::default();
       let cpu = CPU::new_nmos();
       let mut uut = Debugger::new();
 
-      uut.probe(&cpu);
+      uut.probe(&cpu, &memory);
 
       assert!(uut.get_last_instruction().is_none());
     }
@@ -221,27 +250,27 @@ mod tests {
 
       // fetch of LDA_A
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
 
       // tick to fetch lo address
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[]);
 
       // tick to fetch hi address & addressing done
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[ProbeResult::AddressingDone]);
 
       // fetch of value at address
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[]);
 
       // fetch of NOP
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
     }
 
@@ -258,17 +287,17 @@ mod tests {
 
       // fetch LDA_A
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
 
       // fetch lo of address
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[]);
 
       // fetch hi of address & addressing done
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(
         &result,
         &[
@@ -279,42 +308,42 @@ mod tests {
 
       // fetch of value at address
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[]);
 
       // fetch of next LDA_A
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
 
       // fetch lo of address
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[]);
 
       // fetch hi of address & addressing done
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[ProbeResult::AddressingDone]);
 
       // fetch of value at address
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[]);
 
       // fetch of next LDA_A
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[ProbeResult::NextInstruction]);
 
       // fetch lo of address
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(&result, &[]);
 
       // fetch hi of address & addressing done
       cpu.tick(&mut memory);
-      let result = uut.probe(&cpu);
+      let result = uut.probe(&cpu, &memory);
       assert_eq!(
         &result,
         &[
@@ -346,6 +375,7 @@ mod tests {
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $5955");
@@ -362,6 +392,7 @@ mod tests {
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59,X");
@@ -378,6 +409,7 @@ mod tests {
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59,Y");
@@ -393,6 +425,7 @@ mod tests {
           name: "LSR",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LSR A");
@@ -408,9 +441,10 @@ mod tests {
           name: "LDY",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: Some(89),
         };
 
-        assert_eq!(uut.to_string(), "3@0x21: LDY ");
+        assert_eq!(uut.to_string(), "3@0x21: LDY #89");
       }
 
       #[test]
@@ -423,6 +457,7 @@ mod tests {
           name: "NOP",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: NOP ");
@@ -440,6 +475,7 @@ mod tests {
           name: "JMP",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: JMP ($2559)");
@@ -456,6 +492,7 @@ mod tests {
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA ($59,X)");
@@ -472,6 +509,7 @@ mod tests {
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA ($59),Y");
@@ -488,6 +526,7 @@ mod tests {
           name: "BMI",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: BMI *+4");
@@ -504,6 +543,7 @@ mod tests {
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59");
@@ -520,6 +560,7 @@ mod tests {
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59,X");
@@ -536,6 +577,7 @@ mod tests {
           name: "LDX",
           starting_cycle: 3,
           target_addr: Some(addr),
+          target_val: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDX $59,Y");

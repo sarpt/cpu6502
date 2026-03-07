@@ -12,7 +12,7 @@ pub fn execute_next_instruction(
     cpu.tick(memory);
 
     if let Some(dbg) = debugger.as_mut() {
-      dbg.probe(cpu);
+      dbg.probe(cpu, memory);
     }
 
     if cpu.current_instruction.is_none() {
