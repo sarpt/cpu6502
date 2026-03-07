@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use crate::{
   consts::{Byte, Word},
   cpu::addressing::AddressingMode,
@@ -90,32 +88,5 @@ impl Address {
     self.val = None;
     self.mode = Some(AddressingMode::Accumulator);
     self.done = true;
-  }
-}
-
-impl Display for Address {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    let val = self
-      .mode
-      .and_then(|mode| match mode {
-        AddressingMode::Immediate | AddressingMode::Implicit => Some(String::from("")),
-        AddressingMode::Relative => self.indirect.map(|addr_val| format!("*+{addr_val:X}")),
-        AddressingMode::Indirect => self.indirect.map(|addr_val| format!("(${addr_val:X})")),
-        AddressingMode::ZeroPage => self.val.map(|addr_val| format!("${addr_val:X}")),
-        AddressingMode::ZeroPageX => self.val.map(|addr_val| format!("${addr_val:X},X")),
-        AddressingMode::ZeroPageY => self.val.map(|addr_val| format!("${addr_val:X},Y")),
-        AddressingMode::Absolute => self.val.map(|addr_val| format!("${addr_val:X}")),
-        AddressingMode::AbsoluteX => self.val.map(|addr_val| format!("${addr_val:X},X")),
-        AddressingMode::AbsoluteY => self.val.map(|addr_val| format!("${addr_val:X},Y")),
-        AddressingMode::IndexIndirectX => {
-          self.indirect.map(|addr_val| format!("(${addr_val:X},X)"))
-        }
-        AddressingMode::IndirectIndexY => {
-          self.indirect.map(|addr_val| format!("(${addr_val:X}),Y"))
-        }
-        AddressingMode::Accumulator => Some(String::from("A")),
-      })
-      .unwrap_or_else(|| String::from("?"));
-    write!(f, "{val}")
   }
 }

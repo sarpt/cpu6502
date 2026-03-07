@@ -125,21 +125,44 @@ impl Default for Debugger {
 
 impl Display for DebugInstructionInfo {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    let target_addr = self.target_addr.map_or(String::from("?"), |addr| {
-      if let Some(mode) = addr.mode
-        && mode == AddressingMode::Immediate
-      {
-        return format!(
-          "{}#{}",
-          addr,
-          self
-            .target_val
-            .map_or("?".to_string(), |tgt| tgt.to_string())
-        );
-      }
+    let target_addr = self
+      .target_addr
+      .and_then(|target_addr| {
+        let mode = target_addr.mode?;
 
-      format!("{}", addr)
-    });
+        match mode {
+          AddressingMode::Implicit => Some(String::new()),
+          AddressingMode::Immediate => self.target_val.map(|tgt| format!("#{tgt}")),
+          AddressingMode::Relative => target_addr
+            .indirect()
+            .map(|addr_val| format!("*+{addr_val:X}")),
+          AddressingMode::Indirect => target_addr
+            .indirect()
+            .map(|addr_val| format!("(${addr_val:X})")),
+          AddressingMode::ZeroPage => target_addr.value().map(|addr_val| format!("${addr_val:X}")),
+          AddressingMode::ZeroPageX => target_addr
+            .value()
+            .map(|addr_val| format!("${addr_val:X},X")),
+          AddressingMode::ZeroPageY => target_addr
+            .value()
+            .map(|addr_val| format!("${addr_val:X},Y")),
+          AddressingMode::Absolute => target_addr.value().map(|addr_val| format!("${addr_val:X}")),
+          AddressingMode::AbsoluteX => target_addr
+            .value()
+            .map(|addr_val| format!("${addr_val:X},X")),
+          AddressingMode::AbsoluteY => target_addr
+            .value()
+            .map(|addr_val| format!("${addr_val:X},Y")),
+          AddressingMode::IndexIndirectX => target_addr
+            .indirect()
+            .map(|addr_val| format!("(${addr_val:X},X)")),
+          AddressingMode::IndirectIndexY => target_addr
+            .indirect()
+            .map(|addr_val| format!("(${addr_val:X}),Y")),
+          AddressingMode::Accumulator => Some(String::from("A")),
+        }
+      })
+      .unwrap_or_else(|| String::from("?"));
 
     write!(
       f,
