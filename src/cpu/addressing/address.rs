@@ -9,7 +9,7 @@ use crate::{
 pub struct Address {
   indirect: Option<Word>,
   val: Option<Word>,
-  mode: Option<AddressingMode>,
+  pub mode: Option<AddressingMode>,
   pub done: bool,
 }
 
