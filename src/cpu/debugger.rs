@@ -42,6 +42,13 @@ pub struct Debugger {
   traps: Vec<TrapConditions>,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Registers {
+  pub a: Byte,
+  pub x: Byte,
+  pub y: Byte,
+}
+
 impl Debugger {
   pub fn new() -> Self {
     Debugger {
@@ -50,8 +57,13 @@ impl Debugger {
     }
   }
 
-  pub fn probe(&mut self, cpu: &CPU, memory: &dyn Memory) -> Vec<ProbeResult> {
-    let mut probe_results: Vec<ProbeResult> = Vec::new();
+  pub fn probe(&mut self, cpu: &CPU, memory: &dyn Memory) -> (Vec<ProbeResult>, Registers) {
+    let mut results: Vec<ProbeResult> = Vec::new();
+    let registers = Registers {
+      a: cpu.accumulator,
+      x: cpu.index_register_x,
+      y: cpu.index_register_y,
+    };
 
     if cpu.sync()
       && let Some(instruction) = &cpu.current_instruction
@@ -64,11 +76,11 @@ impl Debugger {
         target_addr: None,
         target_val: None,
       });
-      probe_results.push(ProbeResult::NextInstruction);
+      results.push(ProbeResult::NextInstruction);
     }
 
     let Some(last_instruction) = &mut self.instructions.back_mut() else {
-      return probe_results;
+      return (results, registers);
     };
 
     let target_addr = cpu.addr;
@@ -86,7 +98,7 @@ impl Debugger {
       }
 
       last_instruction.target_addr = Some(target_addr);
-      probe_results.push(ProbeResult::AddressingDone);
+      results.push(ProbeResult::AddressingDone);
     }
 
     for trap in self.traps.iter() {
@@ -96,7 +108,7 @@ impl Debugger {
             && let Some(target_addr_val) = target_addr.value()
             && rng.contains(&target_addr_val)
           {
-            probe_results.push(ProbeResult::TrapHit(Traps::AddressRange(
+            results.push(ProbeResult::TrapHit(Traps::AddressRange(
               rng.clone(),
               target_addr_val,
             )));
@@ -105,7 +117,7 @@ impl Debugger {
       }
     }
 
-    probe_results
+    (results, registers)
   }
 
   pub fn get_last_instruction(&self) -> Option<&DebugInstructionInfo> {
@@ -257,14 +269,14 @@ mod tests {
     use crate::cpu::{
       CPU,
       addressing::address::Address,
-      debugger::{Debugger, ProbeResult},
-      instructions::{LDA_A, NOP},
+      debugger::{Debugger, ProbeResult, Registers},
+      instructions::{LDA_A, LDX_A, LDY_A, NOP},
       tests::MemoryMock,
     };
 
     #[test]
     fn should_return_addresing_done_on_first_cycle_when_addressing_is_done() {
-      let mut memory = MemoryMock::new(&[LDA_A, 0x03, NOP, 0x56]);
+      let mut memory = MemoryMock::new(&[LDA_A, 0x04, 0x00, NOP, 0x56]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
       cpu.addr = Address::new();
@@ -274,105 +286,256 @@ mod tests {
       // fetch of LDA_A
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[ProbeResult::NextInstruction]);
+      assert_eq!(&result.0, &[ProbeResult::NextInstruction]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x0,
+          x: 0x0,
+          y: 0x0
+        }
+      );
 
       // tick to fetch lo address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[]);
+      assert_eq!(&result.0, &[]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x0,
+          x: 0x0,
+          y: 0x0
+        }
+      );
 
       // tick to fetch hi address & addressing done
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[ProbeResult::AddressingDone]);
-
-      // fetch of value at address
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[]);
-
-      // fetch of NOP
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[ProbeResult::NextInstruction]);
-    }
-
-    #[test]
-    fn should_return_addressing_ranges_when_traps_hit_after_last_cycle_of_addressing() {
-      let mut memory = MemoryMock::new(&[LDA_A, 0x04, 0x00, LDA_A, 0x22, 0x00, LDA_A, 0x99, 0x00]);
-      let mut cpu = CPU::new_nmos();
-      cpu.program_counter = 0x00;
-      cpu.addr = Address::new();
-
-      let mut uut = Debugger::new();
-      uut.trap_between_addresses(0x01..=0x04);
-      uut.trap_between_addresses(0x80..=0xA0);
-
-      // fetch LDA_A
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[ProbeResult::NextInstruction]);
-
-      // fetch lo of address
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[]);
-
-      // fetch hi of address & addressing done
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu, &memory);
+      assert_eq!(&result.0, &[ProbeResult::AddressingDone]);
       assert_eq!(
-        &result,
-        &[
-          ProbeResult::AddressingDone,
-          ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x01..=0x04, 0x04))
-        ]
+        result.1,
+        Registers {
+          a: 0x0,
+          x: 0x0,
+          y: 0x0
+        }
       );
 
       // fetch of value at address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[]);
+      assert_eq!(&result.0, &[]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x56,
+          x: 0x0,
+          y: 0x0
+        }
+      );
 
-      // fetch of next LDA_A
+      // fetch of NOP
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[ProbeResult::NextInstruction]);
+      assert_eq!(
+        &result.0,
+        &[ProbeResult::NextInstruction, ProbeResult::AddressingDone]
+      );
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x56,
+          x: 0x0,
+          y: 0x0
+        }
+      );
+    }
+
+    #[test]
+    fn should_return_addressing_ranges_when_traps_hit_after_last_cycle_of_addressing() {
+      let mut memory = MemoryMock::new(&[LDA_A, 0x04, 0x00, LDX_A, 0x07, 0x00, LDY_A, 0x01, 0x00]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x00;
+      cpu.addr = Address::new();
+
+      let mut uut = Debugger::new();
+      uut.trap_between_addresses(0x0001..=0x0001);
+      uut.trap_between_addresses(0x0004..=0x0004);
+      uut.trap_between_addresses(0x0007..=0x0007);
+
+      // fetch LDA_A
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu, &memory);
+      assert_eq!(&result.0, &[ProbeResult::NextInstruction]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x0,
+          x: 0x0,
+          y: 0x0
+        }
+      );
 
       // fetch lo of address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[]);
-
-      // fetch hi of address & addressing done
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[ProbeResult::AddressingDone]);
-
-      // fetch of value at address
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[]);
-
-      // fetch of next LDA_A
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[ProbeResult::NextInstruction]);
-
-      // fetch lo of address
-      cpu.tick(&mut memory);
-      let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result, &[]);
+      assert_eq!(&result.0, &[]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x0,
+          x: 0x0,
+          y: 0x0
+        }
+      );
 
       // fetch hi of address & addressing done
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
       assert_eq!(
-        &result,
+        &result.0,
         &[
           ProbeResult::AddressingDone,
-          ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x80..=0xA0, 0x99))
+          ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x04..=0x04, 0x04))
         ]
+      );
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x0,
+          x: 0x0,
+          y: 0x0
+        }
+      );
+
+      // fetch of value at address
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu, &memory);
+      assert_eq!(&result.0, &[]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x7,
+          x: 0x0,
+          y: 0x0
+        }
+      );
+
+      // fetch of next LDX_A
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu, &memory);
+      assert_eq!(&result.0, &[ProbeResult::NextInstruction]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x7,
+          x: 0x0,
+          y: 0x0
+        }
+      );
+
+      // fetch lo of address
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu, &memory);
+      assert_eq!(&result.0, &[]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x7,
+          x: 0x0,
+          y: 0x0
+        }
+      );
+
+      // fetch hi of address & addressing done
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu, &memory);
+      assert_eq!(
+        &result.0,
+        &[
+          ProbeResult::AddressingDone,
+          ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x07..=0x07, 0x07))
+        ]
+      );
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x7,
+          x: 0x0,
+          y: 0x0
+        }
+      );
+
+      // fetch of value at address
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu, &memory);
+      assert_eq!(&result.0, &[]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x7,
+          x: 0x1,
+          y: 0x0
+        }
+      );
+
+      // fetch of next LDY_A
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu, &memory);
+      assert_eq!(&result.0, &[ProbeResult::NextInstruction]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x7,
+          x: 0x1,
+          y: 0x0
+        }
+      );
+
+      // fetch lo of address
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu, &memory);
+      assert_eq!(&result.0, &[]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x7,
+          x: 0x1,
+          y: 0x0
+        }
+      );
+
+      // fetch hi of address & addressing done
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu, &memory);
+      assert_eq!(
+        &result.0,
+        &[
+          ProbeResult::AddressingDone,
+          ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x1..=0x1, 0x1))
+        ]
+      );
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x7,
+          x: 0x1,
+          y: 0x0
+        }
+      );
+
+      // fetch of value at address
+      cpu.tick(&mut memory);
+      let result = uut.probe(&cpu, &memory);
+      assert_eq!(&result.0, &[]);
+      assert_eq!(
+        result.1,
+        Registers {
+          a: 0x7,
+          x: 0x1,
+          y: 0x4
+        }
       );
     }
   }
