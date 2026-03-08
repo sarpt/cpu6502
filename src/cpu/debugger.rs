@@ -86,15 +86,8 @@ impl Debugger {
     let target_addr = cpu.addr;
     let addressing_done = last_instruction.target_addr.is_none() && cpu.addr.done;
     if addressing_done {
-      match target_addr.value() {
-        Some(addr) => last_instruction.target_val = Some(memory[addr]),
-        None => {
-          if let Some(mode) = target_addr.mode
-            && mode == AddressingMode::Immediate
-          {
-            last_instruction.target_val = Some(memory[cpu.program_counter + 1]);
-          }
-        }
+      if let Some(addr) = target_addr.value() {
+        last_instruction.target_val = Some(memory[addr])
       }
 
       last_instruction.target_addr = Some(target_addr);
@@ -270,7 +263,7 @@ mod tests {
       CPU,
       addressing::address::Address,
       debugger::{Debugger, ProbeResult, Registers},
-      instructions::{LDA_A, LDX_A, LDY_A, NOP},
+      instructions::{LDA_A, LDA_IM, LDX_A, LDX_IM, LDY_A, LDY_IM, NOP},
       tests::MemoryMock,
     };
 
@@ -537,6 +530,63 @@ mod tests {
           y: 0x4
         }
       );
+    }
+
+    #[test]
+    fn should_fill_target_val_of_last_instruction_when_addressing_is_immediate() {
+      let mut memory = MemoryMock::new(&[LDA_IM, 0x04, LDX_IM, 0x07, LDY_IM, 0x01]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x00;
+      cpu.addr = Address::new();
+      let mut uut = Debugger::new();
+
+      // fetch instruction LDA_IM
+      cpu.tick(&mut memory);
+      _ = uut.probe(&cpu, &memory);
+      let last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.target_val, None);
+
+      // fetch address, store value
+      cpu.tick(&mut memory);
+      _ = uut.probe(&cpu, &memory);
+      let last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.target_val, Some(0x04));
+
+      // fetch instruction LDX_IM
+      cpu.tick(&mut memory);
+      _ = uut.probe(&cpu, &memory);
+      let last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.target_val, None);
+
+      // fetch address, store value
+      cpu.tick(&mut memory);
+      _ = uut.probe(&cpu, &memory);
+      let last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.target_val, Some(0x07));
+
+      // fetch instruction LDY_IM
+      cpu.tick(&mut memory);
+      _ = uut.probe(&cpu, &memory);
+      let last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.target_val, None);
+
+      // fetch address, store value
+      cpu.tick(&mut memory);
+      _ = uut.probe(&cpu, &memory);
+      let last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.target_val, Some(0x01));
     }
   }
 
