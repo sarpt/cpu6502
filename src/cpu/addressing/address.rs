@@ -3,7 +3,7 @@ use crate::{
   cpu::addressing::AddressingMode,
 };
 
-#[derive(Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct Address {
   indirect: Option<Word>,
   val: Option<Word>,

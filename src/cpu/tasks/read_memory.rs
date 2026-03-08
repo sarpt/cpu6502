@@ -126,6 +126,7 @@ impl Tasks for ImmediateReadMemoryTasks {
     self.value = Some(memory[cpu.program_counter]);
     cpu.increment_program_counter();
     self.done = true;
+    cpu.addr.done = true;
 
     true
   }
@@ -192,6 +193,22 @@ mod read_memory_tasks {
       }
 
       assert_eq!(cpu.cycle, 1);
+    }
+
+    #[test]
+    fn should_set_addressing_as_done() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0xCB;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(ImmediateReadMemoryTasks::new());
+      while !tasks.done() {
+        _ = tasks.tick(&mut cpu, &mut memory);
+        cpu.cycle += 1;
+      }
+
+      assert!(cpu.addr.done);
     }
   }
 }

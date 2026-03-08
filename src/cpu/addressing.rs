@@ -14,7 +14,7 @@ use crate::cpu::tasks::read_memory::ImmediateReadMemoryTasks;
 
 use super::{CPU, ChipVariant, tasks::Tasks};
 
-#[derive(Copy, Clone, PartialEq, Display)]
+#[derive(Debug, Copy, Clone, PartialEq, Display)]
 pub enum AddressingMode {
   Absolute,
   AbsoluteX,
