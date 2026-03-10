@@ -140,7 +140,7 @@ impl Display for DebugInstructionInfo {
           AddressingMode::Immediate => self.target_val.map(|tgt| format!("#{tgt}")),
           AddressingMode::Relative => target_addr
             .indirect()
-            .map(|addr_val| format!("*+{addr_val:X}")),
+            .map(|addr_val| format!("*{:+}", addr_val as i8)),
           AddressingMode::Indirect => target_addr
             .indirect()
             .map(|addr_val| format!("(${addr_val:X})")),
@@ -752,7 +752,7 @@ mod tests {
       }
 
       #[test]
-      fn should_show_relative_address_instruction() {
+      fn should_show_relative_address_instruction_when_offset_is_positive_() {
         let mut addr = Address::new();
         addr.reset(AddressingMode::Relative);
         addr.set_indirect_lo(0x4);
@@ -766,6 +766,23 @@ mod tests {
         };
 
         assert_eq!(uut.to_string(), "3@0x21: BMI *+4");
+      }
+
+      #[test]
+      fn should_show_relative_address_instruction_when_offset_is_negative_() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::Relative);
+        addr.set_indirect_lo(0xFD);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0x30,
+          name: "BMI",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+          target_val: None,
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: BMI *-3");
       }
 
       #[test]
