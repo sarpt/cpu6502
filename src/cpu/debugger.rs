@@ -18,6 +18,7 @@ pub struct DebugInstructionInfo {
   pub starting_cycle: usize,
   pub target_addr: Option<Address>,
   pub target_val: Option<Byte>,
+  pub symbol: Option<String>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -35,6 +36,10 @@ pub enum ProbeResult {
   NextInstruction,
   AddressingDone,
   TrapHit(Traps),
+}
+
+pub trait Symbols {
+  fn get(&self, addr: &Word) -> Option<String>;
 }
 
 pub struct Debugger {
@@ -75,6 +80,7 @@ impl Debugger {
         starting_cycle: instruction.starting_cycle,
         target_addr: None,
         target_val: None,
+        symbol: None,
       });
       results.push(ProbeResult::NextInstruction);
     }
@@ -113,6 +119,28 @@ impl Debugger {
     (results, registers)
   }
 
+  pub fn probe_with_symbols<S: Symbols>(
+    &mut self,
+    cpu: &CPU,
+    memory: &dyn Memory,
+    symbols: &S,
+  ) -> (Vec<ProbeResult>, Registers) {
+    let (results, registers) = self.probe(cpu, memory);
+    let Some(last_instruction) = &mut self.instructions.back_mut() else {
+      return (results, registers);
+    };
+
+    let adressing_done = results.contains(&ProbeResult::AddressingDone);
+    if adressing_done {
+      last_instruction.symbol = last_instruction
+        .target_addr
+        .and_then(|addr| addr.value())
+        .and_then(|addr| symbols.get(&addr));
+    }
+
+    (results, registers)
+  }
+
   pub fn get_last_instruction(&self) -> Option<&DebugInstructionInfo> {
     self.instructions.back()
   }
@@ -128,52 +156,85 @@ impl Default for Debugger {
   }
 }
 
+macro_rules! display_debug_info {
+  ($f:ident, $s:ident, $addr_format:literal, $target_addr:ident) => {
+    write!(
+      $f,
+      concat!("{}@{:#04X}: {} ", $addr_format),
+      $s.starting_cycle, $s.addr, $s.name, $target_addr
+    )
+  };
+  ($f:ident, $s:ident, $target_addr:literal) => {
+    write!(
+      $f,
+      "{}@{:#04X}: {} {}",
+      $s.starting_cycle, $s.addr, $s.name, $target_addr
+    )
+  };
+  ($f:ident, $s:ident) => {
+    write!($f, "{}@{:#04X}: {}", $s.starting_cycle, $s.addr, $s.name)
+  };
+}
+
+macro_rules! display_option_debug_info {
+  ($f:ident, $s:ident, $option:expr, $fmt: literal) => {
+    match $option {
+      Some(tgt) => display_debug_info!($f, $s, $fmt, tgt),
+      None => display_debug_info!($f, $s, "?"),
+    }
+  };
+}
+
 impl Display for DebugInstructionInfo {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    let target_addr = self
-      .target_addr
-      .and_then(|target_addr| {
-        let mode = target_addr.mode?;
+    match &self.symbol {
+      Some(symbol) => display_debug_info!(f, self, "{}", symbol),
+      None => {
+        let Some(target_addr) = self.target_addr else {
+          return display_debug_info!(f, self, "?");
+        };
+
+        let Some(mode) = target_addr.mode else {
+          return display_debug_info!(f, self, "?");
+        };
 
         match mode {
-          AddressingMode::Implicit => Some(String::new()),
-          AddressingMode::Immediate => self.target_val.map(|tgt| format!("#{tgt}")),
-          AddressingMode::Relative => target_addr
-            .indirect()
-            .map(|addr_val| format!("*{:+}", addr_val as i8)),
-          AddressingMode::Indirect => target_addr
-            .indirect()
-            .map(|addr_val| format!("(${addr_val:X})")),
-          AddressingMode::ZeroPage => target_addr.value().map(|addr_val| format!("${addr_val:X}")),
-          AddressingMode::ZeroPageX => target_addr
-            .value()
-            .map(|addr_val| format!("${addr_val:X},X")),
-          AddressingMode::ZeroPageY => target_addr
-            .value()
-            .map(|addr_val| format!("${addr_val:X},Y")),
-          AddressingMode::Absolute => target_addr.value().map(|addr_val| format!("${addr_val:X}")),
-          AddressingMode::AbsoluteX => target_addr
-            .value()
-            .map(|addr_val| format!("${addr_val:X},X")),
-          AddressingMode::AbsoluteY => target_addr
-            .value()
-            .map(|addr_val| format!("${addr_val:X},Y")),
-          AddressingMode::IndexIndirectX => target_addr
-            .indirect()
-            .map(|addr_val| format!("(${addr_val:X},X)")),
-          AddressingMode::IndirectIndexY => target_addr
-            .indirect()
-            .map(|addr_val| format!("(${addr_val:X}),Y")),
-          AddressingMode::Accumulator => Some(String::from("A")),
+          AddressingMode::Implicit => display_debug_info!(f, self),
+          AddressingMode::Immediate => display_option_debug_info!(f, self, self.target_val, "#{}"),
+          AddressingMode::Relative => {
+            display_option_debug_info!(f, self, target_addr.indirect().map(|v| v as i8), "*{:+}")
+          }
+          AddressingMode::Indirect => {
+            display_option_debug_info!(f, self, target_addr.indirect(), "(${:X})")
+          }
+          AddressingMode::ZeroPage => {
+            display_option_debug_info!(f, self, target_addr.value(), "${:X}")
+          }
+          AddressingMode::ZeroPageX => {
+            display_option_debug_info!(f, self, target_addr.value(), "${:X},X")
+          }
+          AddressingMode::ZeroPageY => {
+            display_option_debug_info!(f, self, target_addr.value(), "${:X},Y")
+          }
+          AddressingMode::Absolute => {
+            display_option_debug_info!(f, self, target_addr.value(), "${:X}")
+          }
+          AddressingMode::AbsoluteX => {
+            display_option_debug_info!(f, self, target_addr.value(), "${:X},X")
+          }
+          AddressingMode::AbsoluteY => {
+            display_option_debug_info!(f, self, target_addr.value(), "${:X},Y")
+          }
+          AddressingMode::IndexIndirectX => {
+            display_option_debug_info!(f, self, target_addr.indirect(), "(${:X},X)")
+          }
+          AddressingMode::IndirectIndexY => {
+            display_option_debug_info!(f, self, target_addr.indirect(), "(${:X}),Y")
+          }
+          AddressingMode::Accumulator => display_debug_info!(f, self, "A"),
         }
-      })
-      .unwrap_or_else(|| String::from("?"));
-
-    write!(
-      f,
-      "{}@{:#04X}: {} {}",
-      self.starting_cycle, self.addr, self.name, target_addr
-    )
+      }
+    }
   }
 }
 
@@ -206,7 +267,7 @@ mod tests {
         .get_last_instruction()
         .expect("last instruction is unexpectedly None");
       let mut instruction_info = format!("{}", last_instruction);
-      assert_eq!(instruction_info, "1@0x00: NOP ");
+      assert_eq!(instruction_info, "1@0x00: NOP");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu, &memory);
@@ -215,7 +276,7 @@ mod tests {
         .expect("last instruction is unexpectedly None");
       instruction_info = format!("{}", last_instruction);
       // second cycle of NOP
-      assert_eq!(instruction_info, "1@0x00: NOP ");
+      assert_eq!(instruction_info, "1@0x00: NOP");
 
       cpu.tick(&mut memory);
       uut.probe(&cpu, &memory);
@@ -612,6 +673,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $5955");
@@ -629,6 +691,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59,X");
@@ -646,6 +709,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59,Y");
@@ -662,6 +726,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LSR A");
@@ -678,6 +743,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: Some(89),
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDY #89");
@@ -694,9 +760,10 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
-        assert_eq!(uut.to_string(), "3@0x21: NOP ");
+        assert_eq!(uut.to_string(), "3@0x21: NOP");
       }
 
       #[test]
@@ -712,6 +779,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: JMP ($2559)");
@@ -729,6 +797,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA ($59,X)");
@@ -746,6 +815,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA ($59),Y");
@@ -763,6 +833,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: BMI *+4");
@@ -780,6 +851,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: BMI *-3");
@@ -797,6 +869,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59");
@@ -814,6 +887,7 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59,X");
@@ -831,9 +905,28 @@ mod tests {
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
+          symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDX $59,Y");
+      }
+
+      #[test]
+      fn should_show_symbol_instead_of_address_when_available() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::Absolute);
+        addr.set(0x5955u16);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          opcode: 0xAD,
+          name: "LDA",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+          target_val: None,
+          symbol: Some(String::from(".PEEK")),
+        };
+
+        assert_eq!(uut.to_string(), "3@0x21: LDA .PEEK");
       }
     }
   }
