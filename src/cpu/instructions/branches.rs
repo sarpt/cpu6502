@@ -15,7 +15,6 @@ enum BranchStep {
 struct BranchTasks {
   condition: fn(&CPU) -> bool,
   step: BranchStep,
-  negative_offset_direction: bool,
 }
 
 impl BranchTasks {
@@ -23,7 +22,6 @@ impl BranchTasks {
     BranchTasks {
       condition,
       step: BranchStep::ConditionExecution,
-      negative_offset_direction: false,
     }
   }
 }
@@ -41,7 +39,6 @@ impl Tasks for BranchTasks {
         cpu.increment_program_counter();
 
         if (self.condition)(cpu) {
-          self.negative_offset_direction = 0b10000000 & offset > 0;
           self.step = BranchStep::OffsetProgramCounterLo;
           return false;
         }
@@ -54,22 +51,17 @@ impl Tasks for BranchTasks {
           .addr
           .indirect()
           .expect("unexpected lack of indirect address in OffsetProgramCounterLo step")
-          .to_le_bytes()[0];
+          .to_le_bytes()[0] as i8;
         let [program_counter_lo, program_counter_hi] = cpu.program_counter.to_le_bytes();
-        let directionless_offset = if self.negative_offset_direction {
-          (offset ^ 0b11111111) + 1
-        } else {
-          offset
-        };
-        let offset_program_counter_lo: Byte;
+        let offset_program_counter_lo: u8;
         let carry: bool;
 
-        if self.negative_offset_direction {
+        if offset < 0 {
           (offset_program_counter_lo, carry) =
-            program_counter_lo.overflowing_sub(directionless_offset);
+            (program_counter_lo).overflowing_sub(offset.unsigned_abs());
         } else {
           (offset_program_counter_lo, carry) =
-            program_counter_lo.overflowing_add(directionless_offset);
+            (program_counter_lo).overflowing_add(offset.unsigned_abs());
         }
 
         cpu.program_counter = Word::from_le_bytes([offset_program_counter_lo, program_counter_hi]);
@@ -94,8 +86,13 @@ impl Tasks for BranchTasks {
         false
       }
       BranchStep::OffsetProgramCounterHi => {
+        let offset = cpu
+          .addr
+          .indirect()
+          .expect("unexpected lack of indirect address in OffsetProgramCounterLo step")
+          .to_le_bytes()[0] as i8;
         let [program_counter_lo, program_counter_hi] = cpu.program_counter.to_le_bytes();
-        let offset_program_counter_hi: Byte = if self.negative_offset_direction {
+        let offset_program_counter_hi: Byte = if offset < 0 {
           program_counter_hi.wrapping_sub(1)
         } else {
           program_counter_hi.wrapping_add(1)
