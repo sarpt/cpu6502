@@ -156,82 +156,86 @@ impl Default for Debugger {
   }
 }
 
-macro_rules! display_debug_info {
-  ($f:ident, $s:ident, $addr_format:literal, $target_addr:ident) => {
-    write!(
-      $f,
-      concat!("{}@{:#04X}: {} ", $addr_format),
-      $s.starting_cycle, $s.addr, $s.name, $target_addr
-    )
-  };
-  ($f:ident, $s:ident, $target_addr:literal) => {
-    write!(
-      $f,
-      "{}@{:#04X}: {} {}",
-      $s.starting_cycle, $s.addr, $s.name, $target_addr
-    )
-  };
-  ($f:ident, $s:ident) => {
-    write!($f, "{}@{:#04X}: {}", $s.starting_cycle, $s.addr, $s.name)
-  };
-}
-
-macro_rules! display_option_debug_info {
-  ($f:ident, $s:ident, $option:expr, $fmt: literal) => {
-    match $option {
-      Some(tgt) => display_debug_info!($f, $s, $fmt, tgt),
-      None => display_debug_info!($f, $s, "?"),
-    }
-  };
-}
-
 impl Display for DebugInstructionInfo {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    macro_rules! display_debug_info {
+      ($addr_format:literal, $target_addr:ident) => {
+        write!(
+          f,
+          concat!("{}@{:#04X}: {} ", $addr_format),
+          self.starting_cycle, self.addr, self.name, $target_addr
+        )
+      };
+      ($target_addr:literal) => {
+        write!(
+          f,
+          "{}@{:#04X}: {} {}",
+          self.starting_cycle, self.addr, self.name, $target_addr
+        )
+      };
+      () => {
+        write!(
+          f,
+          "{}@{:#04X}: {}",
+          self.starting_cycle, self.addr, self.name
+        )
+      };
+    }
+
+    macro_rules! display_option_debug_info {
+      ($option:expr, $fmt: literal) => {
+        match $option {
+          Some(tgt) => display_debug_info!($fmt, tgt),
+          None => display_debug_info!("?"),
+        }
+      };
+    }
+
     match &self.symbol {
-      Some(symbol) => display_debug_info!(f, self, "{}", symbol),
+      Some(symbol) => display_debug_info!("{}", symbol),
       None => {
         let Some(target_addr) = self.target_addr else {
-          return display_debug_info!(f, self, "?");
+          return display_debug_info!("?");
         };
 
         let Some(mode) = target_addr.mode else {
-          return display_debug_info!(f, self, "?");
+          return display_debug_info!("?");
         };
 
         match mode {
-          AddressingMode::Implicit => display_debug_info!(f, self),
-          AddressingMode::Immediate => display_option_debug_info!(f, self, self.target_val, "#{}"),
+          AddressingMode::Implicit => display_debug_info!(),
+          AddressingMode::Immediate => display_option_debug_info!(self.target_val, "#{}"),
           AddressingMode::Relative => {
-            display_option_debug_info!(f, self, target_addr.indirect().map(|v| v as i8), "*{:+}")
+            display_option_debug_info!(target_addr.indirect().map(|v| v as i8), "*{:+}")
           }
           AddressingMode::Indirect => {
-            display_option_debug_info!(f, self, target_addr.indirect(), "(${:X})")
+            display_option_debug_info!(target_addr.indirect(), "(${:X})")
           }
           AddressingMode::ZeroPage => {
-            display_option_debug_info!(f, self, target_addr.value(), "${:X}")
+            display_option_debug_info!(target_addr.value(), "${:X}")
           }
           AddressingMode::ZeroPageX => {
-            display_option_debug_info!(f, self, target_addr.value(), "${:X},X")
+            display_option_debug_info!(target_addr.value(), "${:X},X")
           }
           AddressingMode::ZeroPageY => {
-            display_option_debug_info!(f, self, target_addr.value(), "${:X},Y")
+            display_option_debug_info!(target_addr.value(), "${:X},Y")
           }
           AddressingMode::Absolute => {
-            display_option_debug_info!(f, self, target_addr.value(), "${:X}")
+            display_option_debug_info!(target_addr.value(), "${:X}")
           }
           AddressingMode::AbsoluteX => {
-            display_option_debug_info!(f, self, target_addr.value(), "${:X},X")
+            display_option_debug_info!(target_addr.value(), "${:X},X")
           }
           AddressingMode::AbsoluteY => {
-            display_option_debug_info!(f, self, target_addr.value(), "${:X},Y")
+            display_option_debug_info!(target_addr.value(), "${:X},Y")
           }
           AddressingMode::IndexIndirectX => {
-            display_option_debug_info!(f, self, target_addr.indirect(), "(${:X},X)")
+            display_option_debug_info!(target_addr.indirect(), "(${:X},X)")
           }
           AddressingMode::IndirectIndexY => {
-            display_option_debug_info!(f, self, target_addr.indirect(), "(${:X}),Y")
+            display_option_debug_info!(target_addr.indirect(), "(${:X}),Y")
           }
-          AddressingMode::Accumulator => display_debug_info!(f, self, "A"),
+          AddressingMode::Accumulator => display_debug_info!("A"),
         }
       }
     }
