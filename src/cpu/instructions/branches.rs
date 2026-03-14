@@ -38,7 +38,6 @@ impl Tasks for BranchTasks {
       BranchStep::ConditionExecution => {
         let offset = memory[cpu.program_counter];
         cpu.addr.set_indirect_lo(offset);
-        cpu.addr.done = true;
         cpu.increment_program_counter();
 
         if (self.condition)(cpu) {
@@ -54,7 +53,7 @@ impl Tasks for BranchTasks {
         let offset = cpu
           .addr
           .indirect()
-          .expect("unexpect lack of indirect address in OffsetProgramCounterLo step")
+          .expect("unexpected lack of indirect address in OffsetProgramCounterLo step")
           .to_le_bytes()[0];
         let [program_counter_lo, program_counter_hi] = cpu.program_counter.to_le_bytes();
         let directionless_offset = if self.negative_offset_direction {
@@ -74,6 +73,17 @@ impl Tasks for BranchTasks {
         }
 
         cpu.program_counter = Word::from_le_bytes([offset_program_counter_lo, program_counter_hi]);
+        // TODO: Maybe separate this into addressing task that is called without
+        // yielding it from this tick immediately? Maybe could take a concrete
+        // struct instead of a trait to signal that the relative tasks are
+        // treated specially. Sounds like unnecessary part but currently it throws
+        // me off that this addressing is set here instead of a specific task.
+        // On the other hand, Task ticks are supposed to signify one clock cycle.
+        // Additionally, the offset is decided in the previous tick, and calculating
+        // target_addr ahead of time is iffy since memory could be changed outside
+        // cpu between cycles. Maybe swallow struct ticks over multiple steps?
+        cpu.addr.set(cpu.program_counter);
+        cpu.addr.done = true;
 
         if !carry {
           self.step = BranchStep::Done;
@@ -304,6 +314,21 @@ mod common_branching_tasks {
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
     assert_eq!(cpu.cycle, 3);
+  }
+
+  #[test]
+  fn should_fill_indirect_addr_with_offset_and_addr_value_with_branch_target() {
+    const OFFSET: Byte = 0x03;
+    let mut memory = MemoryMock::new(&[OFFSET, 0x00, 0x01, 0x00]);
+    let mut cpu = CPU::new_nmos();
+    cpu.program_counter = 0x00;
+
+    let condition: fn(&CPU) -> bool = |_| true;
+    let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
+    run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+    assert_eq!(cpu.addr.indirect(), Some(0x0003));
+    assert_eq!(cpu.addr.value(), Some(0x0004));
   }
 }
 
