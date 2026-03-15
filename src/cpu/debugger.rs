@@ -13,12 +13,13 @@ use crate::{
 
 pub struct DebugInstructionInfo {
   pub addr: Word,
+  pub addr_symbol: Option<String>,
   pub opcode: Byte,
   pub name: &'static str,
   pub starting_cycle: usize,
   pub target_addr: Option<Address>,
   pub target_val: Option<Byte>,
-  pub symbol: Option<String>,
+  pub target_symbol: Option<String>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -75,12 +76,13 @@ impl Debugger {
     {
       self.instructions.push(DebugInstructionInfo {
         addr: instruction.addr,
+        addr_symbol: None,
         opcode: instruction.opcode,
         name: instruction.name,
         starting_cycle: instruction.starting_cycle,
         target_addr: None,
         target_val: None,
-        symbol: None,
+        target_symbol: None,
       });
       results.push(ProbeResult::NextInstruction);
     }
@@ -130,9 +132,12 @@ impl Debugger {
       return (results, registers);
     };
 
-    let adressing_done = results.contains(&ProbeResult::AddressingDone);
-    if adressing_done {
-      last_instruction.symbol = last_instruction
+    if results.contains(&ProbeResult::NextInstruction) {
+      last_instruction.addr_symbol = symbols.get(&last_instruction.addr);
+    }
+
+    if results.contains(&ProbeResult::AddressingDone) {
+      last_instruction.target_symbol = last_instruction
         .target_addr
         .and_then(|addr| addr.value())
         .and_then(|addr| symbols.get(&addr));
@@ -191,8 +196,8 @@ impl Display for DebugInstructionInfo {
       };
     }
 
-    match &self.symbol {
-      Some(symbol) => display_debug_info!("{}", symbol),
+    match &self.target_symbol {
+      Some(target_symbol) => display_debug_info!("{}", target_symbol),
       None => {
         let Some(target_addr) = self.target_addr else {
           return display_debug_info!("?");
@@ -656,6 +661,129 @@ mod tests {
   }
 
   #[cfg(test)]
+  mod probe_with_symbols {
+
+    use crate::{
+      consts::Word,
+      cpu::{
+        CPU,
+        addressing::address::Address,
+        debugger::{Debugger, Symbols},
+        instructions::{LDA_A, LDA_IM, LDX_A, LDX_IM, LDY_IM},
+        tests::MemoryMock,
+      },
+    };
+
+    struct SymbolsMock {}
+    impl Symbols for SymbolsMock {
+      fn get(&self, addr: &Word) -> Option<String> {
+        if *addr == 0x00 {
+          Some(String::from(".START"))
+        } else if *addr == 0x04 {
+          Some(String::from(".END"))
+        } else {
+          None
+        }
+      }
+    }
+
+    #[test]
+    fn should_fill_instruction_address_symbol_when_instruction_addr_can_be_matched_against_symbol_during_new_instruction_fetch()
+     {
+      let symbols_mock = SymbolsMock {};
+      let mut memory = MemoryMock::new(&[LDA_IM, 0x04, LDX_IM, 0x07, LDY_IM, 0x01]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x00;
+      cpu.addr = Address::new();
+      let mut uut = Debugger::new();
+
+      // fetch instruction LDA_IM
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+      let mut last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.addr, 0x00);
+      assert_eq!(last_instruction.addr_symbol, Some(String::from(".START")));
+
+      // fetch address, store value
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+
+      // fetch instruction LDX_IM
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+      last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.addr, 0x02);
+      assert_eq!(last_instruction.addr_symbol, None);
+
+      // fetch address, store value
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+
+      // fetch instruction LDY_IM
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+      last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.addr, 0x04);
+      assert_eq!(last_instruction.addr_symbol, Some(String::from(".END")));
+    }
+
+    #[test]
+    fn should_fill_target_address_symbol_when_target_addr_can_be_matched_against_symbol_after_addressing_is_done()
+     {
+      let symbols_mock = SymbolsMock {};
+      let mut memory = MemoryMock::new(&[LDA_A, 0x04, 0x00, LDX_A, 0x00, 0x00]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x00;
+      cpu.addr = Address::new();
+      let mut uut = Debugger::new();
+
+      // fetch instruction LDA_A
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+
+      // fetch address lo
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+
+      // fetch address hi
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+      let mut last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.target_addr.unwrap().value(), Some(0x04));
+      assert_eq!(last_instruction.target_symbol, Some(String::from(".END")));
+
+      // fetch value
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+
+      // fetch instruction LDX_A
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+
+      // fetch address lo
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+
+      // fetch address hi
+      cpu.tick(&mut memory);
+      _ = uut.probe_with_symbols(&cpu, &memory, &symbols_mock);
+      last_instruction = uut
+        .get_last_instruction()
+        .expect("Could not get last instruction");
+      assert_eq!(last_instruction.target_addr.unwrap().value(), Some(0x00));
+      assert_eq!(last_instruction.target_symbol, Some(String::from(".START")));
+    }
+  }
+
+  #[cfg(test)]
   mod debug_instruction_info {
 
     #[cfg(test)]
@@ -672,12 +800,13 @@ mod tests {
         addr.set(0x5955u16);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xAD,
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $5955");
@@ -690,12 +819,13 @@ mod tests {
         addr.set_lo(0x59u8);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xBD,
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59,X");
@@ -708,12 +838,13 @@ mod tests {
         addr.set_lo(0x59u8);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xB9,
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59,Y");
@@ -725,12 +856,13 @@ mod tests {
         addr.reset(AddressingMode::Accumulator);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0x4A,
           name: "LSR",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LSR A");
@@ -742,12 +874,13 @@ mod tests {
         addr.reset(AddressingMode::Immediate);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xA0,
           name: "LDY",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: Some(89),
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDY #89");
@@ -759,12 +892,13 @@ mod tests {
         addr.reset(AddressingMode::Implicit);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xEA,
           name: "NOP",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: NOP");
@@ -778,12 +912,13 @@ mod tests {
         addr.set_indirect_hi(0x25);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0x6C,
           name: "JMP",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: JMP ($2559)");
@@ -796,12 +931,13 @@ mod tests {
         addr.set_indirect_lo(0x59);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xA1,
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA ($59,X)");
@@ -814,12 +950,13 @@ mod tests {
         addr.set_indirect_lo(0x59);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xB1,
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA ($59),Y");
@@ -832,12 +969,13 @@ mod tests {
         addr.set_indirect_lo(0x4);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0x30,
           name: "BMI",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: BMI *+4");
@@ -850,12 +988,13 @@ mod tests {
         addr.set_indirect_lo(0xFD);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0x30,
           name: "BMI",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: BMI *-3");
@@ -868,12 +1007,13 @@ mod tests {
         addr.set_lo(0x59u8);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xA5,
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59");
@@ -886,12 +1026,13 @@ mod tests {
         addr.set_lo(0x59u8);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xB5,
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA $59,X");
@@ -904,30 +1045,32 @@ mod tests {
         addr.set_lo(0x59u8);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xB6,
           name: "LDX",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: None,
+          target_symbol: None,
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDX $59,Y");
       }
 
       #[test]
-      fn should_show_symbol_instead_of_address_when_available() {
+      fn should_show_target_symbol_instead_of_address_when_available() {
         let mut addr = Address::new();
         addr.reset(AddressingMode::Absolute);
         addr.set(0x5955u16);
         let uut = DebugInstructionInfo {
           addr: 0x21,
+          addr_symbol: None,
           opcode: 0xAD,
           name: "LDA",
           starting_cycle: 3,
           target_addr: Some(addr),
           target_val: None,
-          symbol: Some(String::from(".PEEK")),
+          target_symbol: Some(String::from(".PEEK")),
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA .PEEK");
