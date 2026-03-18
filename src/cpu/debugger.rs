@@ -163,26 +163,30 @@ impl Default for Debugger {
 
 impl Display for DebugInstructionInfo {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    let instruction_address = self
+      .addr_symbol
+      .clone()
+      .unwrap_or(format!("{:#04X}", self.addr));
     macro_rules! display_debug_info {
       ($addr_format:literal, $target_addr:ident) => {
         write!(
           f,
-          concat!("{}@{:#04X}: {} ", $addr_format),
-          self.starting_cycle, self.addr, self.name, $target_addr
+          concat!("{}@{}: {} ", $addr_format),
+          self.starting_cycle, instruction_address, self.name, $target_addr
         )
       };
       ($target_addr:literal) => {
         write!(
           f,
-          "{}@{:#04X}: {} {}",
-          self.starting_cycle, self.addr, self.name, $target_addr
+          "{}@{}: {} {}",
+          self.starting_cycle, instruction_address, self.name, $target_addr
         )
       };
       () => {
         write!(
           f,
-          "{}@{:#04X}: {}",
-          self.starting_cycle, self.addr, self.name
+          "{}@{}: {}",
+          self.starting_cycle, instruction_address, self.name
         )
       };
     }
@@ -1074,6 +1078,25 @@ mod tests {
         };
 
         assert_eq!(uut.to_string(), "3@0x21: LDA .PEEK");
+      }
+
+      #[test]
+      fn should_show_instruction_symbol_instead_of_address_when_available() {
+        let mut addr = Address::new();
+        addr.reset(AddressingMode::Absolute);
+        addr.set(0x5955u16);
+        let uut = DebugInstructionInfo {
+          addr: 0x21,
+          addr_symbol: Some(String::from(".MONRD")),
+          opcode: 0xAD,
+          name: "LDA",
+          starting_cycle: 3,
+          target_addr: Some(addr),
+          target_val: None,
+          target_symbol: None,
+        };
+
+        assert_eq!(uut.to_string(), "3@.MONRD: LDA $5955");
       }
     }
   }
