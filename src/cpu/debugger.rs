@@ -33,7 +33,13 @@ pub enum TrapConditions {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum ProbeResult {
+pub struct ProbeResult {
+  pub events: Vec<ProbeEvent>,
+  pub registers: Registers,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum ProbeEvent {
   NextInstruction,
   AddressingDone,
   TrapHit(Traps),
@@ -63,12 +69,14 @@ impl Debugger {
     }
   }
 
-  pub fn probe(&mut self, cpu: &CPU, memory: &dyn Memory) -> (Vec<ProbeResult>, Registers) {
-    let mut results: Vec<ProbeResult> = Vec::new();
-    let registers = Registers {
-      a: cpu.accumulator,
-      x: cpu.index_register_x,
-      y: cpu.index_register_y,
+  pub fn probe(&mut self, cpu: &CPU, memory: &dyn Memory) -> ProbeResult {
+    let mut result = ProbeResult {
+      events: Vec::new(),
+      registers: Registers {
+        a: cpu.accumulator,
+        x: cpu.index_register_x,
+        y: cpu.index_register_y,
+      },
     };
 
     if cpu.sync()
@@ -84,11 +92,11 @@ impl Debugger {
         target_val: None,
         target_symbol: None,
       });
-      results.push(ProbeResult::NextInstruction);
+      result.events.push(ProbeEvent::NextInstruction);
     }
 
     let Some(last_instruction) = &mut self.instructions.back_mut() else {
-      return (results, registers);
+      return result;
     };
 
     let target_addr = cpu.addr;
@@ -99,7 +107,7 @@ impl Debugger {
       }
 
       last_instruction.target_addr = Some(target_addr);
-      results.push(ProbeResult::AddressingDone);
+      result.events.push(ProbeEvent::AddressingDone);
     }
 
     for trap in self.traps.iter() {
@@ -109,7 +117,7 @@ impl Debugger {
             && let Some(target_addr_val) = target_addr.value()
             && rng.contains(&target_addr_val)
           {
-            results.push(ProbeResult::TrapHit(Traps::AddressRange(
+            result.events.push(ProbeEvent::TrapHit(Traps::AddressRange(
               rng.clone(),
               target_addr_val,
             )));
@@ -118,7 +126,7 @@ impl Debugger {
       }
     }
 
-    (results, registers)
+    result
   }
 
   pub fn probe_with_symbols<S: Symbols>(
@@ -126,24 +134,24 @@ impl Debugger {
     cpu: &CPU,
     memory: &dyn Memory,
     symbols: &S,
-  ) -> (Vec<ProbeResult>, Registers) {
-    let (results, registers) = self.probe(cpu, memory);
+  ) -> ProbeResult {
+    let result = self.probe(cpu, memory);
     let Some(last_instruction) = &mut self.instructions.back_mut() else {
-      return (results, registers);
+      return result;
     };
 
-    if results.contains(&ProbeResult::NextInstruction) {
+    if result.events.contains(&ProbeEvent::NextInstruction) {
       last_instruction.addr_symbol = symbols.get(&last_instruction.addr);
     }
 
-    if results.contains(&ProbeResult::AddressingDone) {
+    if result.events.contains(&ProbeEvent::AddressingDone) {
       last_instruction.target_symbol = last_instruction
         .target_addr
         .and_then(|addr| addr.value())
         .and_then(|addr| symbols.get(&addr));
     }
 
-    (results, registers)
+    result
   }
 
   pub fn get_last_instruction(&self) -> Option<&DebugInstructionInfo> {
@@ -336,7 +344,7 @@ mod tests {
     use crate::cpu::{
       CPU,
       addressing::address::Address,
-      debugger::{Debugger, ProbeResult, Registers},
+      debugger::{Debugger, ProbeEvent, Registers},
       instructions::{LDA_A, LDA_IM, LDX_A, LDX_IM, LDY_A, LDY_IM, NOP},
       tests::MemoryMock,
     };
@@ -353,9 +361,9 @@ mod tests {
       // fetch of LDA_A
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[ProbeResult::NextInstruction]);
+      assert_eq!(&result.events, &[ProbeEvent::NextInstruction]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x0,
           x: 0x0,
@@ -366,9 +374,9 @@ mod tests {
       // tick to fetch lo address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[]);
+      assert_eq!(&result.events, &[]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x0,
           x: 0x0,
@@ -379,9 +387,9 @@ mod tests {
       // tick to fetch hi address & addressing done
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[ProbeResult::AddressingDone]);
+      assert_eq!(&result.events, &[ProbeEvent::AddressingDone]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x0,
           x: 0x0,
@@ -392,9 +400,9 @@ mod tests {
       // fetch of value at address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[]);
+      assert_eq!(&result.events, &[]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x56,
           x: 0x0,
@@ -406,11 +414,11 @@ mod tests {
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
       assert_eq!(
-        &result.0,
-        &[ProbeResult::NextInstruction, ProbeResult::AddressingDone]
+        &result.events,
+        &[ProbeEvent::NextInstruction, ProbeEvent::AddressingDone]
       );
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x56,
           x: 0x0,
@@ -434,9 +442,9 @@ mod tests {
       // fetch LDA_A
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[ProbeResult::NextInstruction]);
+      assert_eq!(&result.events, &[ProbeEvent::NextInstruction]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x0,
           x: 0x0,
@@ -447,9 +455,9 @@ mod tests {
       // fetch lo of address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[]);
+      assert_eq!(&result.events, &[]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x0,
           x: 0x0,
@@ -461,14 +469,14 @@ mod tests {
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
       assert_eq!(
-        &result.0,
+        &result.events,
         &[
-          ProbeResult::AddressingDone,
-          ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x04..=0x04, 0x04))
+          ProbeEvent::AddressingDone,
+          ProbeEvent::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x04..=0x04, 0x04))
         ]
       );
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x0,
           x: 0x0,
@@ -479,9 +487,9 @@ mod tests {
       // fetch of value at address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[]);
+      assert_eq!(&result.events, &[]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x7,
           x: 0x0,
@@ -492,9 +500,9 @@ mod tests {
       // fetch of next LDX_A
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[ProbeResult::NextInstruction]);
+      assert_eq!(&result.events, &[ProbeEvent::NextInstruction]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x7,
           x: 0x0,
@@ -505,9 +513,9 @@ mod tests {
       // fetch lo of address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[]);
+      assert_eq!(&result.events, &[]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x7,
           x: 0x0,
@@ -519,14 +527,14 @@ mod tests {
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
       assert_eq!(
-        &result.0,
+        &result.events,
         &[
-          ProbeResult::AddressingDone,
-          ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x07..=0x07, 0x07))
+          ProbeEvent::AddressingDone,
+          ProbeEvent::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x07..=0x07, 0x07))
         ]
       );
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x7,
           x: 0x0,
@@ -537,9 +545,9 @@ mod tests {
       // fetch of value at address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[]);
+      assert_eq!(&result.events, &[]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x7,
           x: 0x1,
@@ -550,9 +558,9 @@ mod tests {
       // fetch of next LDY_A
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[ProbeResult::NextInstruction]);
+      assert_eq!(&result.events, &[ProbeEvent::NextInstruction]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x7,
           x: 0x1,
@@ -563,9 +571,9 @@ mod tests {
       // fetch lo of address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[]);
+      assert_eq!(&result.events, &[]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x7,
           x: 0x1,
@@ -577,14 +585,14 @@ mod tests {
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
       assert_eq!(
-        &result.0,
+        &result.events,
         &[
-          ProbeResult::AddressingDone,
-          ProbeResult::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x1..=0x1, 0x1))
+          ProbeEvent::AddressingDone,
+          ProbeEvent::TrapHit(crate::cpu::debugger::Traps::AddressRange(0x1..=0x1, 0x1))
         ]
       );
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x7,
           x: 0x1,
@@ -595,9 +603,9 @@ mod tests {
       // fetch of value at address
       cpu.tick(&mut memory);
       let result = uut.probe(&cpu, &memory);
-      assert_eq!(&result.0, &[]);
+      assert_eq!(&result.events, &[]);
       assert_eq!(
-        result.1,
+        result.registers,
         Registers {
           a: 0x7,
           x: 0x1,
