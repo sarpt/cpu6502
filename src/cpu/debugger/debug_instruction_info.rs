@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use crate::{consts::{Byte, Word}, cpu::addressing::{AddressingMode, address::Address}};
+use crate::{
+  consts::{Byte, Word},
+  cpu::addressing::{AddressingMode, address::Address},
+};
 
 pub struct DebugInstructionInfo {
   pub addr: Word,
@@ -102,4 +105,3 @@ impl Display for DebugInstructionInfo {
     }
   }
 }
-

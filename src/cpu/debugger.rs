@@ -5,7 +5,8 @@ use ringbuffer::{AllocRingBuffer, RingBuffer};
 use crate::{
   consts::{Byte, DEFAULT_INSTRUCTION_HISTORY_CAPACITY, Word},
   cpu::{
-    CPU, debugger::{debug_instruction_info::DebugInstructionInfo, registers::Registers},
+    CPU,
+    debugger::{debug_instruction_info::DebugInstructionInfo, registers::Registers},
   },
   memory::Memory,
 };
