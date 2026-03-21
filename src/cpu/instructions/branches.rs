@@ -43,6 +43,7 @@ impl Tasks for BranchTasks {
           return false;
         }
 
+        cpu.addr.done = true;
         self.step = BranchStep::Done;
         true
       }
@@ -203,6 +204,7 @@ mod common_branching_tasks {
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
     assert_eq!(cpu.program_counter, 0x0001);
+    assert!(cpu.addr.done);
   }
 
   #[test]

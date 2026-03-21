@@ -2,7 +2,6 @@ use std::fmt::Display;
 
 use crate::consts::Byte;
 
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Registers {
   pub a: Byte,
@@ -35,8 +34,10 @@ mod tests {
         y: 0xA0,
       };
 
-      assert_eq!(format!("{uut}"), "A: 89 / $59; X: 253 / $FD; Y: 160 / $A0\n".to_owned());
+      assert_eq!(
+        format!("{uut}"),
+        "A: 89 / $59; X: 253 / $FD; Y: 160 / $A0\n".to_owned()
+      );
     }
   }
 }
-
