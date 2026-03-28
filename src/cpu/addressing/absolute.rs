@@ -55,7 +55,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
         }
 
         let addr_lo = memory[cpu.program_counter];
-        cpu.addr.set_lo(addr_lo);
+        cpu.addr.set_indirect_lo(addr_lo);
         cpu.increment_program_counter();
         self.step = AbsoluteOffsetStep::MemoryAccessHi;
 
@@ -63,7 +63,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
       }
       AbsoluteOffsetStep::MemoryAccessHi => {
         let addr_hi = memory[cpu.program_counter];
-        cpu.addr.set_hi(addr_hi);
+        cpu.addr.set_indirect_hi(addr_hi);
         cpu.increment_program_counter();
         self.step = AbsoluteOffsetStep::OffsetLo;
 
@@ -76,26 +76,28 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
         };
         let [lo, hi] = cpu
           .addr
-          .value()
-          .expect("unexpected lack of address in OffsetLo step")
+          .indirect()
+          .expect("unexpected lack of indirect address in OffsetLo step")
           .to_le_bytes();
         let (new_lo, carry) = lo.overflowing_add(offset);
         cpu.addr.set(Word::from_le_bytes([new_lo, hi]));
         self.step = AbsoluteOffsetStep::OffsetHi;
 
         if !carry {
+          cpu.addr.done = true;
           self.done = true;
         }
+
         self.done
       }
       AbsoluteOffsetStep::OffsetHi => {
-        let [lo, hi] = cpu
+        let [_, hi] = cpu
           .addr
-          .value()
-          .expect("unexpected lack of address in OffsetHi step")
+          .indirect()
+          .expect("unexpected lack of indirect address in OffsetHi step")
           .to_le_bytes();
         let new_hi = hi.wrapping_add(1);
-        cpu.addr.set(Word::from_le_bytes([lo, new_hi]));
+        cpu.addr.set_hi(new_hi);
 
         cpu.addr.done = true;
         self.done = true;
