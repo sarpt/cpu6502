@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::consts::Byte;
 
 #[derive(Clone, Copy)]
@@ -115,5 +117,43 @@ impl ProcessorStatus {
   pub fn get_flag(&self, flag: Flags) -> bool {
     let shift: u8 = flag as u8;
     (self.flags & (1 << shift)) > 0
+  }
+}
+
+impl Display for ProcessorStatus {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(
+      f,
+      "Carry: {}; Zero: {}, IntDisable: {}, Decimal: {}, Break: {}; Overflow: {}; Negative: {}",
+      self.get_flag(Flags::Carry),
+      self.get_flag(Flags::Zero),
+      self.get_flag(Flags::InterruptDisable),
+      self.get_flag(Flags::DecimalMode),
+      self.get_flag(Flags::Break),
+      self.get_flag(Flags::Overflow),
+      self.get_flag(Flags::Negative)
+    )
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  #[cfg(test)]
+  mod display {
+    use crate::cpu::processor_status::ProcessorStatus;
+
+    #[test]
+    fn should_display_flags_when_not_set() {
+      let uut: ProcessorStatus = 0b00000000.into();
+
+      assert_eq!(uut.to_string(), "Carry: false; Zero: false, IntDisable: false, Decimal: false, Break: false; Overflow: false; Negative: false".to_string())
+    }
+
+    #[test]
+    fn should_display_flags_when_set() {
+      let uut: ProcessorStatus = 0b11111111.into();
+
+      assert_eq!(uut.to_string(), "Carry: true; Zero: true, IntDisable: true, Decimal: true, Break: true; Overflow: true; Negative: true".to_string())
+    }
   }
 }
