@@ -43,14 +43,16 @@ impl Tasks for JsrTasks {
       }
       JsrSteps::DecrementProgramCounterHi => {
         let [_, ret_program_counter_hi] = cpu.program_counter.wrapping_sub(1).to_le_bytes();
-        cpu.push_byte_to_stack(ret_program_counter_hi, memory);
+        memory[cpu.get_stack_ptr_address()] = ret_program_counter_hi;
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_sub(1);
 
         self.step = JsrSteps::DecrementProgramCounterLo;
         false
       }
       JsrSteps::DecrementProgramCounterLo => {
         let [ret_program_counter_lo, _] = cpu.program_counter.wrapping_sub(1).to_le_bytes();
-        cpu.push_byte_to_stack(ret_program_counter_lo, memory);
+        memory[cpu.get_stack_ptr_address()] = ret_program_counter_lo;
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_sub(1);
 
         self.step = JsrSteps::SetProgramCounter;
         false
@@ -111,20 +113,21 @@ impl Tasks for RtsTasks {
         false
       }
       RtsSteps::PreDecrementStackPointer => {
-        // dummy tick, simulate separate stack pointer decrement
-        // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
-        // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_add(1);
         self.step = RtsSteps::PopProgramCounterLo;
         false
       }
       RtsSteps::PopProgramCounterLo => {
-        let lo = cpu.pop_byte_from_stack(memory);
+        let stack_addr = cpu.get_stack_ptr_address();
+        let lo = memory[stack_addr];
         cpu.set_program_counter_lo(lo);
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_add(1);
         self.step = RtsSteps::PopProgramCounterHi;
         false
       }
       RtsSteps::PopProgramCounterHi => {
-        let hi = cpu.pop_byte_from_stack(memory);
+        let stack_addr = cpu.get_stack_ptr_address();
+        let hi = memory[stack_addr];
         cpu.set_program_counter_hi(hi);
         self.step = RtsSteps::IncrementProgramCounter;
         false

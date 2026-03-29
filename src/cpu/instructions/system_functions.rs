@@ -71,17 +71,20 @@ impl Tasks for BrkTasks {
         false
       }
       BrkSteps::PushProgramCounterHi => {
-        cpu.push_byte_to_stack(cpu.get_program_counter_hi(), memory);
+        memory[cpu.get_stack_ptr_address()] = cpu.get_program_counter_hi();
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_sub(1);
         self.step = BrkSteps::PushProgramCounterLo;
         false
       }
       BrkSteps::PushProgramCounterLo => {
-        cpu.push_byte_to_stack(cpu.get_program_counter_lo(), memory);
+        memory[cpu.get_stack_ptr_address()] = cpu.get_program_counter_lo();
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_sub(1);
         self.step = BrkSteps::PushProcessorStatus;
         false
       }
       BrkSteps::PushProcessorStatus => {
-        cpu.push_byte_to_stack(cpu.processor_status.into(), memory);
+        memory[cpu.get_stack_ptr_address()] = cpu.processor_status.into();
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_sub(1);
         self.step = BrkSteps::AccessBrkVectorLo;
         false
       }
@@ -150,25 +153,28 @@ impl Tasks for RtiTasks {
         false
       }
       RtiSteps::StackPointerPreDecrement => {
-        // dummy tick, simulate separate stack pointer decrement
-        // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
-        // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_add(1);
         self.step = RtiSteps::PopProcessorStatus;
         false
       }
       RtiSteps::PopProcessorStatus => {
-        cpu.processor_status = cpu.pop_byte_from_stack(memory).into();
+        let stack_addr = cpu.get_stack_ptr_address();
+        cpu.processor_status = memory[stack_addr].into();
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_add(1);
         self.step = RtiSteps::PopProgramCounterLo;
         false
       }
       RtiSteps::PopProgramCounterLo => {
-        let lo = cpu.pop_byte_from_stack(memory);
+        let stack_addr = cpu.get_stack_ptr_address();
+        let lo = memory[stack_addr];
         cpu.set_program_counter_lo(lo);
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_add(1);
         self.step = RtiSteps::PopProgramCounterHi;
         false
       }
       RtiSteps::PopProgramCounterHi => {
-        let hi = cpu.pop_byte_from_stack(memory);
+        let stack_addr = cpu.get_stack_ptr_address();
+        let hi = memory[stack_addr];
         cpu.set_program_counter_hi(hi);
         self.step = RtiSteps::Done;
         true
