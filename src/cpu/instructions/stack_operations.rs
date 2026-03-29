@@ -39,7 +39,8 @@ impl Tasks for PushRegisterTasks {
       }
       PushRegisterSteps::PushToStack => {
         let val = cpu.get_register(self.register);
-        cpu.push_byte_to_stack(val, memory);
+        memory[cpu.get_stack_ptr_address()] = val;
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_sub(1);
 
         self.step = PushRegisterSteps::Done;
         true
@@ -101,14 +102,13 @@ impl Tasks for PullRegisterTasks {
         false
       }
       PullRegisterSteps::PreDecrementStackPointer => {
-        // dummy tick, simulate separate stack pointer decrement
-        // second cycle involves decrement of the stack pointer but poping byte from stack in third cycle does it in a single fn call
-        // TODO: dont create dummy cycles, instead of decrementing and poping values in one call separate them into respective cycles
+        cpu.stack_pointer = cpu.stack_pointer.wrapping_add(1);
         self.step = PullRegisterSteps::PullFromStack;
         false
       }
       PullRegisterSteps::PullFromStack => {
-        let value = cpu.pop_byte_from_stack(memory);
+        let stack_addr = cpu.get_stack_ptr_address();
+        let value = memory[stack_addr];
         cpu.set_register(self.register, value);
 
         self.step = PullRegisterSteps::Done;

@@ -201,16 +201,8 @@ impl CPU {
       .change_negative_flag((value & 0b10000000) > 0);
   }
 
-  fn push_byte_to_stack(&mut self, val: Byte, memory: &mut dyn Memory) {
-    let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
-    memory[stack_addr] = val;
-    self.stack_pointer = self.stack_pointer.wrapping_sub(1);
-  }
-
-  fn pop_byte_from_stack(&mut self, memory: &dyn Memory) -> Byte {
-    self.stack_pointer = self.stack_pointer.wrapping_add(1);
-    let stack_addr: Word = STACK_PAGE_HI | (self.stack_pointer as u16);
-    memory[stack_addr]
+  fn get_stack_ptr_address(&self) -> Word {
+    STACK_PAGE_HI | (self.stack_pointer as u16)
   }
 
   fn read_memory(&self, addr_mode: AddressingMode) -> Box<dyn ReadMemoryTasks> {

@@ -266,68 +266,6 @@ mod set_register {
 }
 
 #[cfg(test)]
-mod push_byte_to_stack {
-  use super::MemoryMock;
-  use crate::cpu::CPU;
-
-  #[test]
-  fn should_push_a_byte_to_a_place_to_the_first_page_in_memory_pointed_by_a_stack_pointer() {
-    let mut memory = MemoryMock::default();
-    let mut uut = CPU::new_nmos();
-    uut.stack_pointer = 0xFF;
-
-    let value: u8 = 0xDF;
-    uut.push_byte_to_stack(value, &mut memory);
-
-    assert_eq!(memory[0x01FF], 0xDF);
-  }
-
-  #[test]
-  fn should_decrease_stack_pointer_by_one() {
-    let mut memory = MemoryMock::default();
-    let mut uut = CPU::new_nmos();
-    uut.stack_pointer = 0xFF;
-
-    let value: u8 = 0xDF;
-    uut.push_byte_to_stack(value, &mut memory);
-
-    assert_eq!(uut.stack_pointer, 0xFE);
-  }
-}
-
-#[cfg(test)]
-mod pop_byte_from_stack {
-  use super::MemoryMock;
-  use crate::cpu::CPU;
-
-  #[test]
-  fn should_pop_byte_from_stack() {
-    let mut memory = MemoryMock::default();
-    let mut uut = CPU::new_nmos();
-    memory[0x01FF] = 0xDF;
-    memory[0x01FE] = 0x48;
-    uut.stack_pointer = 0xFD;
-
-    let value = uut.pop_byte_from_stack(&memory);
-
-    assert_eq!(value, 0x48);
-  }
-
-  #[test]
-  fn should_increment_stack_pointer_once() {
-    let mut memory = MemoryMock::default();
-    let mut uut = CPU::new_nmos();
-    memory[0x01FF] = 0x00;
-    memory[0x01FE] = 0x00;
-    uut.stack_pointer = 0xFD;
-
-    uut.pop_byte_from_stack(&memory);
-
-    assert_eq!(uut.stack_pointer, 0xFE);
-  }
-}
-
-#[cfg(test)]
 mod set_status_of_register {
   use crate::cpu::{CPU, Registers};
 
