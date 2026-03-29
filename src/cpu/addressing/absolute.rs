@@ -2,15 +2,16 @@ use crate::{consts::Word, cpu::tasks::Tasks, memory::Memory};
 
 use super::OffsetVariant;
 
+#[derive(Eq, PartialEq)]
 enum AbsoluteOffsetStep {
   MemoryAccessLo,
   MemoryAccessHi,
   OffsetLo,
   OffsetHi,
+  Done,
 }
 
 pub struct AbsoluteOffsetAddressingTasks {
-  done: bool,
   step: AbsoluteOffsetStep,
   variant: OffsetVariant,
 }
@@ -18,7 +19,6 @@ pub struct AbsoluteOffsetAddressingTasks {
 impl AbsoluteOffsetAddressingTasks {
   pub fn new_offset_by_x() -> Self {
     AbsoluteOffsetAddressingTasks {
-      done: false,
       step: AbsoluteOffsetStep::MemoryAccessLo,
       variant: OffsetVariant::X,
     }
@@ -26,7 +26,6 @@ impl AbsoluteOffsetAddressingTasks {
 
   pub fn new_offset_by_y() -> Self {
     AbsoluteOffsetAddressingTasks {
-      done: false,
       step: AbsoluteOffsetStep::MemoryAccessLo,
       variant: OffsetVariant::Y,
     }
@@ -35,14 +34,10 @@ impl AbsoluteOffsetAddressingTasks {
 
 impl Tasks for AbsoluteOffsetAddressingTasks {
   fn done(&self) -> bool {
-    self.done
+    self.step == AbsoluteOffsetStep::Done
   }
 
   fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
-    if self.done {
-      return self.done;
-    }
-
     match self.step {
       AbsoluteOffsetStep::MemoryAccessLo => {
         match self.variant {
@@ -81,14 +76,15 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
           .to_le_bytes();
         let (new_lo, carry) = lo.overflowing_add(offset);
         cpu.addr.set(Word::from_le_bytes([new_lo, hi]));
-        self.step = AbsoluteOffsetStep::OffsetHi;
 
         if !carry {
           cpu.addr.done = true;
-          self.done = true;
+          self.step = AbsoluteOffsetStep::Done;
+          true
+        } else {
+          self.step = AbsoluteOffsetStep::OffsetHi;
+          false
         }
-
-        self.done
       }
       AbsoluteOffsetStep::OffsetHi => {
         let [_, hi] = cpu
@@ -100,27 +96,30 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
         cpu.addr.set_hi(new_hi);
 
         cpu.addr.done = true;
-        self.done = true;
-        self.done
+        self.step = AbsoluteOffsetStep::Done;
+        true
+      }
+      AbsoluteOffsetStep::Done => {
+        panic!("tick mustn't be called when done")
       }
     }
   }
 }
 
+#[derive(Eq, PartialEq)]
 enum AbsoluteStep {
   MemoryLo,
   MemoryHi,
+  Done,
 }
 
 pub struct AbsoluteAddressingTasks {
-  done: bool,
   step: AbsoluteStep,
 }
 
 impl AbsoluteAddressingTasks {
   pub fn new() -> Self {
     AbsoluteAddressingTasks {
-      done: false,
       step: AbsoluteStep::MemoryLo,
     }
   }
@@ -128,14 +127,10 @@ impl AbsoluteAddressingTasks {
 
 impl Tasks for AbsoluteAddressingTasks {
   fn done(&self) -> bool {
-    self.done
+    self.step == AbsoluteStep::Done
   }
 
   fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
-    if self.done {
-      return self.done;
-    }
-
     match self.step {
       AbsoluteStep::MemoryLo => {
         cpu.addr.reset(super::AddressingMode::Absolute);
@@ -152,8 +147,11 @@ impl Tasks for AbsoluteAddressingTasks {
         cpu.increment_program_counter();
 
         cpu.addr.done = true;
-        self.done = true;
-        self.done
+        self.step = AbsoluteStep::Done;
+        true
+      }
+      AbsoluteStep::Done => {
+        panic!("tick mustn't be called when done")
       }
     }
   }
