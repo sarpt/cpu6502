@@ -66,19 +66,18 @@ impl Tasks for BranchTasks {
         }
 
         cpu.program_counter = Word::from_le_bytes([offset_program_counter_lo, program_counter_hi]);
-        // TODO: Maybe separate this into addressing task that is called without
-        // yielding it from this tick immediately? Maybe could take a concrete
-        // struct instead of a trait to signal that the relative tasks are
-        // treated specially. Sounds like unnecessary part but currently it throws
-        // me off that this addressing is set here instead of a specific task.
-        // On the other hand, Task ticks are supposed to signify one clock cycle.
-        // Additionally, the offset is decided in the previous tick, and calculating
-        // target_addr ahead of time is iffy since memory could be changed outside
-        // cpu between cycles. Maybe swallow struct ticks over multiple steps?
-        cpu.addr.set(cpu.program_counter);
-        cpu.addr.done = true;
-
         if !carry {
+          // TODO: Maybe separate this into addressing task that is called without
+          // yielding it from this tick immediately? Maybe could take a concrete
+          // struct instead of a trait to signal that the relative tasks are
+          // treated specially. Sounds like unnecessary part but currently it throws
+          // me off that this addressing is set here instead of a specific task.
+          // On the other hand, Task ticks are supposed to signify one clock cycle.
+          // Additionally, the offset is decided in the previous tick, and calculating
+          // target_addr ahead of time is iffy since memory could be changed outside
+          // cpu between cycles. Maybe swallow struct ticks over multiple steps?
+          cpu.addr.set(cpu.program_counter);
+          cpu.addr.done = true;
           self.step = BranchStep::Done;
           return true;
         }
@@ -99,7 +98,8 @@ impl Tasks for BranchTasks {
           program_counter_hi.wrapping_add(1)
         };
         cpu.program_counter = Word::from_le_bytes([program_counter_lo, offset_program_counter_hi]);
-
+        cpu.addr.set(cpu.program_counter);
+        cpu.addr.done = true;
         self.step = BranchStep::Done;
         true
       }
@@ -328,6 +328,24 @@ mod common_branching_tasks {
 
     assert_eq!(cpu.addr.indirect(), Some(0x0003));
     assert_eq!(cpu.addr.value(), Some(0x0004));
+  }
+
+  #[test]
+  fn should_fill_addr_value_with_branch_target_when_a_page_flip_occurs() {
+    const OFFSET: Byte = 0x04;
+    let mut payload: [Byte; 512] = [0x00; 512];
+    payload[0x00FE] = OFFSET;
+    let mut memory = MemoryMock::new(&payload);
+    let mut cpu = CPU::new_nmos();
+    cpu.program_counter = 0x00FE;
+    cpu.cycle = 0;
+
+    let condition: fn(&CPU) -> bool = |_| true;
+    let mut tasks = Box::new(BranchTasks::new(condition)) as Box<dyn Tasks>;
+    run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+    assert_eq!(cpu.addr.indirect(), Some(0x0004));
+    assert_eq!(cpu.addr.value(), Some(0x0103));
   }
 }
 
