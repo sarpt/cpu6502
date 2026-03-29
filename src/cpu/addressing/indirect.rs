@@ -4,23 +4,23 @@ use crate::{
   memory::Memory,
 };
 
+#[derive(Eq, PartialEq)]
 enum IndirectIndexYStep {
   MemoryAccess,
   IndirectAccessLo,
   IndirectAccessHi,
   OffsetLo,
   OffsetHi,
+  Done,
 }
 
 pub struct IndirectIndexYAddressingTasks {
-  done: bool,
   step: IndirectIndexYStep,
 }
 
 impl IndirectIndexYAddressingTasks {
   pub fn new() -> Self {
     IndirectIndexYAddressingTasks {
-      done: false,
       step: IndirectIndexYStep::MemoryAccess,
     }
   }
@@ -28,14 +28,10 @@ impl IndirectIndexYAddressingTasks {
 
 impl Tasks for IndirectIndexYAddressingTasks {
   fn done(&self) -> bool {
-    self.done
+    self.step == IndirectIndexYStep::Done
   }
 
   fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
-    if self.done {
-      return self.done;
-    }
-
     match self.step {
       IndirectIndexYStep::MemoryAccess => {
         cpu.addr.reset(AddressingMode::IndirectIndexY);
@@ -76,13 +72,15 @@ impl Tasks for IndirectIndexYAddressingTasks {
           .to_le_bytes();
         let (new_lo, carry) = lo.overflowing_add(cpu.index_register_y);
         cpu.addr.set(Word::from_le_bytes([new_lo, hi]));
-        self.step = IndirectIndexYStep::OffsetHi;
 
         if !carry {
           cpu.addr.done = true;
-          self.done = true;
+          self.step = IndirectIndexYStep::Done;
+          true
+        } else {
+          self.step = IndirectIndexYStep::OffsetHi;
+          false
         }
-        self.done
       }
       IndirectIndexYStep::OffsetHi => {
         let [lo, hi] = cpu
@@ -94,21 +92,26 @@ impl Tasks for IndirectIndexYAddressingTasks {
         cpu.addr.set(Word::from_le_bytes([lo, new_hi]));
 
         cpu.addr.done = true;
-        self.done = true;
-        self.done
+        self.step = IndirectIndexYStep::Done;
+        true
+      }
+      IndirectIndexYStep::Done => {
+        panic!("tick mustn't be called when done")
       }
     }
   }
 }
 
+#[derive(Eq, PartialEq)]
 enum IndexIndirectXStep {
   IndirectAccess,
   SumWithX,
   MemoryAccessLo,
   MemoryAccessHi,
+  Done,
 }
+
 pub struct IndexIndirectXAddressingTasks {
-  done: bool,
   step: IndexIndirectXStep,
   tgt_addr: Word,
 }
@@ -116,7 +119,6 @@ pub struct IndexIndirectXAddressingTasks {
 impl IndexIndirectXAddressingTasks {
   pub fn new() -> Self {
     IndexIndirectXAddressingTasks {
-      done: false,
       step: IndexIndirectXStep::IndirectAccess,
       tgt_addr: Word::default(),
     }
@@ -125,14 +127,10 @@ impl IndexIndirectXAddressingTasks {
 
 impl Tasks for IndexIndirectXAddressingTasks {
   fn done(&self) -> bool {
-    self.done
+    self.step == IndexIndirectXStep::Done
   }
 
   fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
-    if self.done {
-      return self.done;
-    }
-
     match self.step {
       IndexIndirectXStep::IndirectAccess => {
         cpu.addr.reset(AddressingMode::IndexIndirectX);
@@ -163,15 +161,19 @@ impl Tasks for IndexIndirectXAddressingTasks {
       IndexIndirectXStep::MemoryAccessHi => {
         let addr_hi = memory[self.tgt_addr.wrapping_add(1)];
         cpu.addr.set_hi(addr_hi);
-
         cpu.addr.done = true;
-        self.done = true;
-        self.done
+        self.step = IndexIndirectXStep::Done;
+
+        true
+      }
+      IndexIndirectXStep::Done => {
+        panic!("tick mustn't be called when done")
       }
     }
   }
 }
 
+#[derive(Eq, PartialEq)]
 enum IndirectStep {
   IndirectFetchLo,
   IndirectFetchHi,
@@ -179,11 +181,11 @@ enum IndirectStep {
   MemoryAccessLo,
   FixedMemoryAccessHi,
   IncorrectMemoryAccessHi,
+  Done,
 }
 
 pub struct IndirectAddressingTasks {
   fixed_addressing: bool,
-  done: bool,
   step: IndirectStep,
 }
 
@@ -191,7 +193,6 @@ impl IndirectAddressingTasks {
   pub fn new_fixed_addressing() -> Self {
     IndirectAddressingTasks {
       fixed_addressing: true,
-      done: false,
       step: IndirectStep::IndirectFetchLo,
     }
   }
@@ -199,7 +200,6 @@ impl IndirectAddressingTasks {
   pub fn new_incorrect_addressing() -> Self {
     IndirectAddressingTasks {
       fixed_addressing: false,
-      done: false,
       step: IndirectStep::IndirectFetchLo,
     }
   }
@@ -207,14 +207,10 @@ impl IndirectAddressingTasks {
 
 impl Tasks for IndirectAddressingTasks {
   fn done(&self) -> bool {
-    self.done
+    self.step == IndirectStep::Done
   }
 
   fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
-    if self.done {
-      return self.done;
-    }
-
     match self.step {
       IndirectStep::IndirectFetchLo => {
         cpu.addr.reset(AddressingMode::Indirect);
@@ -263,27 +259,30 @@ impl Tasks for IndirectAddressingTasks {
           .expect("indirect address is unexpectedly empty");
         let addr_hi = memory[addr + 1];
         cpu.addr.set_hi(addr_hi);
-
         cpu.addr.done = true;
-        self.done = true;
-        self.done
+        self.step = IndirectStep::Done;
+
+        true
       }
       IndirectStep::IncorrectMemoryAccessHi => {
         let addr = cpu
           .addr
           .indirect()
           .expect("indirect address is unexpectedly empty");
-        let should_incorrectly_jump = addr.to_le_bytes()[0] == 0xFF; // self.tgt_addr_lo == 0xFF;
+        let should_incorrectly_jump = addr.to_le_bytes()[0] == 0xFF;
         let mut target_addr = addr + 1;
         if should_incorrectly_jump {
           target_addr = addr & 0xFF00;
         };
         let addr_hi = memory[target_addr];
         cpu.addr.set_hi(addr_hi);
-
         cpu.addr.done = true;
-        self.done = true;
-        self.done
+        self.step = IndirectStep::Done;
+
+        true
+      }
+      IndirectStep::Done => {
+        panic!("tick mustn't be called when done")
       }
     }
   }

@@ -33,13 +33,14 @@ impl Tasks for ZeroPageAddressingTasks {
   }
 }
 
+#[derive(Eq, PartialEq)]
 enum ZeroPageOffsetStep {
   ZeroPageAccess,
   Offset,
+  Done,
 }
 
 pub struct ZeroPageOffsetAddressingTasks {
-  done: bool,
   step: ZeroPageOffsetStep,
   variant: OffsetVariant,
 }
@@ -47,7 +48,6 @@ pub struct ZeroPageOffsetAddressingTasks {
 impl ZeroPageOffsetAddressingTasks {
   pub fn new_offset_by_x() -> Self {
     ZeroPageOffsetAddressingTasks {
-      done: false,
       step: ZeroPageOffsetStep::ZeroPageAccess,
       variant: OffsetVariant::X,
     }
@@ -55,7 +55,6 @@ impl ZeroPageOffsetAddressingTasks {
 
   pub fn new_offset_by_y() -> Self {
     ZeroPageOffsetAddressingTasks {
-      done: false,
       step: ZeroPageOffsetStep::ZeroPageAccess,
       variant: OffsetVariant::Y,
     }
@@ -64,14 +63,10 @@ impl ZeroPageOffsetAddressingTasks {
 
 impl Tasks for ZeroPageOffsetAddressingTasks {
   fn done(&self) -> bool {
-    self.done
+    self.step == ZeroPageOffsetStep::Done
   }
 
   fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
-    if self.done {
-      return self.done;
-    }
-
     match self.step {
       ZeroPageOffsetStep::ZeroPageAccess => {
         match self.variant {
@@ -99,8 +94,12 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
         cpu.addr.set(final_address);
 
         cpu.addr.done = true;
-        self.done = true;
-        self.done
+        self.step = ZeroPageOffsetStep::Done;
+
+        true
+      }
+      ZeroPageOffsetStep::Done => {
+        panic!("tick mustn't be called when done")
       }
     }
   }
