@@ -1,4 +1,5 @@
 use cpu6502::cpu::CPU;
+use cpu6502::cpu::debugger::Debugger;
 use cpu6502::cpu::utils::execute_until_break;
 use cpu6502::memory::Generic64kMem;
 use std::str;
@@ -63,7 +64,8 @@ fn should_change_word_to_lower_case() {
 
   let mut cpu = CPU::new_nmos();
   cpu.reset(&memory);
-  execute_until_break(&mut cpu, &mut memory, None);
+  let mut dbg = Debugger::new();
+  execute_until_break(&mut cpu, &mut memory, &mut dbg);
 
   assert_eq!(str::from_utf8(&memory[0x0500..0x050C]), Ok("some message"));
   assert_eq!(cpu.get_processor_status() & 0b00000001, 0);
@@ -77,7 +79,8 @@ fn should_report_string_too_long() {
 
   let mut cpu = CPU::new_nmos();
   cpu.reset(&memory);
-  execute_until_break(&mut cpu, &mut memory, None);
+  let mut dbg = Debugger::new();
+  execute_until_break(&mut cpu, &mut memory, &mut dbg);
 
   assert_eq!(str::from_utf8(&memory[0x0500..0x050C]), Ok("ssssssssssss"));
   assert_eq!(cpu.get_processor_status() & 0b00000001, 1);
@@ -90,7 +93,8 @@ fn should_handle_empty_string() {
 
   let mut cpu = CPU::new_nmos();
   cpu.reset(&memory);
-  execute_until_break(&mut cpu, &mut memory, None);
+  let mut dbg = Debugger::new();
+  execute_until_break(&mut cpu, &mut memory, &mut dbg);
 
   assert_eq!(memory[0x0500], 0);
   assert_eq!(cpu.get_processor_status() & 0b00000001, 0);
