@@ -1,5 +1,5 @@
 use crate::{
-  consts::BRK_INTERRUPT_VECTOR,
+  consts::{BRK_INTERRUPT_VECTOR, Byte},
   cpu::{CPU, ChipVariant, Tasks},
   memory::Memory,
 };
@@ -83,7 +83,8 @@ impl Tasks for BrkTasks {
         false
       }
       BrkSteps::PushProcessorStatus => {
-        memory[cpu.get_stack_ptr_address()] = cpu.processor_status.into();
+        let status: Byte = cpu.processor_status.into();
+        memory[cpu.get_stack_ptr_address()] = status | 0x10;
         cpu.stack_pointer = cpu.stack_pointer.wrapping_sub(1);
         self.step = BrkSteps::AccessBrkVectorLo;
         false
@@ -98,7 +99,6 @@ impl Tasks for BrkTasks {
         let hi = memory[BRK_INTERRUPT_VECTOR + 1];
         cpu.set_program_counter_hi(hi);
 
-        cpu.processor_status.change_break_flag(true);
         if cpu.chip_variant != ChipVariant::NMOS {
           cpu.processor_status.change_decimal_mode_flag(false);
         }
@@ -208,7 +208,7 @@ mod brk {
     fn should_put_program_counter_incremented_by_one_and_processor_status_on_stack() {
       let mut memory = MemoryMock::default();
       let mut cpu = CPU::new_nmos();
-      cpu.processor_status.set(0b11111111);
+      cpu.processor_status.set(0b11101111);
       cpu.stack_pointer = 0xFF;
       cpu.program_counter = 0xABCD;
 
@@ -238,16 +238,18 @@ mod brk {
     }
 
     #[test]
-    fn should_set_break_processor_status_flag() {
+    fn should_set_push_processor_status_flag_with_break_status_without_changing_break_itself() {
       let mut memory = MemoryMock::default();
       let mut cpu = CPU::new_nmos();
+      cpu.stack_pointer = 0xFF;
       cpu.program_counter = 0x00;
       cpu.processor_status.change_break_flag(false);
 
       let mut tasks = brk(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert!(cpu.processor_status.get_break_flag());
+      assert_eq!(memory[0x01FD], 0b00010000);
+      assert!(!cpu.processor_status.get_break_flag());
     }
 
     #[test]
