@@ -24,12 +24,16 @@ pub fn execute_next_instruction(
 pub fn execute_until_break(
   cpu: &mut CPU,
   memory: &mut dyn Memory,
-  mut debugger: Option<&mut Debugger>,
+  debugger: &mut Debugger,
 ) -> usize {
   while !cpu.processor_status.get_break_flag() {
-    match debugger {
-      Some(ref mut dbg) => execute_next_instruction(cpu, memory, Some(dbg)),
-      None => execute_next_instruction(cpu, memory, None),
+    execute_next_instruction(cpu, memory, Some(debugger));
+    let Some(inst) = debugger.get_last_instruction() else {
+      continue;
+    };
+
+    if inst.opcode == 0x00 {
+      break;
     }
   }
 

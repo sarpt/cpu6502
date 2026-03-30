@@ -76,12 +76,7 @@ impl CPU {
 
   pub fn reset(&mut self, memory: &dyn Memory) {
     self.program_counter = self.fetch_address_from(RESET_VECTOR, memory);
-    self.cycle = 0;
-    self.stack_pointer = 0x00;
-    self.processor_status.change_decimal_mode_flag(false);
-    self.accumulator = 0;
-    self.index_register_x = 0;
-    self.index_register_y = 0;
+    self.processor_status.change_interrupt_disable_flag(true);
   }
 
   pub fn get_processor_status(&self) -> Byte {

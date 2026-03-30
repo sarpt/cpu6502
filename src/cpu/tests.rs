@@ -48,7 +48,7 @@ mod new {
   use super::super::*;
 
   #[test]
-  fn should_be_in_reset_state_after_creation() {
+  fn should_be_in_default_state_after_creation() {
     let uut = CPU::new_nmos();
 
     assert_eq!(uut.accumulator, 0);
@@ -83,14 +83,14 @@ mod reset {
   }
 
   #[test]
-  fn should_set_negative_flag_in_processor_status_to_zero_after_reset() {
+  fn should_set_disable_interrupt_flag_in_processor_status_to_zero_after_reset() {
     let memory = MemoryMock::default();
     let mut uut = CPU::new_nmos();
-    uut.processor_status.set(0b11111111);
+    uut.processor_status.set(0b00000000);
 
     uut.reset(&memory);
 
-    assert_eq!(uut.processor_status, 0b11110111);
+    assert_eq!(uut.processor_status, 0b00000100);
   }
 }
 
