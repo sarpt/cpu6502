@@ -9,64 +9,67 @@ use serde::Deserialize;
 
 #[test]
 fn nmos6502_tests() {
-  let specs = load_spec("00.json");
+  for i in 0..=255 {
+    let filename = format!("{i:02x}.json");
+    let specs = load_spec(&filename);
 
-  for spec in specs {
-    let mut uut = CPU::new_nmos();
-    let mut memory = Generic64kMem::new();
+    for spec in specs {
+      let mut uut = CPU::new_nmos();
+      let mut memory = Generic64kMem::new();
 
-    uut.processor_status = spec.initial_status.p.into();
+      uut.processor_status = spec.initial_status.p.into();
 
-    uut.reset(&memory);
+      uut.reset(&memory);
 
-    uut.accumulator = spec.initial_status.a;
-    uut.index_register_x = spec.initial_status.x;
-    uut.index_register_y = spec.initial_status.y;
-    uut.stack_pointer = spec.initial_status.s;
-    uut.program_counter = spec.initial_status.pc;
+      uut.accumulator = spec.initial_status.a;
+      uut.index_register_x = spec.initial_status.x;
+      uut.index_register_y = spec.initial_status.y;
+      uut.stack_pointer = spec.initial_status.s;
+      uut.program_counter = spec.initial_status.pc;
 
-    for [addr, val] in spec.initial_status.ram {
-      memory[addr] = val as u8;
+      for [addr, val] in spec.initial_status.ram {
+        memory[addr] = val as u8;
+      }
+
+      for _ in spec.cycles {
+        uut.tick(&mut memory);
+      }
+
+      assert_eq!(
+        uut.program_counter, spec.final_status.pc,
+        "program counter for test \"{}\" in file \"{filename}\"",
+        spec.name
+      );
+      assert_eq!(
+        uut.accumulator, spec.final_status.a,
+        "accumulator for test \"{}\" in file \"{filename}\"",
+        spec.name
+      );
+      assert_eq!(
+        uut.index_register_x, spec.final_status.x,
+        "index register x for test \"{}\" in file \"{filename}\"",
+        spec.name
+      );
+      assert_eq!(
+        uut.index_register_y, spec.final_status.y,
+        "index register y for test \"{}\" in file \"{filename}\"",
+        spec.name
+      );
+      assert_eq!(
+        uut.stack_pointer, spec.final_status.s,
+        "stack pointer for test \"{}\" in file \"{filename}\"",
+        spec.name
+      );
+      assert_eq!(
+        format!("{}", uut.processor_status),
+        format!(
+          "{}",
+          std::convert::Into::<ProcessorStatus>::into(spec.final_status.p)
+        ),
+        "processor status for test \"{}\" in file \"{filename}\"",
+        spec.name
+      );
     }
-
-    for _ in spec.cycles {
-      uut.tick(&mut memory);
-    }
-
-    assert_eq!(
-      uut.program_counter, spec.final_status.pc,
-      "program counter for test \"{}\"",
-      spec.name
-    );
-    assert_eq!(
-      uut.accumulator, spec.final_status.a,
-      "accumulator for test \"{}\"",
-      spec.name
-    );
-    assert_eq!(
-      uut.index_register_x, spec.final_status.x,
-      "index register x for test \"{}\"",
-      spec.name
-    );
-    assert_eq!(
-      uut.index_register_y, spec.final_status.y,
-      "index register y for test \"{}\"",
-      spec.name
-    );
-    assert_eq!(
-      uut.stack_pointer, spec.final_status.s,
-      "stack pointer for test \"{}\"",
-      spec.name
-    );
-    assert_eq!(
-      format!("{}", uut.processor_status),
-      format!(
-        "{}",
-        std::convert::Into::<ProcessorStatus>::into(spec.final_status.p)
-      ),
-      "processor status for test \"{}\"",
-      spec.name
-    );
   }
 }
 
