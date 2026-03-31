@@ -253,7 +253,7 @@ mod ora {
       let mut tasks = ora_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -306,7 +306,7 @@ mod ora {
       let mut tasks = ora_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -361,7 +361,7 @@ mod ora {
       let mut tasks = ora_zpx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -416,7 +416,7 @@ mod ora {
       let mut tasks = ora_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -475,7 +475,7 @@ mod ora {
       let mut tasks = ora_ax(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -557,7 +557,7 @@ mod ora {
       let mut tasks = ora_ay(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -653,7 +653,7 @@ mod ora {
       let mut tasks = ora_inx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -737,7 +737,7 @@ mod ora {
       let mut tasks = ora_iny(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -812,7 +812,7 @@ mod bit {
       let mut tasks = bit_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b00000010);
+      assert_eq!(cpu.processor_status, 0b00100010);
     }
 
     #[test]
@@ -826,7 +826,7 @@ mod bit {
       let mut tasks = bit_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000000);
+      assert_eq!(cpu.processor_status, 0b01100000);
     }
 
     #[test]
@@ -840,7 +840,7 @@ mod bit {
       let mut tasks = bit_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -883,7 +883,7 @@ mod bit {
       let mut tasks = bit_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b00000010);
+      assert_eq!(cpu.processor_status, 0b00100010);
     }
 
     #[test]
@@ -897,7 +897,7 @@ mod bit {
       let mut tasks = bit_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000000);
+      assert_eq!(cpu.processor_status, 0b01100000);
     }
 
     #[test]
@@ -911,7 +911,7 @@ mod bit {
       let mut tasks = bit_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -968,7 +968,7 @@ mod and {
       let mut tasks = and_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1021,7 +1021,7 @@ mod and {
       let mut tasks = and_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1076,7 +1076,7 @@ mod and {
       let mut tasks = and_zpx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1131,7 +1131,7 @@ mod and {
       let mut tasks = and_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1190,7 +1190,7 @@ mod and {
       let mut tasks = and_ax(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1272,7 +1272,7 @@ mod and {
       let mut tasks = and_ay(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1368,7 +1368,7 @@ mod and {
       let mut tasks = and_inx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1452,7 +1452,7 @@ mod and {
       let mut tasks = and_iny(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1540,7 +1540,7 @@ mod eor {
       let mut tasks = eor_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1593,7 +1593,7 @@ mod eor {
       let mut tasks = eor_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1648,7 +1648,7 @@ mod eor {
       let mut tasks = eor_zpx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1703,7 +1703,7 @@ mod eor {
       let mut tasks = eor_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1762,7 +1762,7 @@ mod eor {
       let mut tasks = eor_ax(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1844,7 +1844,7 @@ mod eor {
       let mut tasks = eor_ay(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1940,7 +1940,7 @@ mod eor {
       let mut tasks = eor_inx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -2024,7 +2024,7 @@ mod eor {
       let mut tasks = eor_iny(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0x80);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]

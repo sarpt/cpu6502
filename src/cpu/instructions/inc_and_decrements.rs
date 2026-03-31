@@ -122,7 +122,7 @@ mod inx_im {
     let mut tasks = inx_im(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -168,7 +168,7 @@ mod iny_im {
     let mut tasks = iny_im(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -218,7 +218,7 @@ mod inc_zp {
     let mut tasks = inc_zp(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -272,7 +272,7 @@ mod inc_zpx {
     let mut tasks = inc_zpx(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -324,7 +324,7 @@ mod inc_a {
     let mut tasks = inc_a(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -380,7 +380,7 @@ mod inc_ax {
     let mut tasks = inc_ax(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -426,7 +426,7 @@ mod dex_im {
     let mut tasks = dex_im(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -472,7 +472,7 @@ mod dey_im {
     let mut tasks = dey_im(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -522,7 +522,7 @@ mod dec_zp {
     let mut tasks = dec_zp(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -576,7 +576,7 @@ mod dec_zpx {
     let mut tasks = dec_zpx(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -628,7 +628,7 @@ mod dec_a {
     let mut tasks = dec_a(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }
 
@@ -684,6 +684,6 @@ mod dec_ax {
     let mut tasks = dec_ax(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b00000010);
+    assert_eq!(cpu.processor_status, 0b00100010);
   }
 }

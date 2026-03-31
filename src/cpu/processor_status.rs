@@ -13,9 +13,15 @@ pub enum Flags {
   Negative = 7,
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct ProcessorStatus {
   flags: Byte,
+}
+
+impl Default for ProcessorStatus {
+  fn default() -> Self {
+    Self { flags: 0b00100000 }
+  }
 }
 
 impl PartialEq<Byte> for ProcessorStatus {
@@ -94,7 +100,7 @@ impl ProcessorStatus {
   }
 
   pub fn set(&mut self, val: Byte) {
-    self.flags = val;
+    self.flags = val | 0b00100000;
   }
 
   pub fn change_zero_flag(&mut self, value_set: bool) {

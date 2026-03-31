@@ -231,12 +231,12 @@ mod pla {
     let mut cpu = CPU::new_nmos();
     cpu.stack_pointer = 0xFE;
     memory[0x01FF] = 0xDE;
-    cpu.processor_status = 0x00_u8.into();
+    cpu.processor_status.set(0x00);
 
     let mut tasks = pla(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b10000000);
+    assert_eq!(cpu.processor_status, 0b10100000);
   }
 }
 
@@ -253,7 +253,7 @@ mod php {
   fn should_push_processor_status_into_stack() {
     let mut memory = MemoryMock::default();
     let mut cpu = CPU::new_nmos();
-    cpu.processor_status = 0b10101010_u8.into();
+    cpu.processor_status.set(0b10101010);
     cpu.stack_pointer = 0xFF;
 
     let mut tasks = php(&mut cpu);
@@ -266,7 +266,7 @@ mod php {
   fn should_take_two_cycles() {
     let mut memory = MemoryMock::default();
     let mut cpu = CPU::new_nmos();
-    cpu.processor_status = 0b10101010_u8.into();
+    cpu.processor_status.set(0b10101010);
     cpu.stack_pointer = 0xFF;
     cpu.cycle = 0;
 
@@ -292,12 +292,12 @@ mod plp {
     let mut cpu = CPU::new_nmos();
     cpu.stack_pointer = 0xFE;
     memory[0x01FF] = 0xDE;
-    cpu.processor_status = 0x00_u8.into();
+    cpu.processor_status.set(0x00);
 
     let mut tasks = plp(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0xDE);
+    assert_eq!(cpu.processor_status, 0b11111110);
   }
 
   #[test]
@@ -306,7 +306,7 @@ mod plp {
     let mut cpu = CPU::new_nmos();
     cpu.stack_pointer = 0xFE;
     memory[0x01FF] = 0xDE;
-    cpu.processor_status = 0x00_u8.into();
+    cpu.processor_status.set(0x00);
     cpu.cycle = 0;
 
     let mut tasks = plp(&mut cpu);
@@ -390,11 +390,11 @@ mod tsx {
     let mut memory = MemoryMock::default();
     let mut cpu = CPU::new_nmos();
     cpu.stack_pointer = 0xDE;
-    cpu.processor_status = 0x00_u8.into();
+    cpu.processor_status.set(0x00);
 
     let mut tasks = tsx(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b10000000);
+    assert_eq!(cpu.processor_status, 0b10100000);
   }
 }

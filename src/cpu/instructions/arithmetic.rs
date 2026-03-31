@@ -296,12 +296,12 @@ mod cmp {
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cmp_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -333,12 +333,12 @@ mod cmp {
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cmp_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -371,12 +371,12 @@ mod cmp {
       cpu.accumulator = 0x02;
       cpu.index_register_x = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cmp_zpx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -409,12 +409,12 @@ mod cmp {
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cmp_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -455,12 +455,12 @@ mod cmp {
       cpu.accumulator = 0x02;
       cpu.program_counter = 0x00;
       cpu.index_register_x = 0x02;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cmp_ax(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -524,12 +524,12 @@ mod cmp {
       cpu.accumulator = 0x02;
       cpu.program_counter = 0x00;
       cpu.index_register_y = 0x02;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cmp_ay(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -603,12 +603,12 @@ mod cmp {
       cpu.accumulator = 0x02;
       cpu.index_register_y = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cmp_iny(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -674,12 +674,12 @@ mod cpy {
       let mut cpu = CPU::new_nmos();
       cpu.index_register_y = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cpy_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -712,12 +712,12 @@ mod cpy {
       let mut cpu = CPU::new_nmos();
       cpu.index_register_y = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cpy_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -750,12 +750,12 @@ mod cpy {
       let mut cpu = CPU::new_nmos();
       cpu.index_register_y = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cpy_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -791,12 +791,12 @@ mod cpx {
       let mut cpu = CPU::new_nmos();
       cpu.index_register_x = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cpx_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -829,12 +829,12 @@ mod cpx {
       let mut cpu = CPU::new_nmos();
       cpu.index_register_x = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cpx_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -867,12 +867,12 @@ mod cpx {
       let mut cpu = CPU::new_nmos();
       cpu.index_register_x = 0x02;
       cpu.program_counter = 0x00;
-      assert_eq!(cpu.processor_status, 0b00000000);
+      assert_eq!(cpu.processor_status, 0b00100000);
 
       let mut tasks = cpx_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1024,12 +1024,12 @@ mod adc {
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0xd0;
       cpu.program_counter = 0x00;
-      cpu.processor_status = ProcessorStatus::from(0b00000000);
+      cpu.processor_status = ProcessorStatus::from(0b00100000);
 
       let mut tasks = adc_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000001);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -1081,12 +1081,12 @@ mod adc {
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0xd0;
       cpu.program_counter = 0x00;
-      cpu.processor_status = ProcessorStatus::from(0b00000000);
+      cpu.processor_status = ProcessorStatus::from(0b00100000);
 
       let mut tasks = adc_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000001);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -1139,12 +1139,12 @@ mod adc {
       cpu.index_register_x = 0x02;
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b00000000);
+      cpu.processor_status = ProcessorStatus::from(0b00100000);
 
       let mut tasks = adc_zpx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000001);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -1197,12 +1197,12 @@ mod adc {
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b00000000);
+      cpu.processor_status = ProcessorStatus::from(0b00100000);
 
       let mut tasks = adc_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000001);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -1260,12 +1260,12 @@ mod adc {
       cpu.program_counter = 0x00;
       cpu.index_register_x = 0x02;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b00000000);
+      cpu.processor_status = ProcessorStatus::from(0b00100000);
 
       let mut tasks = adc_ax(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000001);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -1344,12 +1344,12 @@ mod adc {
       cpu.program_counter = 0x00;
       cpu.index_register_y = 0x02;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b00000000);
+      cpu.processor_status = ProcessorStatus::from(0b00100000);
 
       let mut tasks = adc_ay(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000001);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -1443,12 +1443,12 @@ mod adc {
       cpu.index_register_y = 0x02;
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b00000000);
+      cpu.processor_status = ProcessorStatus::from(0b00100000);
 
       let mut tasks = adc_iny(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000001);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -1549,12 +1549,12 @@ mod adc {
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
       cpu.index_register_x = OFFSET;
-      cpu.processor_status = ProcessorStatus::from(0b00000000);
+      cpu.processor_status = ProcessorStatus::from(0b00100000);
 
       let mut tasks = adc_inx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000001);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -1718,12 +1718,12 @@ mod sbc {
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0xd0;
       cpu.program_counter = 0x00;
-      cpu.processor_status = ProcessorStatus::from(0b01000001);
+      cpu.processor_status = ProcessorStatus::from(0b01100001);
 
       let mut tasks = sbc_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000000);
+      assert_eq!(cpu.processor_status, 0b01100000);
     }
 
     #[test]
@@ -1777,12 +1777,12 @@ mod sbc {
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01000001);
+      cpu.processor_status = ProcessorStatus::from(0b01100001);
 
       let mut tasks = sbc_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000000);
+      assert_eq!(cpu.processor_status, 0b01100000);
     }
 
     #[test]
@@ -1838,12 +1838,12 @@ mod sbc {
       cpu.index_register_x = 0x02;
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01000001);
+      cpu.processor_status = ProcessorStatus::from(0b01100001);
 
       let mut tasks = sbc_zpx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000000);
+      assert_eq!(cpu.processor_status, 0b01100000);
     }
     #[test]
     fn should_take_three_cycles() {
@@ -1897,12 +1897,12 @@ mod sbc {
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01000001);
+      cpu.processor_status = ProcessorStatus::from(0b01100001);
 
       let mut tasks = sbc_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000000);
+      assert_eq!(cpu.processor_status, 0b01100000);
     }
 
     #[test]
@@ -1962,12 +1962,12 @@ mod sbc {
       cpu.program_counter = 0x00;
       cpu.index_register_x = 0x02;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01000001);
+      cpu.processor_status = ProcessorStatus::from(0b01100001);
 
       let mut tasks = sbc_ax(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000000);
+      assert_eq!(cpu.processor_status, 0b01100000);
     }
 
     #[test]
@@ -2049,12 +2049,12 @@ mod sbc {
       cpu.program_counter = 0x00;
       cpu.index_register_y = 0x02;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01000001);
+      cpu.processor_status = ProcessorStatus::from(0b01100001);
 
       let mut tasks = sbc_ay(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000000);
+      assert_eq!(cpu.processor_status, 0b01100000);
     }
 
     #[test]
@@ -2151,12 +2151,12 @@ mod sbc {
       cpu.index_register_y = 0x02;
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01000001);
+      cpu.processor_status = ProcessorStatus::from(0b01100001);
 
       let mut tasks = sbc_iny(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000000);
+      assert_eq!(cpu.processor_status, 0b01100000);
     }
 
     #[test]
@@ -2260,12 +2260,12 @@ mod sbc {
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
       cpu.index_register_x = OFFSET;
-      cpu.processor_status = ProcessorStatus::from(0b01000001);
+      cpu.processor_status = ProcessorStatus::from(0b01100001);
 
       let mut tasks = sbc_inx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01000000);
+      assert_eq!(cpu.processor_status, 0b01100000);
     }
 
     #[test]
