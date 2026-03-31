@@ -257,7 +257,7 @@ mod lda {
       let mut tasks = lda_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -306,7 +306,7 @@ mod lda {
       let mut tasks = lda_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -370,7 +370,7 @@ mod lda {
       let mut tasks = lda_zpx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -420,7 +420,7 @@ mod lda {
       let mut tasks = lda_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -478,7 +478,7 @@ mod lda {
       let mut tasks = lda_ax(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -558,7 +558,7 @@ mod lda {
       let mut tasks = lda_ay(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -653,7 +653,7 @@ mod lda {
       let mut tasks = lda_iny(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -733,7 +733,7 @@ mod ldx {
       let mut tasks = ldx_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -782,7 +782,7 @@ mod ldx {
       let mut tasks = ldx_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -846,7 +846,7 @@ mod ldx {
       let mut tasks = ldx_zpy(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -896,7 +896,7 @@ mod ldx {
       let mut tasks = ldx_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -955,7 +955,7 @@ mod ldx {
       let mut tasks = ldx_ay(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1028,7 +1028,7 @@ mod ldy {
       let mut tasks = ldy_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1077,7 +1077,7 @@ mod ldy {
       let mut tasks = ldy_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1141,7 +1141,7 @@ mod ldy {
       let mut tasks = ldy_zpx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1191,7 +1191,7 @@ mod ldy {
       let mut tasks = ldy_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]
@@ -1250,7 +1250,7 @@ mod ldy {
       let mut tasks = ldy_ax(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b10000000);
+      assert_eq!(cpu.processor_status, 0b10100000);
     }
 
     #[test]

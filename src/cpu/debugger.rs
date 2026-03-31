@@ -432,7 +432,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b00000000);
+      assert_eq!(result.processor_status, 0b00100000);
 
       // fetch lo of address
       cpu.tick(&mut memory);
@@ -445,7 +445,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b00000000);
+      assert_eq!(result.processor_status, 0b00100000);
 
       // fetch hi of address & addressing done
       cpu.tick(&mut memory);
@@ -458,7 +458,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b00000000);
+      assert_eq!(result.processor_status, 0b00100000);
 
       // fetch of value at address
       cpu.tick(&mut memory);
@@ -471,7 +471,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b00000010);
+      assert_eq!(result.processor_status, 0b00100010);
 
       // fetch of LDX_A
       cpu.tick(&mut memory);
@@ -484,7 +484,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b00000010);
+      assert_eq!(result.processor_status, 0b00100010);
 
       // fetch lo of address
       cpu.tick(&mut memory);
@@ -497,7 +497,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b00000010);
+      assert_eq!(result.processor_status, 0b00100010);
 
       // fetch hi of address & addressing done
       cpu.tick(&mut memory);
@@ -510,7 +510,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b00000010);
+      assert_eq!(result.processor_status, 0b00100010);
 
       // fetch of value at address
       cpu.tick(&mut memory);
@@ -523,7 +523,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b10000000);
+      assert_eq!(result.processor_status, 0b10100000);
 
       // fetch of next LDY_A
       cpu.tick(&mut memory);
@@ -536,7 +536,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b10000000);
+      assert_eq!(result.processor_status, 0b10100000);
 
       // fetch lo of address
       cpu.tick(&mut memory);
@@ -549,7 +549,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b10000000);
+      assert_eq!(result.processor_status, 0b10100000);
 
       // fetch hi of address & addressing done
       cpu.tick(&mut memory);
@@ -562,7 +562,7 @@ mod tests {
           y: 0x0
         }
       );
-      assert_eq!(result.processor_status, 0b10000000);
+      assert_eq!(result.processor_status, 0b10100000);
 
       // fetch of value at address
       cpu.tick(&mut memory);
@@ -575,7 +575,7 @@ mod tests {
           y: 0x4
         }
       );
-      assert_eq!(result.processor_status, 0b00000000);
+      assert_eq!(result.processor_status, 0b00100000);
     }
 
     #[test]

@@ -96,12 +96,14 @@ impl Tasks for BrkTasks {
         false
       }
       BrkSteps::AccessBrkVectorHi => {
-        let hi = memory[BRK_INTERRUPT_VECTOR + 1];
-        cpu.set_program_counter_hi(hi);
-
+        cpu.processor_status.change_interrupt_disable_flag(true);
         if cpu.chip_variant != ChipVariant::NMOS {
           cpu.processor_status.change_decimal_mode_flag(false);
         }
+
+        let hi = memory[BRK_INTERRUPT_VECTOR + 1];
+        cpu.set_program_counter_hi(hi);
+
         self.step = BrkSteps::Done;
         true
       }
@@ -248,8 +250,23 @@ mod brk {
       let mut tasks = brk(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(memory[0x01FD], 0b00010000);
+      assert_eq!(memory[0x01FD], 0b00110000);
       assert!(!cpu.processor_status.get_break_flag());
+    }
+
+    #[test]
+    fn should_set_interrupt_disable_flag() {
+      let mut memory = MemoryMock::default();
+      let mut cpu = CPU::new_nmos();
+      cpu.stack_pointer = 0xFF;
+      cpu.program_counter = 0x00;
+      cpu.processor_status.change_break_flag(false);
+
+      let mut tasks = brk(&mut cpu);
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(memory[0x01FD], 0b00110000);
+      assert!(cpu.processor_status.get_interrupt_disable_flag());
     }
 
     #[test]

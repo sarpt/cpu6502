@@ -56,7 +56,7 @@ mod new {
     assert_eq!(uut.index_register_x, 0);
     assert_eq!(uut.index_register_y, 0);
     assert_eq!(uut.stack_pointer, 0);
-    assert_eq!(uut.processor_status, 0);
+    assert_eq!(uut.processor_status, 0b00100000);
     assert_eq!(uut.program_counter, 0xFFFC);
   }
 }
@@ -90,7 +90,7 @@ mod reset {
 
     uut.reset(&memory);
 
-    assert_eq!(uut.processor_status, 0b00000100);
+    assert_eq!(uut.processor_status, 0b00100100);
   }
 }
 
@@ -278,7 +278,7 @@ mod set_status_of_register {
     let register = Registers::Accumulator;
     uut.set_status_of_register(register);
 
-    assert_eq!(uut.processor_status, 0b00000010);
+    assert_eq!(uut.processor_status, 0b00100010);
   }
 
   #[test]
@@ -302,7 +302,7 @@ mod set_status_of_register {
     let register = Registers::Accumulator;
     uut.set_status_of_register(register);
 
-    assert_eq!(uut.processor_status, 0b10000000);
+    assert_eq!(uut.processor_status, 0b10100000);
   }
 
   #[test]
