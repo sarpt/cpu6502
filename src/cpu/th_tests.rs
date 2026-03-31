@@ -17,10 +17,9 @@ fn nmos6502_tests() {
       let mut uut = CPU::new_nmos();
       let mut memory = Generic64kMem::new();
 
-      uut.processor_status = spec.initial_status.p.into();
-
       uut.reset(&memory);
 
+      uut.processor_status.set(spec.initial_status.p);
       uut.accumulator = spec.initial_status.a;
       uut.index_register_x = spec.initial_status.x;
       uut.index_register_y = spec.initial_status.y;
@@ -69,6 +68,14 @@ fn nmos6502_tests() {
         "processor status for test \"{}\" in file \"{filename}\"",
         spec.name
       );
+
+      for [addr, expected_val] in spec.final_status.ram {
+        assert_eq!(
+          memory[addr], expected_val as u8,
+          "memory val @ addr \"{addr:#04X}\" for test \"{}\" in file \"{filename}\"",
+          spec.name
+        );
+      }
     }
   }
 }
