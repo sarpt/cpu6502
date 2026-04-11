@@ -188,19 +188,17 @@ impl Tasks for OperationsWithCarryTasks {
       None => panic!("unexpected lack of value after memory read"),
     };
     let accumulator = cpu.get_register(Registers::Accumulator);
-    let (value, carry, overflow) =
+    let (result, carry, overflow) =
       (self.op)(value, accumulator, cpu.processor_status.get_carry_flag());
 
-    cpu.set_register(Registers::Accumulator, value);
+    cpu.set_register(Registers::Accumulator, result);
 
     if carry != FlagOp::Unchanged {
       cpu.processor_status.change_carry_flag(carry == FlagOp::Set)
     }
-    if overflow != FlagOp::Unchanged {
-      cpu
-        .processor_status
-        .change_overflow_flag(overflow == FlagOp::Set)
-    }
+    cpu
+      .processor_status
+      .change_overflow_flag(overflow == FlagOp::Set);
     self.done = true;
 
     self.done
