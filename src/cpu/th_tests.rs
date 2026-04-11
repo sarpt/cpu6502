@@ -63,16 +63,16 @@ fn nmos6502_tests() {
         let addr = match last_op {
           crate::memory::Operation::Read(addr) => {
             spec_assert!(
-              cycle.operation,
               "read",
+              cycle.operation,
               "mismatched memory operation during cycle {idx}"
             );
             addr
           }
           crate::memory::Operation::Write(addr) => {
             spec_assert!(
-              cycle.operation,
               "write",
+              cycle.operation,
               "mismatched memory operation during cycle {idx}"
             );
             addr
