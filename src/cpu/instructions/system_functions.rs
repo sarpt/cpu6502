@@ -19,11 +19,12 @@ impl Tasks for NopTasks {
     self.done
   }
 
-  fn tick(&mut self, _cpu: &mut CPU, _: &mut dyn Memory) -> bool {
+  fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
     if self.done() {
       panic!("tick mustn't be called when done")
     }
 
+    cpu.dummy_fetch(memory);
     self.done = true;
     true
   }

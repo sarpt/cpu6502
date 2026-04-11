@@ -83,7 +83,7 @@ impl Tasks for ModifyRegisterTasks {
     self.done
   }
 
-  fn tick(&mut self, cpu: &mut CPU, _: &mut dyn Memory) -> bool {
+  fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
     if self.done() {
       panic!("tick mustn't be called when done")
     }
@@ -131,6 +131,8 @@ impl Tasks for ModifyRegisterTasks {
       }
       _ => {}
     }
+
+    cpu.dummy_fetch(memory);
 
     self.done = true;
     self.done
