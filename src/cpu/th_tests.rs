@@ -1,11 +1,14 @@
 use std::fs::OpenOptions;
 use std::path::PathBuf;
 
+use serde::de::Error;
+use serde::{Deserialize, Deserializer};
+
+use crate::consts::{Byte, Word};
 use crate::cpu::CPU;
 use crate::cpu::processor_status::ProcessorStatus;
 
 use crate::memory::Generic64kMem;
-use serde::Deserialize;
 
 #[test]
 fn nmos6502_tests() {
@@ -44,29 +47,17 @@ fn nmos6502_tests() {
           panic!("unexpected lack of operation on memory after a cycle");
         };
 
-        let Cycle::Number(cycle_addr) = cycle[0] else {
-          panic!("the first value in cycle information is supposed to be a number");
-        };
-
-        let Cycle::Number(cycle_val) = cycle[1] else {
-          panic!("the second value in cycle information is supposed to be a number");
-        };
-
-        let Cycle::Text(cycl_op) = &cycle[2] else {
-          panic!("the third value in cycle information is supposed to be a string");
-        };
-
         let addr = match last_op {
           crate::memory::Operation::Read(addr) => {
             assert_eq!(
-              cycl_op, "read",
+              cycle.operation, "read",
               "mismatched memory operation during cycle {idx}"
             );
             addr
           }
           crate::memory::Operation::Write(addr) => {
             assert_eq!(
-              cycl_op, "write",
+              cycle.operation, "write",
               "mismatched memory operation during cycle {idx}"
             );
             addr
@@ -74,11 +65,11 @@ fn nmos6502_tests() {
         };
         spec_assert!(
           addr,
-          cycle_addr,
+          cycle.addr,
           "mismatched address access during cycle {idx}"
         );
         let val = memory.data[addr as usize];
-        spec_assert!(val, cycle_val as u8, "mismatched value during cycle {idx}");
+        spec_assert!(val, cycle.val, "mismatched value during cycle {idx}");
       }
 
       spec_assert!(
@@ -156,5 +147,48 @@ struct THTestSpec {
   pub initial_status: THTestSpecStatus,
   #[serde(rename = "final")]
   pub final_status: THTestSpecStatus,
-  pub cycles: Vec<[Cycle; 3]>,
+  #[serde(deserialize_with = "parse_cycles")]
+  pub cycles: Vec<CycleInfo>,
+}
+
+struct CycleInfo {
+  addr: Word,
+  val: Byte,
+  operation: String,
+}
+
+fn parse_cycles<'de, D>(deserializer: D) -> Result<Vec<CycleInfo>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  let cycles: Vec<[Cycle; 3]> = Deserialize::deserialize(deserializer)?;
+
+  let mut result: Vec<CycleInfo> = vec![];
+  for cycle in cycles {
+    let Cycle::Number(cycle_addr) = cycle[0] else {
+      return Err(Error::custom(
+        "the first value in cycle information is supposed to be a number",
+      ));
+    };
+
+    let Cycle::Number(cycle_val) = cycle[1] else {
+      return Err(Error::custom(
+        "the second value in cycle information is supposed to be a number",
+      ));
+    };
+
+    let Cycle::Text(cycl_op) = &cycle[2] else {
+      return Err(Error::custom(
+        "the third value in cycle information is supposed to be a string",
+      ));
+    };
+
+    result.push(CycleInfo {
+      addr: cycle_addr,
+      val: cycle_val as u8,
+      operation: cycl_op.clone(),
+    });
+  }
+
+  Ok(result)
 }
