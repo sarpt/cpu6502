@@ -117,6 +117,10 @@ impl Tasks for ModifyMemoryTasks {
       ModifyMemoryStep::ValueModification => {
         self.previous_value = self.value;
 
+        memory[cpu
+          .addr
+          .value()
+          .expect("unexpected lack of address in ValueModification step")] = self.previous_value; // write value back to address without modification
         match self.variant {
           ModificationVariant::Inc => self.value = self.value.wrapping_add(1),
           ModificationVariant::Dec => self.value = self.value.wrapping_sub(1),
