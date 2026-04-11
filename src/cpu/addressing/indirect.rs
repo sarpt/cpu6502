@@ -142,11 +142,11 @@ impl Tasks for IndexIndirectXAddressingTasks {
         false
       }
       IndexIndirectXStep::SumWithX => {
+        cpu.dummy_fetch(memory);
         let addr_output = cpu
           .addr
           .indirect()
           .expect("unexpected lack of indirect address in SumWithX step");
-        _ = memory[addr_output]; // dummy read
         self.tgt_addr_lo = addr_output.to_le_bytes()[0].wrapping_add(cpu.index_register_x);
         self.step = IndexIndirectXStep::MemoryAccessLo;
 

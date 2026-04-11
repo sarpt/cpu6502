@@ -24,12 +24,13 @@ impl Tasks for ChangeStatusFlagTasks {
     self.done
   }
 
-  fn tick(&mut self, cpu: &mut CPU, _: &mut dyn Memory) -> bool {
+  fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
     if self.done() {
       panic!("tick mustn't be called when done")
     }
 
     cpu.processor_status.change_flag(self.flag, self.value);
+    cpu.dummy_fetch(memory);
     self.done = true;
     self.done
   }
