@@ -113,14 +113,14 @@ enum IndexIndirectXStep {
 
 pub struct IndexIndirectXAddressingTasks {
   step: IndexIndirectXStep,
-  tgt_addr: Word,
+  tgt_addr_lo: u8,
 }
 
 impl IndexIndirectXAddressingTasks {
   pub fn new() -> Self {
     IndexIndirectXAddressingTasks {
       step: IndexIndirectXStep::IndirectAccess,
-      tgt_addr: Word::default(),
+      tgt_addr_lo: 0,
     }
   }
 }
@@ -146,20 +146,23 @@ impl Tasks for IndexIndirectXAddressingTasks {
           .addr
           .indirect()
           .expect("unexpected lack of indirect address in SumWithX step");
-        self.tgt_addr = addr_output.wrapping_add(cpu.index_register_x.into());
+        _ = memory[addr_output]; // dummy read
+        self.tgt_addr_lo = addr_output.to_le_bytes()[0].wrapping_add(cpu.index_register_x);
         self.step = IndexIndirectXStep::MemoryAccessLo;
 
         false
       }
       IndexIndirectXStep::MemoryAccessLo => {
-        let addr_lo = memory[self.tgt_addr];
+        let tgt_addr = [self.tgt_addr_lo, 0x0];
+        let addr_lo = memory[Word::from_le_bytes(tgt_addr)];
         cpu.addr.set_lo(addr_lo);
         self.step = IndexIndirectXStep::MemoryAccessHi;
 
         false
       }
       IndexIndirectXStep::MemoryAccessHi => {
-        let addr_hi = memory[self.tgt_addr.wrapping_add(1)];
+        let tgt_addr = Word::from_le_bytes([self.tgt_addr_lo.wrapping_add(1), 0x0]);
+        let addr_hi = memory[tgt_addr];
         cpu.addr.set_hi(addr_hi);
         cpu.addr.done = true;
         self.step = IndexIndirectXStep::Done;
