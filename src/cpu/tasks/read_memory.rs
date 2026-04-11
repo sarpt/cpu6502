@@ -76,15 +76,16 @@ impl Tasks for AddressingReadMemoryTasks {
           return addressing_done;
         }
 
-        if !self.access_during_addressing {
-          self.step = AddressingReadMemoryStep::SeparateMemoryAccess;
-          return false;
+        if self.access_during_addressing {
+          self.access_memory(cpu, memory);
+          self.step = AddressingReadMemoryStep::Done;
+
+          return true;
         }
 
-        self.access_memory(cpu, memory);
-        self.step = AddressingReadMemoryStep::Done;
+        self.step = AddressingReadMemoryStep::SeparateMemoryAccess;
 
-        addressing_done
+        false
       }
       AddressingReadMemoryStep::SeparateMemoryAccess => {
         self.access_memory(cpu, memory);
