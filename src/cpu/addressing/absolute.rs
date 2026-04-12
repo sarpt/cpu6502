@@ -1,34 +1,48 @@
-use crate::{consts::Word, cpu::tasks::Tasks, memory::Memory};
+use crate::{
+  consts::Word,
+  cpu::{addressing::AddressingTasks, tasks::Tasks},
+  memory::Memory,
+};
 
 use super::OffsetVariant;
 
 #[derive(Eq, PartialEq)]
 enum AbsoluteOffsetStep {
   MemoryAccessLo,
-  MemoryAccessHi,
-  OffsetLo,
-  OffsetHi,
+  MemoryAccessHiOffsetLo,
+  FixHi,
+  Refetch,
   Done,
+}
+
+#[derive(Eq, PartialEq)]
+pub enum AccessVariant {
+  Read,
+  Modify,
+  Write,
 }
 
 pub struct AbsoluteOffsetAddressingTasks {
   step: AbsoluteOffsetStep,
-  variant: OffsetVariant,
+  pub offset_variant: OffsetVariant,
+  pub access_variant: AccessVariant,
+  carry: bool,
 }
 
 impl AbsoluteOffsetAddressingTasks {
-  pub fn new_offset_by_x() -> Self {
+  pub fn new(offset_variant: OffsetVariant, access_variant: AccessVariant) -> Self {
     AbsoluteOffsetAddressingTasks {
       step: AbsoluteOffsetStep::MemoryAccessLo,
-      variant: OffsetVariant::X,
+      offset_variant,
+      access_variant,
+      carry: false,
     }
   }
+}
 
-  pub fn new_offset_by_y() -> Self {
-    AbsoluteOffsetAddressingTasks {
-      step: AbsoluteOffsetStep::MemoryAccessLo,
-      variant: OffsetVariant::Y,
-    }
+impl AddressingTasks for AbsoluteOffsetAddressingTasks {
+  fn fetch_during_addressing(&self) -> bool {
+    true
   }
 }
 
@@ -40,7 +54,7 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
   fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
     match self.step {
       AbsoluteOffsetStep::MemoryAccessLo => {
-        match self.variant {
+        match self.offset_variant {
           OffsetVariant::X => cpu
             .addr
             .reset(crate::cpu::addressing::AddressingMode::AbsoluteX),
@@ -52,48 +66,65 @@ impl Tasks for AbsoluteOffsetAddressingTasks {
         let addr_lo = memory[cpu.program_counter];
         cpu.addr.set_indirect_lo(addr_lo);
         cpu.increment_program_counter();
-        self.step = AbsoluteOffsetStep::MemoryAccessHi;
+        self.step = AbsoluteOffsetStep::MemoryAccessHiOffsetLo;
 
         false
       }
-      AbsoluteOffsetStep::MemoryAccessHi => {
+      AbsoluteOffsetStep::MemoryAccessHiOffsetLo => {
         let addr_hi = memory[cpu.program_counter];
         cpu.addr.set_indirect_hi(addr_hi);
         cpu.increment_program_counter();
-        self.step = AbsoluteOffsetStep::OffsetLo;
 
-        false
-      }
-      AbsoluteOffsetStep::OffsetLo => {
-        let offset = match self.variant {
+        let offset = match self.offset_variant {
           OffsetVariant::X => cpu.index_register_x,
           OffsetVariant::Y => cpu.index_register_y,
         };
         let [lo, hi] = cpu
           .addr
           .indirect()
-          .expect("unexpected lack of indirect address in OffsetLo step")
+          .expect("unexpected lack of indirect address in MemoryAccessHiOffsetLo step")
           .to_le_bytes();
         let (new_lo, carry) = lo.overflowing_add(offset);
         cpu.addr.set(Word::from_le_bytes([new_lo, hi]));
+        self.carry = carry;
 
-        if !carry {
+        self.step = AbsoluteOffsetStep::FixHi;
+        false
+      }
+      AbsoluteOffsetStep::FixHi => {
+        let [lo, hi] = cpu
+          .addr
+          .value()
+          .expect("unexpected lack of indirect address in FixHi step")
+          .to_le_bytes();
+        let tgt_addr = Word::from_le_bytes([lo, hi]);
+        _ = memory[tgt_addr]; // dummy read
+
+        if self.access_variant == AccessVariant::Read && !self.carry {
           cpu.addr.done = true;
           self.step = AbsoluteOffsetStep::Done;
-          true
-        } else {
-          self.step = AbsoluteOffsetStep::OffsetHi;
-          false
+          return true;
         }
+
+        if self.carry {
+          cpu.addr.set_hi(hi.wrapping_add(1));
+        }
+
+        if self.access_variant == AccessVariant::Write {
+          cpu.addr.done = true;
+          self.step = AbsoluteOffsetStep::Done;
+          return true;
+        }
+
+        self.step = AbsoluteOffsetStep::Refetch;
+        false
       }
-      AbsoluteOffsetStep::OffsetHi => {
-        let [_, hi] = cpu
+      AbsoluteOffsetStep::Refetch => {
+        let tgt_addr = cpu
           .addr
-          .indirect()
-          .expect("unexpected lack of indirect address in OffsetHi step")
-          .to_le_bytes();
-        let new_hi = hi.wrapping_add(1);
-        cpu.addr.set_hi(new_hi);
+          .value()
+          .expect("unexpected lack of indirect address in Refetch step");
+        _ = memory[tgt_addr]; // dummy read
 
         cpu.addr.done = true;
         self.step = AbsoluteOffsetStep::Done;
@@ -122,6 +153,12 @@ impl AbsoluteAddressingTasks {
     AbsoluteAddressingTasks {
       step: AbsoluteStep::MemoryLo,
     }
+  }
+}
+
+impl AddressingTasks for AbsoluteAddressingTasks {
+  fn fetch_during_addressing(&self) -> bool {
+    false
   }
 }
 

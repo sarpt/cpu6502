@@ -1,13 +1,12 @@
 use crate::cpu::{
-  AddressingMode, CPU, Registers, Tasks,
-  addressing::get_addressing_tasks,
+  CPU, Registers, Tasks,
+  addressing::{
+    OffsetVariant,
+    absolute::{AbsoluteAddressingTasks, AbsoluteOffsetAddressingTasks, AccessVariant},
+    zero_page::{ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks},
+  },
   tasks::{modify_memory::ModifyMemoryTasks, modify_register::ModifyRegisterTasks},
 };
-
-fn decrement_memory(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-  let addr_tasks = get_addressing_tasks(cpu, addr_mode);
-  Box::new(ModifyMemoryTasks::new_dec(addr_tasks))
-}
 
 fn decrement_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
   match register {
@@ -16,20 +15,28 @@ fn decrement_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
   }
 }
 
-pub fn dec_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  decrement_memory(cpu, AddressingMode::ZeroPage)
+pub fn dec_zp(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(ModifyMemoryTasks::new_dec(Box::new(
+    ZeroPageAddressingTasks::new(),
+  )))
 }
 
-pub fn dec_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  decrement_memory(cpu, AddressingMode::ZeroPageX)
+pub fn dec_zpx(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(ModifyMemoryTasks::new_dec(Box::new(
+    ZeroPageOffsetAddressingTasks::new_offset_by_x(),
+  )))
 }
 
-pub fn dec_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  decrement_memory(cpu, AddressingMode::Absolute)
+pub fn dec_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(ModifyMemoryTasks::new_dec(Box::new(
+    AbsoluteAddressingTasks::new(),
+  )))
 }
 
-pub fn dec_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-  decrement_memory(cpu, AddressingMode::AbsoluteX)
+pub fn dec_ax(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(ModifyMemoryTasks::new_dec(Box::new(
+    AbsoluteOffsetAddressingTasks::new(OffsetVariant::X, AccessVariant::Modify),
+  )))
 }
 
 pub fn dex_im(cpu: &mut CPU) -> Box<dyn Tasks> {
@@ -42,11 +49,6 @@ pub fn dey_im(cpu: &mut CPU) -> Box<dyn Tasks> {
   decrement_register(cpu, Registers::IndexY)
 }
 
-fn increment_memory(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-  let addr_tasks = get_addressing_tasks(cpu, addr_mode);
-  Box::new(ModifyMemoryTasks::new_inc(addr_tasks))
-}
-
 fn increment_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
   match register {
     Registers::IndexX | Registers::IndexY => Box::new(ModifyRegisterTasks::new_inc(register)),
@@ -54,20 +56,28 @@ fn increment_register(_cpu: &mut CPU, register: Registers) -> Box<dyn Tasks> {
   }
 }
 
-pub fn inc_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  increment_memory(cpu, AddressingMode::ZeroPage)
+pub fn inc_zp(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(ModifyMemoryTasks::new_inc(Box::new(
+    ZeroPageAddressingTasks::new(),
+  )))
 }
 
-pub fn inc_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  increment_memory(cpu, AddressingMode::ZeroPageX)
+pub fn inc_zpx(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(ModifyMemoryTasks::new_inc(Box::new(
+    ZeroPageOffsetAddressingTasks::new_offset_by_x(),
+  )))
 }
 
-pub fn inc_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  increment_memory(cpu, AddressingMode::Absolute)
+pub fn inc_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(ModifyMemoryTasks::new_inc(Box::new(
+    AbsoluteAddressingTasks::new(),
+  )))
 }
 
-pub fn inc_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-  increment_memory(cpu, AddressingMode::AbsoluteX)
+pub fn inc_ax(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(ModifyMemoryTasks::new_inc(Box::new(
+    AbsoluteOffsetAddressingTasks::new(OffsetVariant::X, AccessVariant::Modify),
+  )))
 }
 
 pub fn inx_im(cpu: &mut CPU) -> Box<dyn Tasks> {

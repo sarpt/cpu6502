@@ -1,11 +1,20 @@
-use addressing::{AddressingMode, get_addressing_tasks};
+use addressing::AddressingMode;
 use tasks::Tasks;
 use tasks::read_memory::{AddressingReadMemoryTasks, ReadMemoryTasks};
 
 use super::consts::{Byte, Word};
 use crate::consts::RESET_VECTOR;
+use crate::cpu::addressing::absolute::{
+  AbsoluteAddressingTasks, AbsoluteOffsetAddressingTasks, AccessVariant,
+};
 use crate::cpu::addressing::address::Address;
+use crate::cpu::addressing::indirect::{
+  IndexIndirectXAddressingTasks, IndirectAddressingTasks, IndirectIndexYAddressingTasks,
+};
+use crate::cpu::addressing::zero_page::{ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks};
+use crate::cpu::addressing::{AddressingTasks, OffsetVariant};
 use crate::cpu::instructions::INSTRUCTIONS;
+use crate::cpu::tasks::read_memory::ImmediateReadMemoryTasks;
 use crate::{consts::STACK_PAGE_HI, memory::Memory};
 
 mod addressing;
@@ -201,7 +210,34 @@ impl CPU {
   }
 
   fn read_memory(&self, addr_mode: AddressingMode) -> Box<dyn ReadMemoryTasks> {
-    let addressing_tasks = get_addressing_tasks(self, addr_mode);
+    let addressing_tasks: Box<dyn AddressingTasks> = match addr_mode {
+      AddressingMode::ZeroPage => Box::new(ZeroPageAddressingTasks::new()),
+      AddressingMode::ZeroPageX => Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x()),
+      AddressingMode::ZeroPageY => Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_y()),
+      AddressingMode::Absolute => Box::new(AbsoluteAddressingTasks::new()),
+      AddressingMode::AbsoluteX => Box::new(AbsoluteOffsetAddressingTasks::new(
+        OffsetVariant::X,
+        AccessVariant::Read,
+      )),
+      AddressingMode::AbsoluteY => Box::new(AbsoluteOffsetAddressingTasks::new(
+        OffsetVariant::Y,
+        AccessVariant::Read,
+      )),
+      AddressingMode::Indirect => {
+        if self.chip_variant == ChipVariant::NMOS {
+          Box::new(IndirectAddressingTasks::new_incorrect_addressing())
+        } else {
+          Box::new(IndirectAddressingTasks::new_fixed_addressing())
+        }
+      }
+      AddressingMode::IndexIndirectX => Box::new(IndexIndirectXAddressingTasks::new()),
+      AddressingMode::IndirectIndexY => Box::new(IndirectIndexYAddressingTasks::new()),
+      AddressingMode::Immediate => Box::new(ImmediateReadMemoryTasks::new()),
+      AddressingMode::Accumulator | AddressingMode::Implicit | AddressingMode::Relative => {
+        panic!("addressing tasks not available")
+      }
+    };
+
     if access_cycle_has_been_done_during_addressing(addr_mode) {
       Box::new(AddressingReadMemoryTasks::new_with_access_during_addressing(addressing_tasks))
     } else {
