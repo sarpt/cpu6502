@@ -1,4 +1,8 @@
-use crate::{consts::Byte, cpu::tasks::Tasks, memory::Memory};
+use crate::{
+  consts::Byte,
+  cpu::{addressing::AddressingTasks, tasks::Tasks},
+  memory::Memory,
+};
 
 use super::OffsetVariant;
 
@@ -9,6 +13,12 @@ pub struct ZeroPageAddressingTasks {
 impl ZeroPageAddressingTasks {
   pub fn new() -> Self {
     ZeroPageAddressingTasks { done: false }
+  }
+}
+
+impl AddressingTasks for ZeroPageAddressingTasks {
+  fn fetch_during_addressing(&self) -> bool {
+    false
   }
 }
 
@@ -61,6 +71,12 @@ impl ZeroPageOffsetAddressingTasks {
   }
 }
 
+impl AddressingTasks for ZeroPageOffsetAddressingTasks {
+  fn fetch_during_addressing(&self) -> bool {
+    false
+  }
+}
+
 impl Tasks for ZeroPageOffsetAddressingTasks {
   fn done(&self) -> bool {
     self.step == ZeroPageOffsetStep::Done
@@ -90,6 +106,8 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
           .addr
           .value()
           .expect("unexpected lack of address at Offset step") as Byte;
+
+        _ = memory[addr_output.into()]; // dummy fetch from address
         let final_address = addr_output.wrapping_add(offset);
         cpu.addr.set(final_address);
 

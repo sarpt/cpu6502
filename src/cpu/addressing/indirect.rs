@@ -1,6 +1,9 @@
 use crate::{
   consts::{Byte, Word},
-  cpu::{addressing::AddressingMode, tasks::Tasks},
+  cpu::{
+    addressing::{AddressingMode, AddressingTasks},
+    tasks::Tasks,
+  },
   memory::Memory,
 };
 
@@ -23,6 +26,12 @@ impl IndirectIndexYAddressingTasks {
     IndirectIndexYAddressingTasks {
       step: IndirectIndexYStep::MemoryAccess,
     }
+  }
+}
+
+impl AddressingTasks for IndirectIndexYAddressingTasks {
+  fn fetch_during_addressing(&self) -> bool {
+    true
   }
 }
 
@@ -125,6 +134,12 @@ impl IndexIndirectXAddressingTasks {
   }
 }
 
+impl AddressingTasks for IndexIndirectXAddressingTasks {
+  fn fetch_during_addressing(&self) -> bool {
+    false
+  }
+}
+
 impl Tasks for IndexIndirectXAddressingTasks {
   fn done(&self) -> bool {
     self.step == IndexIndirectXStep::Done
@@ -205,6 +220,12 @@ impl IndirectAddressingTasks {
       fixed_addressing: false,
       step: IndirectStep::IndirectFetchLo,
     }
+  }
+}
+
+impl AddressingTasks for IndirectAddressingTasks {
+  fn fetch_during_addressing(&self) -> bool {
+    false
   }
 }
 

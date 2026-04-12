@@ -1,5 +1,8 @@
 use crate::{
-  cpu::{AddressingMode, CPU, Tasks, addressing::get_addressing_tasks},
+  cpu::{
+    CPU, ChipVariant, Tasks,
+    addressing::{absolute::AbsoluteAddressingTasks, indirect::IndirectAddressingTasks},
+  },
   memory::Memory,
 };
 
@@ -73,9 +76,8 @@ impl Tasks for JsrTasks {
   }
 }
 
-pub fn jsr_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  let addr_tasks = get_addressing_tasks(cpu, AddressingMode::Absolute);
-  Box::new(JsrTasks::new(addr_tasks))
+pub fn jsr_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(JsrTasks::new(Box::new(AbsoluteAddressingTasks::new())))
 }
 
 #[derive(PartialEq, PartialOrd)]
@@ -182,18 +184,17 @@ impl Tasks for JmpTasks {
   }
 }
 
-fn jmp(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-  let addr_tasks = get_addressing_tasks(cpu, addr_mode);
-
-  Box::new(JmpTasks::new(addr_tasks))
-}
-
-pub fn jmp_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  jmp(cpu, AddressingMode::Absolute)
+pub fn jmp_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(JmpTasks::new(Box::new(AbsoluteAddressingTasks::new())))
 }
 
 pub fn jmp_in(cpu: &mut CPU) -> Box<dyn Tasks> {
-  jmp(cpu, AddressingMode::Indirect)
+  let addr_tasks = if cpu.chip_variant == ChipVariant::NMOS {
+    Box::new(IndirectAddressingTasks::new_incorrect_addressing())
+  } else {
+    Box::new(IndirectAddressingTasks::new_fixed_addressing())
+  };
+  Box::new(JmpTasks::new(addr_tasks))
 }
 
 #[cfg(test)]

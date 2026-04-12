@@ -1,6 +1,9 @@
 use crate::{
   consts::Byte,
-  cpu::{CPU, addressing::AddressingMode},
+  cpu::{
+    CPU,
+    addressing::{AddressingMode, AddressingTasks},
+  },
   memory::Memory,
 };
 
@@ -109,6 +112,12 @@ impl ImmediateReadMemoryTasks {
       done: false,
       value: None,
     }
+  }
+}
+
+impl AddressingTasks for ImmediateReadMemoryTasks {
+  fn fetch_during_addressing(&self) -> bool {
+    true
   }
 }
 

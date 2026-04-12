@@ -1,6 +1,12 @@
 use crate::{
   cpu::{
-    AddressingMode, CPU, Registers, Tasks, addressing::get_addressing_tasks,
+    AddressingMode, CPU, Registers, Tasks,
+    addressing::{
+      OffsetVariant,
+      absolute::{AbsoluteAddressingTasks, AbsoluteOffsetAddressingTasks, AccessVariant},
+      indirect::{IndexIndirectXAddressingTasks, IndirectIndexYAddressingTasks},
+      zero_page::{ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks},
+    },
     tasks::read_memory::ReadMemoryTasks,
   },
   memory::Memory,
@@ -166,62 +172,101 @@ impl Tasks for StoreTasks {
   }
 }
 
-pub fn store(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Box<dyn Tasks> {
-  let addr_tasks = get_addressing_tasks(cpu, addr_mode);
-
-  Box::new(StoreTasks::new(addr_tasks, register))
+pub fn sta_zp(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(ZeroPageAddressingTasks::new()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn sta_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::ZeroPage, Registers::Accumulator)
+pub fn sta_zpx(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn sta_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::ZeroPageX, Registers::Accumulator)
+pub fn sta_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(AbsoluteAddressingTasks::new()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn sta_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::Absolute, Registers::Accumulator)
+pub fn sta_ax(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(AbsoluteOffsetAddressingTasks::new(
+      OffsetVariant::X,
+      AccessVariant::Write,
+    )),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn sta_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::AbsoluteX, Registers::Accumulator)
+pub fn sta_ay(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(AbsoluteOffsetAddressingTasks::new(
+      OffsetVariant::Y,
+      AccessVariant::Write,
+    )),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn sta_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::AbsoluteY, Registers::Accumulator)
+pub fn sta_inx(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(IndexIndirectXAddressingTasks::new()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn sta_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::IndexIndirectX, Registers::Accumulator)
+pub fn sta_iny(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(IndirectIndexYAddressingTasks::new()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn sta_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::IndirectIndexY, Registers::Accumulator)
+pub fn stx_zp(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(ZeroPageAddressingTasks::new()),
+    Registers::IndexX,
+  ))
 }
 
-pub fn stx_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::ZeroPage, Registers::IndexX)
+pub fn stx_zpy(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_y()),
+    Registers::IndexX,
+  ))
 }
 
-pub fn stx_zpy(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::ZeroPageY, Registers::IndexX)
+pub fn stx_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(AbsoluteAddressingTasks::new()),
+    Registers::IndexX,
+  ))
 }
 
-pub fn stx_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::Absolute, Registers::IndexX)
+pub fn sty_zp(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(ZeroPageAddressingTasks::new()),
+    Registers::IndexY,
+  ))
 }
 
-pub fn sty_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::ZeroPage, Registers::IndexY)
+pub fn sty_zpx(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x()),
+    Registers::IndexY,
+  ))
 }
 
-pub fn sty_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::ZeroPageX, Registers::IndexY)
-}
-
-pub fn sty_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  store(cpu, AddressingMode::Absolute, Registers::IndexY)
+pub fn sty_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(StoreTasks::new(
+    Box::new(AbsoluteAddressingTasks::new()),
+    Registers::IndexY,
+  ))
 }
 
 #[cfg(test)]
