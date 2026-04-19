@@ -1,24 +1,36 @@
 use crate::{
   consts::Byte,
-  cpu::{AddressingMode, CPU, Registers, Tasks, tasks::read_memory::ReadMemoryTasks},
+  cpu::{
+    AddressingMode, CPU, Registers, Tasks,
+    addressing::{
+      AddressingTasks, OffsetVariant,
+      absolute::{AbsoluteAddressingTasks, AbsoluteOffsetAddressingTasks, AccessVariant},
+      indirect::{IndexIndirectXAddressingTasks, IndirectIndexYAddressingTasks},
+      zero_page::{ZeroPageAddressingTasks, ZeroPageOffsetAddressingTasks},
+    },
+    tasks::read_memory::{ImmediateReadMemoryTasks, ReadMemoryTasks},
+  },
   memory::Memory,
 };
 
-fn compare(cpu: &mut CPU, addr_mode: AddressingMode, register: Registers) -> Box<dyn Tasks> {
-  let read_memory_tasks = cpu.read_memory(addr_mode);
-  Box::new(CompareTasks::new(read_memory_tasks, register))
+#[derive(PartialEq, Eq)]
+enum CompareTasksSteps {
+  Addressing,
+  MemoryAccess,
 }
 
 struct CompareTasks {
   done: bool,
-  read_memory_tasks: Box<dyn ReadMemoryTasks>,
+  step: CompareTasksSteps,
+  addressing_tasks: Box<dyn AddressingTasks>,
   register: Registers,
 }
 
 impl CompareTasks {
-  pub fn new(read_memory_tasks: Box<dyn ReadMemoryTasks>, register: Registers) -> Self {
+  pub fn new(addressing_tasks: Box<dyn AddressingTasks>, register: Registers) -> Self {
     CompareTasks {
-      read_memory_tasks,
+      addressing_tasks,
+      step: CompareTasksSteps::Addressing,
       done: false,
       register,
     }
@@ -35,75 +47,131 @@ impl Tasks for CompareTasks {
       panic!("tick mustn't be called when done")
     }
 
-    if !self.read_memory_tasks.done() && !self.read_memory_tasks.tick(cpu, memory) {
-      return false;
+    if self.step == CompareTasksSteps::Addressing {
+      let done = self.addressing_tasks.tick(cpu, memory);
+      if !done {
+        return false;
+      }
+
+      if !self.addressing_tasks.fetch_during_addressing() {
+        self.step = CompareTasksSteps::MemoryAccess;
+        return false;
+      }
     }
 
-    let value = match self.read_memory_tasks.value() {
-      Some(ctx) => ctx.to_le_bytes()[0],
-      None => panic!("unexpected lack of value after memory read"),
-    };
-    cpu.set_cmp_status(self.register, value);
+    let tgt_addr = cpu
+      .addr
+      .value()
+      .expect("unexpected lack of address after addressing tasks done");
+    cpu.set_cmp_status(self.register, memory[tgt_addr]);
     self.done = true;
 
     true
   }
 }
 
-pub fn cmp_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::Immediate, Registers::Accumulator)
+pub fn cmp_im(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(ImmediateReadMemoryTasks::new()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn cmp_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::ZeroPage, Registers::Accumulator)
+pub fn cmp_zp(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(ZeroPageAddressingTasks::new()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn cmp_zpx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::ZeroPageX, Registers::Accumulator)
+pub fn cmp_zpx(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn cmp_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::Absolute, Registers::Accumulator)
+pub fn cmp_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(AbsoluteAddressingTasks::new()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn cmp_ax(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::AbsoluteX, Registers::Accumulator)
+pub fn cmp_ax(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(AbsoluteOffsetAddressingTasks::new(
+      OffsetVariant::X,
+      AccessVariant::Read,
+    )),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn cmp_ay(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::AbsoluteY, Registers::Accumulator)
+pub fn cmp_ay(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(AbsoluteOffsetAddressingTasks::new(
+      OffsetVariant::Y,
+      AccessVariant::Read,
+    )),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn cmp_inx(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::IndexIndirectX, Registers::Accumulator)
+pub fn cmp_inx(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(IndexIndirectXAddressingTasks::new()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn cmp_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::IndirectIndexY, Registers::Accumulator)
+pub fn cmp_iny(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(IndirectIndexYAddressingTasks::new()),
+    Registers::Accumulator,
+  ))
 }
 
-pub fn cpx_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::Immediate, Registers::IndexX)
+pub fn cpx_im(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(ImmediateReadMemoryTasks::new()),
+    Registers::IndexX,
+  ))
 }
 
-pub fn cpx_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::ZeroPage, Registers::IndexX)
+pub fn cpx_zp(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(ZeroPageAddressingTasks::new()),
+    Registers::IndexX,
+  ))
 }
 
-pub fn cpx_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::Absolute, Registers::IndexX)
+pub fn cpx_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(AbsoluteAddressingTasks::new()),
+    Registers::IndexX,
+  ))
 }
 
-pub fn cpy_im(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::Immediate, Registers::IndexY)
+pub fn cpy_im(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(ImmediateReadMemoryTasks::new()),
+    Registers::IndexY,
+  ))
 }
 
-pub fn cpy_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::ZeroPage, Registers::IndexY)
+pub fn cpy_zp(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(ZeroPageAddressingTasks::new()),
+    Registers::IndexY,
+  ))
 }
 
-pub fn cpy_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  compare(cpu, AddressingMode::Absolute, Registers::IndexY)
+pub fn cpy_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(CompareTasks::new(
+    Box::new(AbsoluteAddressingTasks::new()),
+    Registers::IndexY,
+  ))
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
