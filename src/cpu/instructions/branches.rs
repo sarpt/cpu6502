@@ -48,6 +48,7 @@ impl Tasks for BranchTasks {
         true
       }
       BranchStep::OffsetProgramCounterLo => {
+        cpu.dummy_fetch(memory);
         let offset = cpu
           .addr
           .indirect()
@@ -86,6 +87,7 @@ impl Tasks for BranchTasks {
         false
       }
       BranchStep::OffsetProgramCounterHi => {
+        cpu.dummy_fetch(memory);
         let offset = cpu
           .addr
           .indirect()
