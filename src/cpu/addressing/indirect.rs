@@ -9,22 +9,24 @@ use crate::{
 
 #[derive(Eq, PartialEq)]
 enum IndirectIndexYStep {
-  MemoryAccess,
+  PointerAddrFetch,
   IndirectAccessLo,
   IndirectAccessHi,
-  OffsetLo,
-  OffsetHi,
+  MemAccessAndFixHi,
+  Refetch,
   Done,
 }
 
 pub struct IndirectIndexYAddressingTasks {
   step: IndirectIndexYStep,
+  carry: bool,
 }
 
 impl IndirectIndexYAddressingTasks {
   pub fn new() -> Self {
     IndirectIndexYAddressingTasks {
-      step: IndirectIndexYStep::MemoryAccess,
+      step: IndirectIndexYStep::PointerAddrFetch,
+      carry: false,
     }
   }
 }
@@ -42,7 +44,7 @@ impl Tasks for IndirectIndexYAddressingTasks {
 
   fn tick(&mut self, cpu: &mut super::CPU, memory: &mut dyn Memory) -> bool {
     match self.step {
-      IndirectIndexYStep::MemoryAccess => {
+      IndirectIndexYStep::PointerAddrFetch => {
         cpu.addr.reset(AddressingMode::IndirectIndexY);
         let addr: Byte = memory[cpu.program_counter];
         cpu.addr.set_indirect_lo(addr);
@@ -52,53 +54,62 @@ impl Tasks for IndirectIndexYAddressingTasks {
         false
       }
       IndirectIndexYStep::IndirectAccessLo => {
-        let indirect_addr = cpu
+        let ptr_addr = cpu
           .addr
           .indirect()
           .expect("indirect address is unexpectedly empty in IndirectAccessLo step");
-        let addr_lo = memory[indirect_addr];
+        let addr_lo = memory[ptr_addr];
         cpu.addr.set_lo(addr_lo);
         self.step = IndirectIndexYStep::IndirectAccessHi;
 
         false
       }
       IndirectIndexYStep::IndirectAccessHi => {
-        let indirect_addr = cpu
+        let [indirect_lo, indirect_hi] = cpu
           .addr
           .indirect()
-          .expect("indirect address is unexpectedly empty in IndirectAccessHi step");
-        let addr_hi = memory[indirect_addr.wrapping_add(1)];
+          .expect("indirect address is unexpectedly empty in IndirectAccessHi step")
+          .to_le_bytes();
+        let ptr_addr = Word::from_le_bytes([indirect_lo.wrapping_add(1), indirect_hi]);
+        let addr_hi = memory[ptr_addr];
         cpu.addr.set_hi(addr_hi);
-        self.step = IndirectIndexYStep::OffsetLo;
-
-        false
-      }
-      IndirectIndexYStep::OffsetLo => {
-        let [lo, hi] = cpu
+        let [lo, _] = cpu
           .addr
           .value()
           .expect("unexpected lack of address in OffsetLo step")
           .to_le_bytes();
         let (new_lo, carry) = lo.overflowing_add(cpu.index_register_y);
-        cpu.addr.set(Word::from_le_bytes([new_lo, hi]));
+        cpu.addr.set_lo(new_lo);
+        self.carry = carry;
+        self.step = IndirectIndexYStep::MemAccessAndFixHi;
 
-        if !carry {
-          cpu.addr.done = true;
-          self.step = IndirectIndexYStep::Done;
-          true
-        } else {
-          self.step = IndirectIndexYStep::OffsetHi;
-          false
-        }
+        false
       }
-      IndirectIndexYStep::OffsetHi => {
-        let [lo, hi] = cpu
+      IndirectIndexYStep::MemAccessAndFixHi => {
+        let tgt_addr = cpu
           .addr
           .value()
-          .expect("unexpected lack of address in OffsetHi step")
-          .to_le_bytes();
+          .expect("unexpected lack of address in OffsetLo step");
+        _ = memory[tgt_addr]; // dummy fetch;
+
+        if !self.carry {
+          cpu.addr.done = true;
+          self.step = IndirectIndexYStep::Done;
+          return true;
+        }
+
+        let [_, hi] = tgt_addr.to_le_bytes();
         let new_hi = hi.wrapping_add(1);
-        cpu.addr.set(Word::from_le_bytes([lo, new_hi]));
+        cpu.addr.set_hi(new_hi);
+        self.step = IndirectIndexYStep::Refetch;
+        false
+      }
+      IndirectIndexYStep::Refetch => {
+        let tgt_addr = cpu
+          .addr
+          .value()
+          .expect("unexpected lack of address in OffsetHi step");
+        _ = memory[tgt_addr]; // dummy refetch;
 
         cpu.addr.done = true;
         self.step = IndirectIndexYStep::Done;
@@ -157,11 +168,11 @@ impl Tasks for IndexIndirectXAddressingTasks {
         false
       }
       IndexIndirectXStep::SumWithX => {
-        cpu.dummy_fetch(memory);
         let addr_output = cpu
           .addr
           .indirect()
           .expect("unexpected lack of indirect address in SumWithX step");
+        _ = memory[addr_output]; // dummy read
         self.tgt_addr_lo = addr_output.to_le_bytes()[0].wrapping_add(cpu.index_register_x);
         self.step = IndexIndirectXStep::MemoryAccessLo;
 
@@ -294,7 +305,7 @@ impl Tasks for IndirectAddressingTasks {
           .indirect()
           .expect("indirect address is unexpectedly empty");
         let should_incorrectly_jump = addr.to_le_bytes()[0] == 0xFF;
-        let mut target_addr = addr + 1;
+        let (mut target_addr, _) = addr.overflowing_add(1);
         if should_incorrectly_jump {
           target_addr = addr & 0xFF00;
         };
