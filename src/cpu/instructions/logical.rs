@@ -1,5 +1,9 @@
 use crate::{
-  cpu::{AddressingMode, CPU, Registers, Tasks, tasks::read_memory::ReadMemoryTasks},
+  cpu::{
+    AddressingMode, CPU, Registers, Tasks,
+    addressing::{absolute::AbsoluteAddressingTasks, zero_page::ZeroPageAddressingTasks},
+    tasks::read_memory::{AddressingReadMemoryTasks, ReadMemoryTasks},
+  },
   memory::Memory,
 };
 
@@ -86,7 +90,7 @@ impl Tasks for LogicalTasks {
         cpu.set_register(Registers::Accumulator, result_value);
       }
       Variant::Bit => {
-        cpu.set_bit_status(cpu.accumulator & value);
+        cpu.set_bit_status(cpu.accumulator, value);
       }
     }
     self.done = true;
@@ -206,17 +210,20 @@ pub fn ora_iny(cpu: &mut CPU) -> Box<dyn Tasks> {
   ora(cpu, AddressingMode::IndirectIndexY)
 }
 
-pub fn bit(cpu: &mut CPU, addr_mode: AddressingMode) -> Box<dyn Tasks> {
-  let read_memory_tasks = cpu.read_memory(addr_mode);
-  Box::new(LogicalTasks::new_bit(read_memory_tasks))
+pub fn bit_zp(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(LogicalTasks::new_bit(Box::new(
+    AddressingReadMemoryTasks::new_with_access_in_separate_cycle(Box::new(
+      ZeroPageAddressingTasks::new(),
+    )),
+  )))
 }
 
-pub fn bit_zp(cpu: &mut CPU) -> Box<dyn Tasks> {
-  bit(cpu, AddressingMode::ZeroPage)
-}
-
-pub fn bit_a(cpu: &mut CPU) -> Box<dyn Tasks> {
-  bit(cpu, AddressingMode::Absolute)
+pub fn bit_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
+  Box::new(LogicalTasks::new_bit(Box::new(
+    AddressingReadMemoryTasks::new_with_access_in_separate_cycle(Box::new(
+      AbsoluteAddressingTasks::new(),
+    )),
+  )))
 }
 
 #[cfg(test)]

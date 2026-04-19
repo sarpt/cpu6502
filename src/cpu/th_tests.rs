@@ -87,6 +87,12 @@ fn nmos6502_tests() {
         spec_assert!(val, cycle.val, "mismatched value during cycle {idx}");
       }
 
+      let cycles_count = spec.cycles.len();
+      spec_assert!(
+        uut.current_instruction.is_none(),
+        true,
+        "instruction is not finished after {cycles_count} cycles"
+      );
       spec_assert!(
         uut.program_counter,
         spec.final_status.pc,

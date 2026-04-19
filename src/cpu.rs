@@ -195,8 +195,10 @@ impl CPU {
       .change_negative_flag(((target_register.wrapping_sub(value)) & 0b10000000) > 1);
   }
 
-  fn set_bit_status(&mut self, value: Byte) {
-    self.processor_status.change_zero_flag(value == 0);
+  fn set_bit_status(&mut self, accumulator: Byte, value: Byte) {
+    self
+      .processor_status
+      .change_zero_flag(accumulator & value == 0);
     self
       .processor_status
       .change_overflow_flag((value & 0b01000000) > 0);
