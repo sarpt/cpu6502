@@ -1,4 +1,5 @@
 use crate::{
+  consts::{Byte, Word},
   cpu::{
     CPU, ChipVariant, Tasks,
     addressing::{absolute::AbsoluteAddressingTasks, indirect::IndirectAddressingTasks},
@@ -8,23 +9,24 @@ use crate::{
 
 #[derive(PartialEq, PartialOrd)]
 enum JsrSteps {
-  Addressing,
-  DecrementProgramCounterLo,
-  DecrementProgramCounterHi,
-  SetProgramCounter,
+  LoAddressFetch,
+  FetchStack,
+  PushProgramCounterHi,
+  PushProgramCounterLo,
+  HiAddressFetch,
   Done,
 }
 
 struct JsrTasks {
   step: JsrSteps,
-  addressing_tasks: Box<dyn Tasks>,
+  lo_addr: Option<Byte>,
 }
 
 impl JsrTasks {
-  pub fn new(addressing_tasks: Box<dyn Tasks>) -> Self {
+  pub fn new() -> Self {
     JsrTasks {
-      step: JsrSteps::Addressing,
-      addressing_tasks,
+      step: JsrSteps::LoAddressFetch,
+      lo_addr: None,
     }
   }
 }
@@ -36,35 +38,41 @@ impl Tasks for JsrTasks {
 
   fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
     match self.step {
-      JsrSteps::Addressing => {
-        let addr_done = self.addressing_tasks.tick(cpu, memory);
-        if addr_done {
-          self.step = JsrSteps::DecrementProgramCounterHi;
-        }
+      JsrSteps::LoAddressFetch => {
+        self.lo_addr = Some(memory[cpu.program_counter]);
+        cpu.increment_program_counter();
 
+        self.step = JsrSteps::FetchStack;
         false
       }
-      JsrSteps::DecrementProgramCounterHi => {
-        let [_, ret_program_counter_hi] = cpu.program_counter.wrapping_sub(1).to_le_bytes();
+      JsrSteps::FetchStack => {
+        _ = memory[cpu.get_stack_ptr_address()]; // dummy fetch
+        self.step = JsrSteps::PushProgramCounterHi;
+        false
+      }
+      JsrSteps::PushProgramCounterHi => {
+        let ret_program_counter_hi = cpu.program_counter.to_le_bytes()[1];
         memory[cpu.get_stack_ptr_address()] = ret_program_counter_hi;
         cpu.stack_pointer = cpu.stack_pointer.wrapping_sub(1);
 
-        self.step = JsrSteps::DecrementProgramCounterLo;
+        self.step = JsrSteps::PushProgramCounterLo;
         false
       }
-      JsrSteps::DecrementProgramCounterLo => {
-        let [ret_program_counter_lo, _] = cpu.program_counter.wrapping_sub(1).to_le_bytes();
+      JsrSteps::PushProgramCounterLo => {
+        let ret_program_counter_lo = cpu.program_counter.to_le_bytes()[0];
         memory[cpu.get_stack_ptr_address()] = ret_program_counter_lo;
         cpu.stack_pointer = cpu.stack_pointer.wrapping_sub(1);
 
-        self.step = JsrSteps::SetProgramCounter;
+        self.step = JsrSteps::HiAddressFetch;
         false
       }
-      JsrSteps::SetProgramCounter => {
-        cpu.program_counter = cpu
-          .addr
-          .value()
-          .expect("unexpected lack of output address in SetProgramCounter step");
+      JsrSteps::HiAddressFetch => {
+        let lo_addr = self
+          .lo_addr
+          .expect("unexpected lack of lo address in HiAddressFetch step");
+        let hi_addr = memory[cpu.program_counter];
+
+        cpu.program_counter = Word::from_le_bytes([lo_addr, hi_addr]);
 
         self.step = JsrSteps::Done;
         true
@@ -77,7 +85,7 @@ impl Tasks for JsrTasks {
 }
 
 pub fn jsr_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
-  Box::new(JsrTasks::new(Box::new(AbsoluteAddressingTasks::new())))
+  Box::new(JsrTasks::new())
 }
 
 #[derive(PartialEq, PartialOrd)]
