@@ -193,3 +193,215 @@ impl Tasks for AbsoluteAddressingTasks {
     }
   }
 }
+
+#[cfg(test)]
+mod tests {
+  #[cfg(test)]
+  mod absolute_addressing {
+    use crate::cpu::{
+      CPU,
+      addressing::absolute::AbsoluteAddressingTasks,
+      tests::{MemoryMock, run_tasks},
+    };
+
+    #[test]
+    fn should_return_address_from_next_word_in_memory_relative_to_program_counter() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x01;
+
+      let mut tasks = Box::new(AbsoluteAddressingTasks::new());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.addr.value(), Some(0xCBFF));
+    }
+
+    #[test]
+    fn should_advance_program_counter_twice() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x01;
+
+      let mut tasks = Box::new(AbsoluteAddressingTasks::new());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.program_counter, 0x03);
+    }
+
+    #[test]
+    fn should_take_two_cycles() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x01;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(AbsoluteAddressingTasks::new());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 2);
+    }
+  }
+
+  #[cfg(test)]
+  mod absolute_x_addressing {
+    use crate::cpu::{
+      CPU,
+      addressing::{
+        OffsetVariant,
+        absolute::{AbsoluteOffsetAddressingTasks, AccessVariant},
+      },
+      tests::{MemoryMock, run_tasks},
+    };
+
+    #[test]
+    fn should_return_address_offset_by_index_register_x_from_next_word_in_memory_relative_to_program_counter()
+     {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_x = 0x01;
+
+      let mut tasks = Box::new(AbsoluteOffsetAddressingTasks::new(
+        OffsetVariant::X,
+        AccessVariant::Read,
+      ));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.addr.value(), Some(0x52CC));
+    }
+
+    #[test]
+    fn should_advance_program_counter_twice() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_x = 0x01;
+
+      let mut tasks = Box::new(AbsoluteOffsetAddressingTasks::new(
+        OffsetVariant::X,
+        AccessVariant::Read,
+      ));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.program_counter, 0x04);
+    }
+
+    #[test]
+    fn should_take_three_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_x = 0x01;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(AbsoluteOffsetAddressingTasks::new(
+        OffsetVariant::X,
+        AccessVariant::Read,
+      ));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 3);
+    }
+
+    #[test]
+    fn should_take_four_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_x = 0xFF;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(AbsoluteOffsetAddressingTasks::new(
+        OffsetVariant::X,
+        AccessVariant::Read,
+      ));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 4);
+    }
+  }
+
+  #[cfg(test)]
+  mod absolute_y_addressing {
+    use crate::cpu::{
+      CPU,
+      addressing::{
+        OffsetVariant,
+        absolute::{AbsoluteOffsetAddressingTasks, AccessVariant},
+      },
+      tests::{MemoryMock, run_tasks},
+    };
+
+    #[test]
+    fn should_return_address_offset_by_index_register_y_from_next_word_in_memory_relative_to_program_counter()
+     {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.index_register_y = 0x01;
+      cpu.program_counter = 0x02;
+
+      let mut tasks = Box::new(AbsoluteOffsetAddressingTasks::new(
+        OffsetVariant::Y,
+        AccessVariant::Read,
+      ));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.addr.value(), Some(0x52CC));
+    }
+
+    #[test]
+    fn should_advance_program_counter_twice() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.index_register_y = 0x01;
+      cpu.program_counter = 0x02;
+
+      let mut tasks = Box::new(AbsoluteOffsetAddressingTasks::new(
+        OffsetVariant::Y,
+        AccessVariant::Read,
+      ));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.program_counter, 0x04);
+    }
+
+    #[test]
+    fn should_take_three_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_y = 0x01;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(AbsoluteOffsetAddressingTasks::new(
+        OffsetVariant::Y,
+        AccessVariant::Read,
+      ));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 3);
+    }
+
+    #[test]
+    fn should_take_four_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_y = 0xFF;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(AbsoluteOffsetAddressingTasks::new(
+        OffsetVariant::Y,
+        AccessVariant::Read,
+      ));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 4);
+    }
+  }
+}
