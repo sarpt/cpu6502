@@ -66,7 +66,7 @@ impl Tasks for BrkTasks {
   fn tick(&mut self, cpu: &mut CPU, memory: &mut dyn Memory) -> bool {
     match self.step {
       BrkSteps::InitialFetchAndDiscard => {
-        memory[cpu.program_counter]; // fetch and discard
+        _ = memory[cpu.program_counter]; // fetch and discard
         cpu.increment_program_counter();
         self.step = BrkSteps::PushProgramCounterHi;
         false

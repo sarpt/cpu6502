@@ -1,7 +1,7 @@
 use crate::{
   consts::{Byte, Word},
   cpu::{
-    addressing::{AddressingMode, AddressingTasks},
+    addressing::{AddressingMode, AddressingTasks, absolute::AccessVariant},
     tasks::Tasks,
   },
   memory::Memory,
@@ -20,13 +20,15 @@ enum IndirectIndexYStep {
 pub struct IndirectIndexYAddressingTasks {
   step: IndirectIndexYStep,
   carry: bool,
+  access_variant: AccessVariant,
 }
 
 impl IndirectIndexYAddressingTasks {
-  pub fn new() -> Self {
+  pub fn new(access_variant: AccessVariant) -> Self {
     IndirectIndexYAddressingTasks {
       step: IndirectIndexYStep::PointerAddrFetch,
       carry: false,
+      access_variant,
     }
   }
 }
@@ -101,8 +103,17 @@ impl Tasks for IndirectIndexYAddressingTasks {
         let [_, hi] = tgt_addr.to_le_bytes();
         let new_hi = hi.wrapping_add(1);
         cpu.addr.set_hi(new_hi);
-        self.step = IndirectIndexYStep::Refetch;
-        false
+
+        match self.access_variant {
+          AccessVariant::Read => {
+            self.step = IndirectIndexYStep::Refetch;
+            false
+          }
+          AccessVariant::Modify | AccessVariant::Write => {
+            self.step = IndirectIndexYStep::Done;
+            true
+          }
+        }
       }
       IndirectIndexYStep::Refetch => {
         let tgt_addr = cpu
@@ -319,6 +330,89 @@ impl Tasks for IndirectAddressingTasks {
       IndirectStep::Done => {
         panic!("tick mustn't be called when done")
       }
+    }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  #[cfg(test)]
+  mod indirect_index_y_addressing {
+    use crate::cpu::{
+      CPU,
+      addressing::{absolute::AccessVariant, indirect::IndirectIndexYAddressingTasks},
+      tests::{MemoryMock, run_tasks},
+    };
+
+    #[test]
+    fn should_return_address_offset_by_index_register_y_which_is_stored_at_zero_page_address() {
+      let mut memory = MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]);
+      let mut cpu = CPU::new_nmos();
+      cpu.index_register_y = 0x02;
+      cpu.program_counter = 0x00;
+
+      let mut tasks = Box::new(IndirectIndexYAddressingTasks::new(AccessVariant::Read));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.addr.value(), Some(0xDD05));
+    }
+
+    #[test]
+    fn should_advance_program_counter_once() {
+      let mut memory = MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]);
+      let mut cpu = CPU::new_nmos();
+      cpu.index_register_y = 0x02;
+      cpu.program_counter = 0x00;
+
+      let mut tasks = Box::new(IndirectIndexYAddressingTasks::new(AccessVariant::Read));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.program_counter, 0x01);
+    }
+
+    #[test]
+    fn should_take_four_cycles_when_not_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
+      let mut memory = MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]);
+      let mut cpu = CPU::new_nmos();
+      cpu.index_register_y = 0x02;
+      cpu.program_counter = 0x00;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(IndirectIndexYAddressingTasks::new(AccessVariant::Read));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 4);
+    }
+
+    #[test]
+    fn should_take_five_cycles_when_crossing_page_boundary_during_offset_addition_for_a_read_operation_address()
+     {
+      let mut memory = MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]);
+      let mut cpu = CPU::new_nmos();
+      cpu.index_register_y = 0xFF;
+      cpu.program_counter = 0x00;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(IndirectIndexYAddressingTasks::new(AccessVariant::Read));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 5);
+    }
+
+    #[test]
+    fn should_take_four_cycles_when_crossing_page_boundary_during_offset_addition_for_a_write_operation_address()
+     {
+      let mut memory = MemoryMock::new(&[0x02, 0xFF, 0x03, 0xDD, 0x25]);
+      let mut cpu = CPU::new_nmos();
+      cpu.index_register_y = 0xFF;
+      cpu.program_counter = 0x00;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(IndirectIndexYAddressingTasks::new(AccessVariant::Write));
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 4);
     }
   }
 }
