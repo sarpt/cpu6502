@@ -38,7 +38,11 @@ impl Tasks for PushRegisterTasks {
         false
       }
       PushRegisterSteps::PushToStack => {
-        let val = cpu.get_register(self.register);
+        let mut val = cpu.get_register(self.register);
+        if self.register == Registers::ProcessorStatus {
+          // for pushing processor status the BRK flag should always be set
+          val |= 0b00010000;
+        }
         memory[cpu.get_stack_ptr_address()] = val;
         cpu.stack_pointer = cpu.stack_pointer.wrapping_sub(1);
 
@@ -102,13 +106,18 @@ impl Tasks for PullRegisterTasks {
         false
       }
       PullRegisterSteps::PreDecrementStackPointer => {
+        _ = memory[cpu.get_stack_ptr_address()]; // dummy read
         cpu.stack_pointer = cpu.stack_pointer.wrapping_add(1);
         self.step = PullRegisterSteps::PullFromStack;
         false
       }
       PullRegisterSteps::PullFromStack => {
         let stack_addr = cpu.get_stack_ptr_address();
-        let value = memory[stack_addr];
+        let mut value = memory[stack_addr];
+        if self.register == Registers::ProcessorStatus {
+          // always unset break bit stored during php
+          value &= 0b11101111;
+        }
         cpu.set_register(self.register, value);
 
         self.step = PullRegisterSteps::Done;
@@ -250,7 +259,7 @@ mod php {
   };
 
   #[test]
-  fn should_push_processor_status_into_stack() {
+  fn should_push_processor_status_into_stack_with_break_always_set() {
     let mut memory = MemoryMock::default();
     let mut cpu = CPU::new_nmos();
     cpu.processor_status.set(0b10101010);
@@ -259,7 +268,7 @@ mod php {
     let mut tasks = php(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(memory[0x01FF], 0b10101010);
+    assert_eq!(memory[0x01FF], 0b10111010);
   }
 
   #[test]
@@ -287,17 +296,17 @@ mod plp {
   };
 
   #[test]
-  fn should_pull_stack_into_accumulator() {
+  fn should_pull_stack_into_processor_status_with_break_unset() {
     let mut memory = MemoryMock::default();
     let mut cpu = CPU::new_nmos();
     cpu.stack_pointer = 0xFE;
-    memory[0x01FF] = 0xDE;
+    memory[0x01FF] = 0b10111010;
     cpu.processor_status.set(0x00);
 
     let mut tasks = plp(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b11111110);
+    assert_eq!(cpu.processor_status, 0b10101010);
   }
 
   #[test]
