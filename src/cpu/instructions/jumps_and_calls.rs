@@ -123,6 +123,7 @@ impl Tasks for RtsTasks {
         false
       }
       RtsSteps::PreDecrementStackPointer => {
+        _ = memory[cpu.get_stack_ptr_address()]; // dummy read
         cpu.stack_pointer = cpu.stack_pointer.wrapping_add(1);
         self.step = RtsSteps::PopProgramCounterLo;
         false
@@ -143,6 +144,7 @@ impl Tasks for RtsTasks {
         false
       }
       RtsSteps::IncrementProgramCounter => {
+        cpu.dummy_fetch(memory);
         cpu.increment_program_counter();
         self.step = RtsSteps::Done;
         true
