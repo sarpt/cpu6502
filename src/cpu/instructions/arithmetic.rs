@@ -174,60 +174,29 @@ pub fn cpy_a(_cpu: &mut CPU) -> Box<dyn Tasks> {
   ))
 }
 
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub enum FlagOp {
-  Unchanged,
-  Set,
-  Clear,
-}
-
-fn adc(val: Byte, acc: Byte, _carry: bool) -> (Byte, FlagOp, FlagOp) {
-  let (result, carry) = acc.overflowing_add(val);
+fn adc(val: Byte, acc: Byte, carry: bool) -> (Byte, bool, bool) {
+  let (val_with_carry, val_carry) = val.overflowing_add(carry as u8);
+  let (result, acc_carry) = acc.overflowing_add(val_with_carry);
   // if a sign (0x80) of a result differs from signs of both inputs
   let overflow = (acc ^ result) & (val ^ result) & 0x80 > 0;
 
-  let carry_op = if carry {
-    FlagOp::Set
-  } else {
-    FlagOp::Unchanged
-  };
-  let overflow_op = if overflow {
-    FlagOp::Set
-  } else {
-    FlagOp::Unchanged
-  };
-  (result, carry_op, overflow_op)
+  (result, acc_carry | val_carry, overflow)
 }
 
-fn sbc(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp) {
-  let (result, carry) = acc.overflowing_add(0xFF - val + (carry as u8));
-  // if a sign (0x80) of a result differs from sign of accumulator
-  // and ones-complement of value sign differs from sign of result
-  let overflow = (acc ^ result) & ((0xFF - val) ^ result) & 0x80 > 0;
-
-  let carry_op = if carry {
-    FlagOp::Clear
-  } else {
-    FlagOp::Unchanged
-  };
-  let overflow_op = if overflow {
-    FlagOp::Set
-  } else {
-    FlagOp::Unchanged
-  };
-  (result, carry_op, overflow_op)
+fn sbc(val: Byte, acc: Byte, carry: bool) -> (Byte, bool, bool) {
+  adc(0xFF - val, acc, carry)
 }
 
 struct OperationsWithCarryTasks {
   done: bool,
   read_memory_tasks: Box<dyn ReadMemoryTasks>,
-  op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
+  op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, bool, bool),
 }
 
 impl OperationsWithCarryTasks {
   pub fn new(
     read_memory_tasks: Box<dyn ReadMemoryTasks>,
-    op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
+    op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, bool, bool),
   ) -> Self {
     OperationsWithCarryTasks {
       done: false,
@@ -261,12 +230,8 @@ impl Tasks for OperationsWithCarryTasks {
 
     cpu.set_register(Registers::Accumulator, result);
 
-    if carry != FlagOp::Unchanged {
-      cpu.processor_status.change_carry_flag(carry == FlagOp::Set)
-    }
-    cpu
-      .processor_status
-      .change_overflow_flag(overflow == FlagOp::Set);
+    cpu.processor_status.change_carry_flag(carry);
+    cpu.processor_status.change_overflow_flag(overflow);
     self.done = true;
 
     self.done
@@ -276,7 +241,7 @@ impl Tasks for OperationsWithCarryTasks {
 pub fn operations_with_carry(
   cpu: &mut CPU,
   addr_mode: AddressingMode,
-  op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, FlagOp, FlagOp),
+  op: fn(val: Byte, acc: Byte, carry: bool) -> (Byte, bool, bool),
 ) -> Box<dyn Tasks> {
   let read_memory_tasks = cpu.read_memory(addr_mode);
   Box::new(OperationsWithCarryTasks::new(read_memory_tasks, op))
@@ -961,17 +926,17 @@ mod cpx {
 mod adc {
   #[cfg(test)]
   mod common {
-    use crate::cpu::instructions::{FlagOp, arithmetic::adc};
+    use crate::cpu::instructions::arithmetic::adc;
 
     #[test]
-    fn should_return_sum_with_carry_as_unchanged_when_sum_does_not_overflows_a_byte() {
+    fn should_return_sum_with_carry_as_unset_when_sum_does_not_overflows_a_byte() {
       let memory_value = 0x05;
       let acc_value = 0xF0;
       let initial_carry = false;
       let (value, carry, _overflow) = adc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0xF5);
-      assert_eq!(carry, FlagOp::Unchanged);
+      assert!(!carry);
     }
 
     #[test]
@@ -982,18 +947,18 @@ mod adc {
       let (value, carry, _overflow) = adc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0x03);
-      assert_eq!(carry, FlagOp::Set);
+      assert!(carry);
     }
 
     #[test]
-    fn should_return_sum_with_overflow_as_unchanged_when_sum_result_and_both_inputs_are_unsigned() {
+    fn should_return_sum_with_overflow_as_unset_when_sum_result_and_both_inputs_are_unsigned() {
       let memory_value = 0x05;
       let acc_value = 0x03;
       let initial_carry = false;
       let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0x08);
-      assert_eq!(overflow, FlagOp::Unchanged);
+      assert!(!overflow);
     }
 
     #[test]
@@ -1005,7 +970,7 @@ mod adc {
       let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0x20);
-      assert_eq!(overflow, FlagOp::Unchanged);
+      assert!(!overflow);
     }
 
     #[test]
@@ -1017,7 +982,7 @@ mod adc {
       let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0xe0);
-      assert_eq!(overflow, FlagOp::Unchanged);
+      assert!(!overflow);
     }
 
     #[test]
@@ -1028,7 +993,7 @@ mod adc {
       let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0xa0);
-      assert_eq!(overflow, FlagOp::Unchanged);
+      assert!(!overflow);
     }
 
     #[test]
@@ -1040,7 +1005,7 @@ mod adc {
       let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0xa0);
-      assert_eq!(overflow, FlagOp::Set);
+      assert!(overflow);
     }
 
     #[test]
@@ -1052,7 +1017,7 @@ mod adc {
       let (value, _carry, overflow) = adc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0x60);
-      assert_eq!(overflow, FlagOp::Set);
+      assert!(overflow);
     }
   }
 
@@ -1651,33 +1616,32 @@ mod adc {
 mod sbc {
   #[cfg(test)]
   mod common {
-    use crate::cpu::instructions::{FlagOp, arithmetic::sbc};
+    use crate::cpu::instructions::arithmetic::sbc;
 
     #[test]
-    fn should_return_subtraction_with_carry_as_clear_when_subtraction_overflows_a_byte() {
+    fn should_return_subtraction_with_carry_set_when_subtraction_overflows_a_byte() {
       let acc_value = 0x50;
       let memory_value = 0x30;
       let initial_carry = true;
       let (value, carry, _overflow) = sbc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0x20);
-      assert_eq!(carry, FlagOp::Clear);
+      assert!(carry);
     }
 
     #[test]
-    fn should_return_subtraction_with_carry_as_unchanged_when_subtraction_does_not_overflow_a_byte()
-    {
+    fn should_return_subtraction_with_carry_unset_when_subtraction_does_not_overflow_a_byte() {
       let acc_value = 0xd0;
       let memory_value = 0xf0;
       let initial_carry = false;
       let (value, carry, _overflow) = sbc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0xdf);
-      assert_eq!(carry, FlagOp::Unchanged);
+      assert!(!carry);
     }
 
     #[test]
-    fn should_return_subtraction_with_overflow_unchanged_when_result_with_accumulator_and_ones_complement_of_value_are_unsigned()
+    fn should_return_subtraction_with_overflow_unset_when_result_with_accumulator_and_ones_complement_of_value_are_unsigned()
      {
       let acc_value = 0x50;
       let memory_value = 0xf0;
@@ -1685,11 +1649,11 @@ mod sbc {
       let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0x60);
-      assert_eq!(overflow, FlagOp::Unchanged);
+      assert!(!overflow);
     }
 
     #[test]
-    fn should_return_subtraction_with_overflow_unchanged_when_result_is_unsigned_with_ones_complement_of_value_unsigned_and_accumulator_is_signed()
+    fn should_return_subtraction_with_overflow_unset_when_result_is_unsigned_with_ones_complement_of_value_unsigned_and_accumulator_is_signed()
      {
       let acc_value = 0xd0;
       let memory_value = 0xf0;
@@ -1697,11 +1661,11 @@ mod sbc {
       let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0xe0);
-      assert_eq!(overflow, FlagOp::Unchanged);
+      assert!(!overflow);
     }
 
     #[test]
-    fn should_return_subtraction_with_overflow_unchanged_when_result_is_signed_with_ones_complement_of_value_signed_and_accumulator_is_unsigned()
+    fn should_return_subtraction_with_overflow_unset_when_result_is_signed_with_ones_complement_of_value_signed_and_accumulator_is_unsigned()
      {
       let acc_value = 0x50;
       let memory_value = 0x70;
@@ -1709,11 +1673,11 @@ mod sbc {
       let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0xdf);
-      assert_eq!(overflow, FlagOp::Unchanged);
+      assert!(!overflow);
     }
 
     #[test]
-    fn should_return_subtraction_with_overflow_set_as_unchanged_when_result_with_accumulator_and_ones_complement_of_value_are_signed()
+    fn should_return_subtraction_with_overflow_set_as_unset_when_result_with_accumulator_and_ones_complement_of_value_are_signed()
      {
       let acc_value = 0xd0;
       let memory_value = 0x30;
@@ -1721,7 +1685,7 @@ mod sbc {
       let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0xa0);
-      assert_eq!(overflow, FlagOp::Unchanged);
+      assert!(!overflow);
     }
 
     #[test]
@@ -1733,7 +1697,7 @@ mod sbc {
       let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0x9f);
-      assert_eq!(overflow, FlagOp::Set);
+      assert!(overflow);
     }
 
     #[test]
@@ -1745,7 +1709,7 @@ mod sbc {
       let (value, _carry, overflow) = sbc(memory_value, acc_value, initial_carry);
 
       assert_eq!(value, 0x60);
-      assert_eq!(overflow, FlagOp::Set);
+      assert!(overflow);
     }
   }
 
@@ -1778,18 +1742,18 @@ mod sbc {
     }
 
     #[test]
-    fn should_set_overflow_and_clear_carry_flag() {
+    fn should_set_overflow_and_carry_flag() {
       const VALUE: Byte = 0x70;
       let mut memory = MemoryMock::new(&[VALUE, 0xFF]);
       let mut cpu = CPU::new_nmos();
       cpu.accumulator = 0xd0;
       cpu.program_counter = 0x00;
-      cpu.processor_status = ProcessorStatus::from(0b01100001);
+      cpu.processor_status = ProcessorStatus::from(0b01100000);
 
       let mut tasks = sbc_im(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01100000);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -1837,18 +1801,18 @@ mod sbc {
     }
 
     #[test]
-    fn should_set_overflow_and_clear_carry_flag() {
+    fn should_set_overflow_and_set_carry_flag() {
       const VALUE: Byte = 0x70;
       let mut memory = MemoryMock::new(&[0x03, 0xFF, 0x00, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01100001);
+      cpu.processor_status = ProcessorStatus::from(0b01100000);
 
       let mut tasks = sbc_zp(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01100000);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -1897,19 +1861,19 @@ mod sbc {
     }
 
     #[test]
-    fn should_set_overflow_and_clear_carry_flag() {
+    fn should_set_overflow_and_set_carry_flag() {
       const VALUE: Byte = 0x70;
       let mut memory = MemoryMock::new(&[0x01, 0x00, 0x00, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.index_register_x = 0x02;
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01100001);
+      cpu.processor_status = ProcessorStatus::from(0b01100000);
 
       let mut tasks = sbc_zpx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01100000);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
     #[test]
     fn should_take_three_cycles() {
@@ -1957,18 +1921,18 @@ mod sbc {
     }
 
     #[test]
-    fn should_set_overflow_and_clear_carry_flag() {
+    fn should_set_overflow_and_set_carry_flag() {
       const VALUE: Byte = 0x70;
       let mut memory = MemoryMock::new(&[0x03, 0x00, 0x00, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01100001);
+      cpu.processor_status = ProcessorStatus::from(0b01100000);
 
       let mut tasks = sbc_a(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01100000);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -2021,19 +1985,19 @@ mod sbc {
     }
 
     #[test]
-    fn should_set_overflow_and_clear_carry_flag() {
+    fn should_set_overflow_and_set_carry_flag() {
       const VALUE: Byte = 0x70;
       let mut memory = MemoryMock::new(&[ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
       cpu.index_register_x = 0x02;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01100001);
+      cpu.processor_status = ProcessorStatus::from(0b01100000);
 
       let mut tasks = sbc_ax(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01100000);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -2108,19 +2072,19 @@ mod sbc {
     }
 
     #[test]
-    fn should_set_overflow_and_clear_carry_flag() {
+    fn should_set_overflow_and_set_carry_flag() {
       const VALUE: Byte = 0x70;
       let mut memory = MemoryMock::new(&[ADDRESS_LO, ADDRESS_HI, 0x45, 0xAF, 0xDD, VALUE]);
       let mut cpu = CPU::new_nmos();
       cpu.program_counter = 0x00;
       cpu.index_register_y = 0x02;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01100001);
+      cpu.processor_status = ProcessorStatus::from(0b01100000);
 
       let mut tasks = sbc_ay(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01100000);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -2203,7 +2167,7 @@ mod sbc {
     }
 
     #[test]
-    fn should_set_overflow_and_clear_carry_flag() {
+    fn should_set_overflow_and_set_carry_flag() {
       const VALUE: Byte = 0x70;
       let mut memory = MemoryMock::new(&[
         INDIRECT_ZERO_PAGE_ADDRESS_PLACE,
@@ -2217,12 +2181,12 @@ mod sbc {
       cpu.index_register_y = 0x02;
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
-      cpu.processor_status = ProcessorStatus::from(0b01100001);
+      cpu.processor_status = ProcessorStatus::from(0b01100000);
 
       let mut tasks = sbc_iny(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01100000);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
@@ -2312,7 +2276,7 @@ mod sbc {
     }
 
     #[test]
-    fn should_set_overflow_and_clear_carry_flag() {
+    fn should_set_overflow_and_set_carry_flag() {
       const VALUE: Byte = 0x70;
       let mut memory = MemoryMock::new(&[
         ZP_ADDRESS,
@@ -2326,12 +2290,12 @@ mod sbc {
       cpu.program_counter = 0x00;
       cpu.accumulator = 0xd0;
       cpu.index_register_x = OFFSET;
-      cpu.processor_status = ProcessorStatus::from(0b01100001);
+      cpu.processor_status = ProcessorStatus::from(0b01100000);
 
       let mut tasks = sbc_inx(&mut cpu);
       run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-      assert_eq!(cpu.processor_status, 0b01100000);
+      assert_eq!(cpu.processor_status, 0b01100001);
     }
 
     #[test]
