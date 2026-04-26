@@ -74,6 +74,7 @@ impl Tasks for JsrTasks {
 
         let tgt_addr = Word::from_le_bytes([lo_addr, hi_addr]);
         cpu.addr.set(tgt_addr);
+        cpu.addr.done = true;
         cpu.program_counter = tgt_addr;
 
         self.step = JsrSteps::Done;
@@ -272,7 +273,7 @@ mod jsr_a {
   }
 
   #[test]
-  fn should_set_target_addr() {
+  fn should_set_target_addr_and_set_addressing_as_done() {
     let mut memory = MemoryMock::new(&[0x44, 0x51, 0x88]);
     let mut cpu = CPU::new_nmos();
     cpu.program_counter = 0x00;
@@ -282,6 +283,7 @@ mod jsr_a {
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
     assert_eq!(cpu.addr.value(), Some(0x5144));
+    assert!(cpu.addr.done);
   }
 }
 
