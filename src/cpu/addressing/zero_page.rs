@@ -122,3 +122,152 @@ impl Tasks for ZeroPageOffsetAddressingTasks {
     }
   }
 }
+
+#[cfg(test)]
+mod tests {
+  #[cfg(test)]
+  mod zero_page_addressing {
+    use crate::cpu::{
+      CPU,
+      addressing::zero_page::ZeroPageAddressingTasks,
+      tests::{MemoryMock, run_tasks},
+    };
+
+    #[test]
+    fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+
+      let mut tasks = Box::new(ZeroPageAddressingTasks::new());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.addr.value(), Some(0x00CB));
+    }
+
+    #[test]
+    fn should_advance_program_counter_once() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+
+      let mut tasks = Box::new(ZeroPageAddressingTasks::new());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.program_counter, 0x03);
+    }
+
+    #[test]
+    fn should_take_one_cycle() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(ZeroPageAddressingTasks::new());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 1);
+    }
+  }
+
+  #[cfg(test)]
+  mod zero_page_x_addressing {
+    use crate::cpu::{
+      CPU,
+      addressing::zero_page::ZeroPageOffsetAddressingTasks,
+      tests::{MemoryMock, run_tasks},
+    };
+
+    #[test]
+    fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter_summed_with_index_register_x()
+     {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_x = 0x03;
+
+      let mut tasks = Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.addr.value(), Some(0x00CE));
+    }
+
+    #[test]
+    fn should_advance_program_counter_once() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_x = 0x03;
+
+      let mut tasks = Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.program_counter, 0x03);
+    }
+
+    #[test]
+    fn should_take_two_cycles() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_x = 0x03;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_x());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 2);
+    }
+  }
+
+  #[cfg(test)]
+  mod zero_page_y_addressing {
+    use crate::cpu::{
+      CPU,
+      addressing::zero_page::ZeroPageOffsetAddressingTasks,
+      tests::{MemoryMock, run_tasks},
+    };
+
+    #[test]
+    fn should_return_address_in_zero_page_from_next_byte_in_memory_relative_to_program_counter_summed_with_index_register_y()
+     {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x03;
+      cpu.index_register_y = 0x03;
+
+      let mut tasks = Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_y());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.addr.value(), Some(0x0055));
+    }
+
+    #[test]
+    fn should_advance_program_counter_once() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_y = 0x03;
+
+      let mut tasks = Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_y());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.program_counter, 0x03);
+    }
+
+    #[test]
+    fn should_take_two_cycles() {
+      let mut memory = MemoryMock::new(&[0x03, 0xFF, 0xCB, 0x52]);
+      let mut cpu = CPU::new_nmos();
+      cpu.program_counter = 0x02;
+      cpu.index_register_y = 0x03;
+      cpu.cycle = 0;
+
+      let mut tasks = Box::new(ZeroPageOffsetAddressingTasks::new_offset_by_y());
+      run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+      assert_eq!(cpu.cycle, 2);
+    }
+  }
+}
