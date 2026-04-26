@@ -222,7 +222,7 @@ pub fn sta_inx(_cpu: &mut CPU) -> Box<dyn Tasks> {
 
 pub fn sta_iny(_cpu: &mut CPU) -> Box<dyn Tasks> {
   Box::new(StoreTasks::new(
-    Box::new(IndirectIndexYAddressingTasks::new()),
+    Box::new(IndirectIndexYAddressingTasks::new(AccessVariant::Write)),
     Registers::Accumulator,
   ))
 }

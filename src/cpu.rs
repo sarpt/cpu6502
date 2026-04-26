@@ -233,7 +233,9 @@ impl CPU {
         }
       }
       AddressingMode::IndexIndirectX => Box::new(IndexIndirectXAddressingTasks::new()),
-      AddressingMode::IndirectIndexY => Box::new(IndirectIndexYAddressingTasks::new()),
+      AddressingMode::IndirectIndexY => {
+        Box::new(IndirectIndexYAddressingTasks::new(AccessVariant::Read))
+      }
       AddressingMode::Immediate => Box::new(ImmediateReadMemoryTasks::new()),
       AddressingMode::Accumulator | AddressingMode::Implicit | AddressingMode::Relative => {
         panic!("addressing tasks not available")

@@ -127,7 +127,7 @@ pub fn cmp_inx(_cpu: &mut CPU) -> Box<dyn Tasks> {
 
 pub fn cmp_iny(_cpu: &mut CPU) -> Box<dyn Tasks> {
   Box::new(CompareTasks::new(
-    Box::new(IndirectIndexYAddressingTasks::new()),
+    Box::new(IndirectIndexYAddressingTasks::new(AccessVariant::Read)),
     Registers::Accumulator,
   ))
 }
