@@ -156,13 +156,15 @@ impl Tasks for RtiTasks {
         false
       }
       RtiSteps::StackPointerPreDecrement => {
+        _ = memory[cpu.get_stack_ptr_address()]; // dummy fetch
         cpu.stack_pointer = cpu.stack_pointer.wrapping_add(1);
         self.step = RtiSteps::PopProcessorStatus;
         false
       }
       RtiSteps::PopProcessorStatus => {
         let stack_addr = cpu.get_stack_ptr_address();
-        cpu.processor_status = memory[stack_addr].into();
+        // break flag is always ignored when restoring from stack
+        cpu.processor_status = (memory[stack_addr] & 0b11101111).into();
         cpu.stack_pointer = cpu.stack_pointer.wrapping_add(1);
         self.step = RtiSteps::PopProgramCounterLo;
         false
@@ -361,7 +363,7 @@ mod rti {
   };
 
   #[test]
-  fn should_pop_processor_status_and_program_counter_from_stack() {
+  fn should_pop_processor_status_and_program_counter_from_stack_omitting_brk_flag() {
     let mut memory = MemoryMock::default();
     memory[0x01FF] = 0xAB;
     memory[0x01FE] = 0xCD;
@@ -375,7 +377,7 @@ mod rti {
     let mut tasks = rti(&mut cpu);
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
-    assert_eq!(cpu.processor_status, 0b11111111);
+    assert_eq!(cpu.processor_status, 0b11101111);
     assert_eq!(cpu.program_counter, 0xABCD);
   }
 
