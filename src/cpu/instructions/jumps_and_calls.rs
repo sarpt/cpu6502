@@ -72,7 +72,9 @@ impl Tasks for JsrTasks {
           .expect("unexpected lack of lo address in HiAddressFetch step");
         let hi_addr = memory[cpu.program_counter];
 
-        cpu.program_counter = Word::from_le_bytes([lo_addr, hi_addr]);
+        let tgt_addr = Word::from_le_bytes([lo_addr, hi_addr]);
+        cpu.addr.set(tgt_addr);
+        cpu.program_counter = tgt_addr;
 
         self.step = JsrSteps::Done;
         true
@@ -267,6 +269,19 @@ mod jsr_a {
     run_tasks(&mut cpu, &mut *tasks, &mut memory);
 
     assert_eq!(cpu.cycle, 5);
+  }
+
+  #[test]
+  fn should_set_target_addr() {
+    let mut memory = MemoryMock::new(&[0x44, 0x51, 0x88]);
+    let mut cpu = CPU::new_nmos();
+    cpu.program_counter = 0x00;
+    cpu.cycle = 0;
+
+    let mut tasks = jsr_a(&mut cpu);
+    run_tasks(&mut cpu, &mut *tasks, &mut memory);
+
+    assert_eq!(cpu.addr.value(), Some(0x5144));
   }
 }
 
